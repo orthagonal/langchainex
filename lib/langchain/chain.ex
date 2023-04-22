@@ -5,6 +5,12 @@ defmodule LangChain.Chain do
     links: []  # List of ChainLinks, processed in order
   ]
 
+  def new(chain_links) do
+    %LangChain.Chain{
+      links: chain_links
+    }
+  end
+
   def call(lang_chain, previous_values) do
     # Use Enum.reduce to process the ChainLinks and accumulate the output in previous_values
     Enum.reduce(lang_chain.links, previous_values, fn chain_link, acc ->

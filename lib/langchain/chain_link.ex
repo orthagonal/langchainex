@@ -12,7 +12,7 @@ defmodule LangChain.ChainLink do
   defstruct [
     name: "Void",
     input: %LangChain.Chat{},
-    outputParser: &LangChain.ChainLink.no_parse/2, # takes in the ChainLink and the list of all responses
+    outputParser: &LangChain.ChainLink.noParse/2, # takes in the ChainLink and the list of all responses
     # from the model, pass your own outputParser to parse the output of your chat interactions
     rawResponses: [],  # the actual response returned by the model
     output: %{},  # output should be a map of %{ variable: value } produced by outputParser
@@ -35,7 +35,7 @@ defmodule LangChain.ChainLink do
   # you can define your own parser functions, but this is the default
   # the output of the ChainLink will be used as variables in the next link
   # by default the simple text response goes in the :text key
-  defp noParse(chainLink, outputs) do
+  defp noParse(chainLink, outputs \\ []) do
     %{
       chainLink |
       rawResponses: outputs,
