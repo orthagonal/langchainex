@@ -1,8 +1,8 @@
-defmodule SchemaChainTest do
+defmodule ScrapeChainTest do
   use ExUnit.Case
 
   alias LangChain.{Chat, ChainLink, Chain, PromptTemplate}
-  alias SchemaChain
+  alias ScrapeChain
 
   # Create a parser function for the ChainLink
   defp schema_parser(chain_link, outputs) do
@@ -25,7 +25,7 @@ defmodule SchemaChainTest do
     end
   end
 
-  test "ask function should process input_text and input_schema and return parsed result" do
+  test "scrape function should process input_text and input_schema and return parsed result" do
     # Create PromptTemplate structs for each prompt message
     chat = Chat.addPromptTemplates(%Chat{}, [
       %{
@@ -49,11 +49,11 @@ defmodule SchemaChainTest do
     # Create a Chain with the ChainLink
     chain = %Chain{links: [chain_link]}
     input_schema = "{ name: String, age: Number }"
-    schema_chain = LangChain.SchemaChain.new(chain, input_schema)
+    schema_chain = LangChain.ScrapeChain.new(chain, input_schema)
 
     input_text = "John Doe is 30 years old."
 
-    result = LangChain.SchemaChain.ask(schema_chain, input_text)
+    result = LangChain.ScrapeChain.scrape(schema_chain, input_text)
     IO.puts "****************"
     IO.inspect result
     assert Map.get(result, "age") == 30
@@ -61,8 +61,8 @@ defmodule SchemaChainTest do
 
     # try some different schemas on the same text
     input_schema2 = "{ name: { first: String, last: String }, age: Number }"
-    schema_chain2 = LangChain.SchemaChain.new(chain, input_schema2)
-    result2 = LangChain.SchemaChain.ask(schema_chain2, input_text)
+    schema_chain2 = LangChain.ScrapeChain.new(chain, input_schema2)
+    result2 = LangChain.ScrapeChain.scrape(schema_chain2, input_text)
     IO.inspect result2
     assert Map.get(result2, "name") == %{"first" => "John", "last" => "Doe"}
     assert Map.get(result2, "age") == 30

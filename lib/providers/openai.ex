@@ -22,11 +22,6 @@ defmodule LangChain.Providers.OpenAI do
     converted = chats_to_openai(msgs)
     case ExOpenAI.Chat.create_chat_completion(converted, model.modelName, n: model.n) do
       {:ok, openai_Response} ->
-        IO.puts "got a response"
-        IO.puts "got a response"
-        IO.puts "got a response"
-        IO.puts "got a response"
-        IO.inspect openai_Response
         response = openai_Response.choices
           |> openai_to_chats()
         {:ok, response}
