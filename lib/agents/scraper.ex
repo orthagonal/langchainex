@@ -1,6 +1,7 @@
 defmodule LangChain.Scraper do
   use GenServer
 
+  alias LangChain.{ScrapeChain, ChainLink, Chat, PromptTemplate, Chain}
   # Client API
 
   def start_link(opts \\ []) do
@@ -15,19 +16,21 @@ defmodule LangChain.Scraper do
     GenServer.call(pid, {:add_scrape_chain, name, scrape_chain})
   end
 
-  def scrape(pid, name, input_text, opts \\ []) do
+  def scrape(pid, input_text, name \\ "default_scraper", opts \\ %{}) do
     GenServer.call(pid, {:scrape, name, input_text, opts})
   end
 
   # Server Callbacks
 
   def init(_) do
-    {:ok, %{}}
+    default_scrape_chain = default_scrape_chain()
+    state = %{"default_scraper" => default_scrape_chain}
+    {:ok, state}
   end
 
   def handle_call(:list, _from, state) do
     result = Enum.map(state, fn {name, scrape_chain} ->
-      {name, scrape_chain.chain.inputVariables}
+      {name, scrape_chain}
     end)
 
     {:reply, result, state}
@@ -38,19 +41,71 @@ defmodule LangChain.Scraper do
     {:reply, :ok, new_state}
   end
 
-  def handle_call({:scrape, name, input_text, opts}, _from, state) do
+  def handle_call({:scrape, name, inputText, opts}, _from, state) do
     scrape_chain = Map.get(state, name)
 
     if is_nil(scrape_chain) do
       {:reply, {:error, "ScrapeChain not found"}, state}
     else
-      input_schema = Keyword.get(opts, :input_schema, scrape_chain.inputSchema)
-      output_parser = Keyword.get(opts, :output_parser, scrape_chain.outputParser)
+      # Override inputSchema or outputParser or outputFormat if provided
+      inputSchema = Map.get(opts, :inputSchema, scrape_chain.inputSchema)
+      outputParser = Map.get(opts, :outputParser, scrape_chain.outputParser)
+      outputFormat = Map.get(opts, :outputFormat, "JSON")
 
-      # Override input_schema or output_parser if provided
-      new_scrape_chain = LangChain.ScrapeChain.new(scrape_chain.chain, input_schema, output_parser)
-      result = LangChain.ScrapeChain.scrape(new_scrape_chain, input_text)
-      {:reply, result, state}
+      temp_scrape_chain = LangChain.ScrapeChain.new(scrape_chain.chain, inputSchema, outputParser)
+
+      # override the outputFormat if provided
+      input_variables = %{
+        inputText: inputText,
+        inputSchema: inputSchema,
+        outputFormat: outputFormat
+      }
+      result = LangChain.ScrapeChain.scrape(temp_scrape_chain, input_variables)
+      {:reply, {:ok, result}, state}
     end
+  end
+
+  # # todo: should I move this to the ScrapeChain module?
+  defp default_scrape_chain() do
+    input_schema = "{ name: String, age: Number }" # can be overruled with the inputSchema option
+    chat = Chat.addPromptTemplates(%Chat{}, [
+      %{
+        role: "user",
+        prompt: %PromptTemplate{
+          template: "Using the schema <%= inputSchema %>, extract relevant information from the text: <%= inputText %>"
+        }
+      },
+      %{
+        role: "user",
+        prompt: %PromptTemplate{
+          template: "Put the extracted data in <%= outputFormat %> format so that a computer can parse it."
+        }
+      }
+    ])
+    chain_link = %ChainLink{
+      name: "schema_extractor",
+      input: chat,
+      outputParser: &schema_parser/2
+    }
+    chain = %Chain{links: [chain_link]}
+    output_parser = &output_parser/1
+    scrape_chain = ScrapeChain.new(chain, input_schema, output_parser)
+  end
+
+
+  # some helper functions
+  defp schema_parser(chain_link, outputs) do
+    response_text = outputs |> List.first() |> Map.get(:text)
+    %{
+      chain_link |
+      rawResponses: outputs,
+      output: %{
+        text: response_text,
+      }
+    }
+  end
+
+  defp output_parser(result) do
+    result
   end
 end
