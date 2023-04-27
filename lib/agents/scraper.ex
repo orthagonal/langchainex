@@ -1,6 +1,8 @@
 defmodule LangChain.Scraper do
   use GenServer
 
+  @timeout 120_000
+
   alias LangChain.{ScrapeChain, ChainLink, Chat, PromptTemplate, Chain}
   # Client API
 
@@ -17,7 +19,7 @@ defmodule LangChain.Scraper do
   end
 
   def scrape(pid, input_text, name \\ "default_scraper", opts \\ %{}) do
-    GenServer.call(pid, {:scrape, name, input_text, opts})
+    GenServer.call(pid, {:scrape, name, input_text, opts}, @timeout)
   end
 
   # Server Callbacks
@@ -72,20 +74,21 @@ defmodule LangChain.Scraper do
       %{
         role: "user",
         prompt: %PromptTemplate{
-          template: "Using the schema <%= inputSchema %>, extract relevant information from the text: <%= inputText %>"
-        }
-      },
-      %{
-        role: "user",
-        prompt: %PromptTemplate{
-          template: "Put the extracted data in <%= outputFormat %> format so that a computer can parse it."
+          template: "Schema: \"\"\"
+          <%= inputSchema %>
+        \"\"\"
+        Text: \"\"\"
+          <%= inputText %>
+        \"\"\
+        Extract the data from Text according to Schema and return it in <%= outputFormat %> format.
+        "
         }
       }
     ])
     chain_link = %ChainLink{
       name: "schema_extractor",
       input: chat,
-      outputParser: &schema_parser/2
+      outputParser: &passthru_parser/2
     }
     chain = %Chain{links: [chain_link]}
     output_parser = &output_parser/1
@@ -94,7 +97,7 @@ defmodule LangChain.Scraper do
 
 
   # some helper functions
-  defp schema_parser(chain_link, outputs) do
+  def passthru_parser(chain_link, outputs) do
     response_text = outputs |> List.first() |> Map.get(:text)
     %{
       chain_link |
@@ -105,7 +108,25 @@ defmodule LangChain.Scraper do
     }
   end
 
-  defp output_parser(result) do
+  def json_parser(chain_link, outputs) do
+    response_text = outputs |> List.first() |> Map.get(:text)
+    case Jason.decode(response_text) do
+      {:ok, json} ->
+        %{
+          chain_link |
+          rawResponses: outputs,
+          output: json
+        }
+      {:error, response} ->
+        %{
+          chain_link |
+          rawResponses: outputs,
+          output: response_text
+        }
+    end
+  end
+
+  def output_parser(result) do
     result
   end
 end
