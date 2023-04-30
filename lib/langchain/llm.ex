@@ -23,6 +23,7 @@ defmodule LangChain.LLM do
     end
   end
 
+  # call is a single chat msg
   def call(model, prompt) do
     case model.provider do
       :openai -> LangChain.Providers.OpenAI.call(model, prompt)

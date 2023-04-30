@@ -4,6 +4,8 @@ defmodule LangChain.Chat do
   @derive Jason.Encoder
   defstruct [template: "", inputVariables: [], partialVariables: %{}, promptMessages: [], llm: %LangChain.LLM{
     provider: :openai,
+    temperature: 0.1,
+    maxTokens: 200,
     modelName: "gpt-3.5-turbo",  # model must support chat dialogue history
   }]
 

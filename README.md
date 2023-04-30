@@ -1,11 +1,22 @@
-# Langchainex
+# LangchainEx   
 
-**TODO: Add description**
+- [LangchainEx](#langchainex)
+    - [Overview](#overview)
+  - [Installation](#installation)
+  - [GenServers](#genservers)
+    - [Scraper](#scraper)
+
+
+### Overview
+
+Loosely inspired by [LangChainJs](https://github.com/hwchase17/langchainjs)
+This library seeks to enable core LangChain functionality but using
+Elixir and OTP idioms. It provides low-level structures
+you can use to build your own language chain applications
+as well as high-level GenServers for accomplishing common 
+natural-language processing tasks very quickly. 
 
 ## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `langchainex` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -15,7 +26,43 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/langchainex>.
+Be sure to set your OPENAI_API_KEY and OPENAI_ORGANIZATION_KEY in your environment variables before using.
 
+
+## GenServers 
+
+### Scraper
+
+Scraper holds language chains that extract structured data
+from natural language text. It has a handy "default_scraper" that
+can be used out of the box.
+
+
+In your Application tree:
+```elixir
+  {LangChain.Scraper, name: :scraper},
+```
+
+In your code: 
+```elixir
+  description = "Hi I'm Nermal an 11th-level magic user with 30 hit points, I have a wand of healing and a cloak of protection in my inventory."
+
+  character_schema = "{
+    name: String,
+    class: String,
+    hitPoints: Int,          
+    inventory: [String]
+  }"
+
+  {:ok, result } = LangChain.Scraper.scrape(:scraper, description, "default_scraper", %{ outputFormat: "YAML", inputSchema: character_schema }) 
+
+  IO.puts result.text 
+  " name: Nermal
+    class: magic user
+    hitPoints: 30
+    inventory:
+      - wand of healing
+      - cloak of protection
+  "
+    end
+```
