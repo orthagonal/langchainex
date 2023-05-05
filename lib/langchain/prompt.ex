@@ -1,19 +1,24 @@
-# a PromptTemplate is just a normal string template
-# you can pass it a set of values and it will interpolate them
-# you can also partially evaluate the template by calling the partial/2 function
-# inputVariables will always be a list of variables that still need to be specified
 defmodule LangChain.PromptTemplate do
-  # template is the template as a string
-  # inputVariables is a list of variables that need to be specified for that template
-  # partialVariables is a map of variables that have already been specified and can be applied to the template
-  # add defaults
-  # src currently can be one of :user, :system, :ai, :generic
-  # though you could add more
-  @derive Jason.Encoder
-  defstruct [template: "", inputVariables: [], partialVariables: %{}, src: :user]
+  @moduledoc """
+  a PromptTemplate is just a normal string template,
+  you can pass it a set of values and it will interpolate them.
+  You can also partially evaluate the template by calling the partial/2 function
+  inputVariables will contain the list of variables that still need to be specified to
+  complete the template.
+  """
 
-  # converts to eex and then interpolates the values+partialVariables
-  # eex needs values and partialVariables to be specified as a map with atom keys
+  @derive Jason.Encoder
+  defstruct [
+    template: "", # template is a string
+    inputVariables: [], # inputVariables is a list of variables that need to be specified for that template
+    partialVariables: %{}, # partialVariables is a map of variables that have already been specified and can be applied to the template
+    src: :user # src is the source of the message, currently one of :user, :system, :ai, :generic
+  ]
+
+  @doc """
+  converts to eex and then interpolates the values+partialVariables.
+  (eex wants values and partialVariables to be specified as a map with atomic keys)
+  """
   def format(template, values) do
     # env is a keyword list merging values and partials and convert
     env = Map.merge(values, template.partialVariables)
@@ -32,8 +37,10 @@ defmodule LangChain.PromptTemplate do
     {:ok, outcome}
   end
 
-  # partially apply the variables in 'partial' to the partialVariables and
-  # remove them from the inputVariables
+  @doc """
+  partially apply the variables in 'partial' to the partialVariables and
+  remove them from the inputVariables
+  """
   def partial(template, partial) do
     keys = Map.keys(partial)
     inputVariablesWithoutPartial = template.inputVariables -- keys

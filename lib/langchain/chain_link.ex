@@ -20,6 +20,9 @@ defmodule LangChain.ChainLink do
   ]
 
   def call(chainLink, previousValues \\ %{}) do
+    @doc """
+    calls the chainLink, filling in the input prompt and parsing the output
+    """
     {:ok, evaluatedTemplates } = LangChain.Chat.format(chainLink.input, previousValues)
     # extract just the role and text fields from each prompt
     modelInputs = Enum.map(evaluatedTemplates, fn evaluatedTemplate -> Map.take(evaluatedTemplate, [:role, :text]) end)

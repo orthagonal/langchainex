@@ -1,4 +1,6 @@
-# does generic processing that all providers can use
+@doc """
+  A generic LLM interface for interacting with different LLM providers
+  """
 defmodule LangChain.LLM do
   # these are the defaults values for a LLM model
   defstruct [

@@ -1,4 +1,22 @@
 defmodule LangChain.Scraper do
+  @moduledoc """
+  A Scraper is a GenServer that scrapes natural language text and tries to turn it into some kind of
+  structured data. It comes with a built in "default_scraper" that can generally extract data
+  from text according to the schema you gave it.  Examples:
+
+   {:ok, scraper_pid} = Scraper.start_link()
+   input_text = "John Doe is 30 years old."
+   {:ok, result} = Scraper.scrape(scraper_pid, input_text)
+
+  {:ok, result_xml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
+    outputFormat: "XML"
+  })
+
+  {:ok, result_yml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
+    inputSchema: "{ name: { first: String, last: String }, age: Number }",
+    outputFormat: "YAML"
+  })
+  """
   use GenServer
 
   @timeout 120_000
@@ -10,24 +28,31 @@ defmodule LangChain.Scraper do
     GenServer.start_link(__MODULE__, %{}, opts)
   end
 
-  def list(pid) do
-    GenServer.call(pid, :list)
-  end
-
-  def add_scrape_chain(pid, name, scrape_chain) do
-    GenServer.call(pid, {:add_scrape_chain, name, scrape_chain})
-  end
-
-  def scrape(pid, input_text, name \\ "default_scraper", opts \\ %{}) do
-    GenServer.call(pid, {:scrape, name, input_text, opts}, @timeout)
-  end
-
-  # Server Callbacks
-
   def init(_) do
     default_scrape_chain = default_scrape_chain()
     state = %{"default_scraper" => default_scrape_chain}
     {:ok, state}
+  end
+
+  @doc """
+  Returns a list of all the scrape chains in the Scraper
+  """
+  def list(pid) do
+    GenServer.call(pid, :list)
+  end
+
+  @doc """
+  add your own custom scrape chain to the Scraper
+  """
+  def add_scrape_chain(pid, name, scrape_chain) do
+    GenServer.call(pid, {:add_scrape_chain, name, scrape_chain})
+  end
+
+  @doc """
+  scrape some text using the default scraper
+  """
+  def scrape(pid, input_text, name \\ "default_scraper", opts \\ %{}) do
+    GenServer.call(pid, {:scrape, name, input_text, opts}, @timeout)
   end
 
   def handle_call(:list, _from, state) do
@@ -81,6 +106,7 @@ defmodule LangChain.Scraper do
           <%= inputText %>
         \"\"\
         Extract the data from Text according to Schema and return it in <%= outputFormat %> format.
+        Format any datetime fields using ISO8601 standard.
         "
         }
       }
@@ -96,7 +122,9 @@ defmodule LangChain.Scraper do
   end
 
 
-  # some helper functions
+  @doc """
+  A default output parser that just returns the first response text
+  """
   def passthru_parser(chain_link, outputs) do
     response_text = outputs |> List.first() |> Map.get(:text)
     %{
@@ -108,6 +136,9 @@ defmodule LangChain.Scraper do
     }
   end
 
+  @doc """
+  A default output parser that just returns the first response text as json
+  """
   def json_parser(chain_link, outputs) do
     response_text = outputs |> List.first() |> Map.get(:text)
     case Jason.decode(response_text) do
@@ -126,6 +157,9 @@ defmodule LangChain.Scraper do
     end
   end
 
+  @doc """
+  simple passthrough parser that just returns the result
+  """
   def output_parser(result) do
     result
   end

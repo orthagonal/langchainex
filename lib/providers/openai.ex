@@ -1,9 +1,11 @@
 defmodule LangChain.Providers.OpenAI do
-  # todo: support listing all the implementations assocaited with their provider atoms
-  # eg { :huggingface, [ :gpt2, :gpt3, :gptneo ] }
+  @moduledoc """
+  A module for interacting with OpenAI's API
+  """
 
-  # a simple call to respond to a simple text input prompt
-  # the prompt is probably {:ok, "some text"} just get the text
+  @doc """
+  a simple call to respond to a simple text input prompt
+  """
   def call(model, prompt) when is_tuple(prompt) do
     call(model, prompt |> elem(1))
   end
@@ -17,7 +19,9 @@ defmodule LangChain.Providers.OpenAI do
     )
   end
 
-  # a call to respond to an entire chat session
+  @doc """
+  a call to respond to an entire chat session containing multiple PromptTemplates
+  """
   def chat(model, msgs) do
     converted = chats_to_openai(msgs)
     case ExOpenAI.Chat.create_chat_completion(converted, model.modelName, n: model.n) do
