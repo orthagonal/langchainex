@@ -12,10 +12,10 @@ defmodule LangChain.Providers.OpenAI do
 
   def call(model, prompt) do
     ExOpenAI.Completions.create_completion(
-      model.modelName,
+      model.model_name,
       prompt: prompt,
       temperature: model.temperature,
-      max_tokens: model.maxTokens
+      max_tokens: model.max_tokens
     )
   end
 
@@ -25,7 +25,7 @@ defmodule LangChain.Providers.OpenAI do
   def chat(model, msgs) do
     converted = chats_to_openai(msgs)
 
-    case ExOpenAI.Chat.create_chat_completion(converted, model.modelName, n: model.n) do
+    case ExOpenAI.Chat.create_chat_completion(converted, model.model_name, n: model.n) do
       {:ok, openai_Response} ->
         response =
           openai_Response.choices

@@ -12,7 +12,7 @@ defmodule ScrapeChainTest do
       {:ok, json} ->
         %{
           chain_link
-          | rawResponses: outputs,
+          | raw_responses: outputs,
             output: json
         }
 
@@ -22,7 +22,7 @@ defmodule ScrapeChainTest do
 
         %{
           chain_link
-          | rawResponses: outputs,
+          | raw_responses: outputs,
             output: response_text
         }
     end
@@ -31,12 +31,12 @@ defmodule ScrapeChainTest do
   test "scrape function should process input_text and input_schema and return parsed result" do
     # Create PromptTemplate structs for each prompt message
     chat =
-      Chat.addPromptTemplates(%Chat{}, [
+      Chat.add_prompt_templates(%Chat{}, [
         %{
           role: "user",
           prompt: %PromptTemplate{
             template:
-              "Using the schema <%= inputSchema %>, extract relevant information from the text: <%= inputText %>"
+              "Using the schema <%= input_schema %>, extract relevant information from the text: <%= input_text %>"
           }
         },
         %{
@@ -51,7 +51,7 @@ defmodule ScrapeChainTest do
     chain_link = %ChainLink{
       name: "schema_extractor",
       input: chat,
-      outputParser: &schema_parser/2
+      output_parser: &schema_parser/2
     }
 
     # Create a Chain with the ChainLink

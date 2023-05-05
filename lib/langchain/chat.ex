@@ -7,15 +7,15 @@ defmodule LangChain.Chat do
 
   @derive Jason.Encoder
   defstruct template: "",
-            inputVariables: [],
-            partialVariables: %{},
-            promptMessages: [],
+            input_variables: [],
+            partial_variables: %{},
+            prompt_messages: [],
             llm: %LangChain.LLM{
               provider: :openai,
               temperature: 0.1,
-              maxTokens: 200,
+              max_tokens: 200,
               # model must support chat dialogue history
-              modelName: "gpt-3.5-turbo"
+              model_name: "gpt-3.5-turbo"
             }
 
   @doc """
@@ -23,9 +23,9 @@ defmodule LangChain.Chat do
   """
   def format(chat, values) do
     resultMessages =
-      Enum.map(chat.promptMessages, fn promptMessage ->
-        {:ok, text} = LangChain.PromptTemplate.format(promptMessage.prompt, values)
-        Map.put(promptMessage, :text, text)
+      Enum.map(chat.prompt_messages, fn prompt_message ->
+        {:ok, text} = LangChain.PromptTemplate.format(prompt_message.prompt, values)
+        Map.put(prompt_message, :text, text)
       end)
 
     {:ok, resultMessages}
@@ -42,8 +42,8 @@ defmodule LangChain.Chat do
       false ->
         {:ok,
          %{
-           inputVariables: chat.inputVariables,
-           promptMessages: Enum.map(chat.promptMessages, &Jason.encode!/1)
+           input_variables: chat.input_variables,
+           prompt_messages: Enum.map(chat.prompt_messages, &Jason.encode!/1)
          }}
     end
   end
@@ -51,8 +51,8 @@ defmodule LangChain.Chat do
   @doc """
   add more PromptTemplates to the Chat
   """
-  def addPromptTemplates(chat_prompt_template, prompt_list) do
-    updated_prompt_messages = chat_prompt_template.promptMessages ++ prompt_list
-    %{chat_prompt_template | promptMessages: updated_prompt_messages}
+  def add_prompt_templates(chat_prompt_template, prompt_list) do
+    updated_prompt_messages = chat_prompt_template.prompt_messages ++ prompt_list
+    %{chat_prompt_template | prompt_messages: updated_prompt_messages}
   end
 end

@@ -4,8 +4,8 @@ defmodule LangChain.LLM do
   """
   # these are the defaults values for a LLM model
   defstruct provider: :openai,
-            modelName: "text-ada-001",
-            maxTokens: 25,
+            model_name: "text-ada-001",
+            max_tokens: 25,
             temperature: 0.5,
             n: 1,
             # further provider-specific options can go here

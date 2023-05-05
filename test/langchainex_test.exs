@@ -1,8 +1,8 @@
-defmodule LangchainexTest do
+defmodule LangchainExTest do
   use ExUnit.Case
-  doctest Langchainex
+  doctest LangchainEx
 
   test "greets the world" do
-    assert Langchainex.hello() == :world
+    assert LangchainEx.hello() == :world
   end
 end
