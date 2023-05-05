@@ -12,10 +12,10 @@ defmodule LangChain.Providers.OpenAI do
 
   def call(model, prompt) do
     ExOpenAI.Completions.create_completion(
-      model.modelName,
+      model.model_name,
       prompt: prompt,
       temperature: model.temperature,
-      max_tokens: model.maxTokens
+      max_tokens: model.max_tokens
     )
   end
 
@@ -24,16 +24,19 @@ defmodule LangChain.Providers.OpenAI do
   """
   def chat(model, msgs) do
     converted = chats_to_openai(msgs)
-    case ExOpenAI.Chat.create_chat_completion(converted, model.modelName, n: model.n) do
+
+    case ExOpenAI.Chat.create_chat_completion(converted, model.model_name, n: model.n) do
       {:ok, openai_Response} ->
-        response = openai_Response.choices
+        response =
+          openai_Response.choices
           |> openai_to_chats()
+
         {:ok, response}
+
       {:error, error} ->
-        { :error, error }
+        {:error, error}
     end
   end
-
 
   # convert any list of chats to open ai format
   def chats_to_openai(chats) do
@@ -41,8 +44,10 @@ defmodule LangChain.Providers.OpenAI do
       case chat do
         %{text: text, role: role} ->
           %{content: text, role: role}
+
         %{role: role, content: content} ->
           %{content: content, role: role}
+
         _ ->
           %{}
       end
@@ -61,6 +66,6 @@ defmodule LangChain.Providers.OpenAI do
   #   }, ......
   def openai_to_chats(choices) do
     choices
-      |> Enum.map(fn choice -> %{text: choice.message.content, role: choice.message.role} end)
+    |> Enum.map(fn choice -> %{text: choice.message.content, role: choice.message.role} end)
   end
 end

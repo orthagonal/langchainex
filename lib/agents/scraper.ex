@@ -9,12 +9,12 @@ defmodule LangChain.Scraper do
    {:ok, result} = Scraper.scrape(scraper_pid, input_text)
 
   {:ok, result_xml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
-    outputFormat: "XML"
+    output_format: "XML"
   })
 
   {:ok, result_yml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
-    inputSchema: "{ name: { first: String, last: String }, age: Number }",
-    outputFormat: "YAML"
+    input_schema: "{ name: { first: String, last: String }, age: Number }",
+    output_format: "YAML"
   })
   """
   use GenServer
@@ -56,9 +56,10 @@ defmodule LangChain.Scraper do
   end
 
   def handle_call(:list, _from, state) do
-    result = Enum.map(state, fn {name, scrape_chain} ->
-      {name, scrape_chain}
-    end)
+    result =
+      Enum.map(state, fn {name, scrape_chain} ->
+        {name, scrape_chain}
+      end)
 
     {:reply, result, state}
   end
@@ -68,25 +69,27 @@ defmodule LangChain.Scraper do
     {:reply, :ok, new_state}
   end
 
-  def handle_call({:scrape, name, inputText, opts}, _from, state) do
+  def handle_call({:scrape, name, input_text, opts}, _from, state) do
     scrape_chain = Map.get(state, name)
 
     if is_nil(scrape_chain) do
       {:reply, {:error, "ScrapeChain not found"}, state}
     else
-      # Override inputSchema or outputParser or outputFormat if provided
-      inputSchema = Map.get(opts, :inputSchema, scrape_chain.inputSchema)
-      outputParser = Map.get(opts, :outputParser, scrape_chain.outputParser)
-      outputFormat = Map.get(opts, :outputFormat, "JSON")
+      # Override input_schema or output_parser or output_format if provided
+      input_schema = Map.get(opts, :input_schema, scrape_chain.input_schema)
+      output_parser = Map.get(opts, :output_parser, scrape_chain.output_parser)
+      output_format = Map.get(opts, :output_format, "JSON")
 
-      temp_scrape_chain = LangChain.ScrapeChain.new(scrape_chain.chain, inputSchema, outputParser)
+      temp_scrape_chain =
+        LangChain.ScrapeChain.new(scrape_chain.chain, input_schema, output_parser)
 
-      # override the outputFormat if provided
+      # override the output_format if provided
       input_variables = %{
-        inputText: inputText,
-        inputSchema: inputSchema,
-        outputFormat: outputFormat
+        input_text: input_text,
+        input_schema: input_schema,
+        output_format: output_format
       }
+
       result = LangChain.ScrapeChain.scrape(temp_scrape_chain, input_variables)
       {:reply, {:ok, result}, state}
     end
@@ -94,45 +97,50 @@ defmodule LangChain.Scraper do
 
   # # todo: should I move this to the ScrapeChain module?
   defp default_scrape_chain() do
-    input_schema = "{ name: String, age: Number }" # can be overruled with the inputSchema option
-    chat = Chat.addPromptTemplates(%Chat{}, [
-      %{
-        role: "user",
-        prompt: %PromptTemplate{
-          template: "Schema: \"\"\"
-          <%= inputSchema %>
+    # can be overruled with the input_schema option
+    input_schema = "{ name: String, age: Number }"
+
+    chat =
+      Chat.add_prompt_templates(%Chat{}, [
+        %{
+          role: "user",
+          prompt: %PromptTemplate{
+            template: "Schema: \"\"\"
+          <%= input_schema %>
         \"\"\"
         Text: \"\"\"
-          <%= inputText %>
+          <%= input_text %>
         \"\"\
-        Extract the data from Text according to Schema and return it in <%= outputFormat %> format.
+        Extract the data from Text according to Schema and return it in <%= output_format %> format.
         Format any datetime fields using ISO8601 standard.
         "
+          }
         }
-      }
-    ])
+      ])
+
     chain_link = %ChainLink{
       name: "schema_extractor",
       input: chat,
-      outputParser: &passthru_parser/2
+      output_parser: &passthru_parser/2
     }
+
     chain = %Chain{links: [chain_link]}
     output_parser = &output_parser/1
     scrape_chain = ScrapeChain.new(chain, input_schema, output_parser)
   end
-
 
   @doc """
   A default output parser that just returns the first response text
   """
   def passthru_parser(chain_link, outputs) do
     response_text = outputs |> List.first() |> Map.get(:text)
+
     %{
-      chain_link |
-      rawResponses: outputs,
-      output: %{
-        text: response_text,
-      }
+      chain_link
+      | raw_responses: outputs,
+        output: %{
+          text: response_text
+        }
     }
   end
 
@@ -141,18 +149,20 @@ defmodule LangChain.Scraper do
   """
   def json_parser(chain_link, outputs) do
     response_text = outputs |> List.first() |> Map.get(:text)
+
     case Jason.decode(response_text) do
       {:ok, json} ->
         %{
-          chain_link |
-          rawResponses: outputs,
-          output: json
+          chain_link
+          | raw_responses: outputs,
+            output: json
         }
+
       {:error, response} ->
         %{
-          chain_link |
-          rawResponses: outputs,
-          output: response_text
+          chain_link
+          | raw_responses: outputs,
+            output: response_text
         }
     end
   end

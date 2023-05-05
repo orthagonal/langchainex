@@ -13,20 +13,23 @@ defmodule LangChain.ScraperTest do
 
   defp schema_parser(chain_link, outputs) do
     response_text = outputs |> List.first() |> Map.get(:text)
+
     case Jason.decode(response_text) do
       {:ok, json} ->
         %{
-          chain_link |
-          rawResponses: outputs,
-          output: json
+          chain_link
+          | raw_responses: outputs,
+            output: json
         }
+
       {:error, response} ->
-        IO.inspect response
-        IO.inspect response_text
+        IO.inspect(response)
+        IO.inspect(response_text)
+
         %{
-          chain_link |
-          rawResponses: outputs,
-          output: response_text
+          chain_link
+          | raw_responses: outputs,
+            output: response_text
         }
     end
   end
@@ -35,25 +38,21 @@ defmodule LangChain.ScraperTest do
     # Define a sample ScrapeChain
     input_schema = "{ name: String, age: Number }"
 
-    chat = Chat.addPromptTemplates(%Chat{}, [
-      %{
-        role: "user",
-        prompt: %PromptTemplate{
-          template: "Using the schema <%= inputSchema %>, extract relevant information from the text: <%= inputText %>"
+    chat =
+      Chat.add_prompt_templates(%Chat{}, [
+        %{
+          role: "user",
+          prompt: %PromptTemplate{
+            template:
+              "Using the schema <%= input_schema %>, extract relevant information from the text: <%= input_text %>"
+          }
         }
-      },
-      %{
-        role: "user",
-        prompt: %PromptTemplate{
-          template: "Put the extracted data in JSON format so that a computer can parse it."
-        }
-      }
-    ])
+      ])
 
     chain_link = %ChainLink{
       name: "schema_extractor",
       input: chat,
-      outputParser: &schema_parser/2
+      output_parser: &schema_parser/2
     }
 
     chain = %Chain{links: [chain_link]}
@@ -66,7 +65,7 @@ defmodule LangChain.ScraperTest do
     # IO.inspect Scraper.list(pid)
     # Test the :scrape call
     input_text = "John Doe is 30 years old."
-    { :ok, result1 } = Scraper.scrape(pid, input_text, :sample_chain)
+    {:ok, result1} = Scraper.scrape(pid, input_text, :sample_chain)
 
     # Define another ScrapeChain with a different schema
     input_schema2 = "{ name: { first: String, last: String }, age: Number }"
@@ -76,10 +75,11 @@ defmodule LangChain.ScraperTest do
     Scraper.add_scrape_chain(pid, :sample_chain2, scrape_chain2)
 
     # Test the :scrape call with the second ScrapeChain
-    { :ok, result2 } = Scraper.scrape(pid, input_text, :sample_chain2)
+    {:ok, result2} = Scraper.scrape(pid, input_text, :sample_chain2)
 
-    IO.inspect result1
-    IO.inspect result2
+    IO.inspect(result1)
+    IO.inspect(result2)
+
     # # verify that result1 and result2 both have the "age" field of 30 and the "name" field of "John Doe" or name.first of "John" and name.last of "Doe"
     assert Map.get(result1, "age") == 30
     assert Map.get(result1, "name") == "John Doe"
@@ -91,20 +91,24 @@ defmodule LangChain.ScraperTest do
     {:ok, scraper_pid} = Scraper.start_link()
     input_text = "John Doe is 30 years old."
     {:ok, result} = Scraper.scrape(scraper_pid, input_text)
-    IO.inspect result
+    IO.inspect(result)
     # Test with a custom output format (e.g., XML)
     # add support for calling if it is a map
     # actually don't worry too much about this for now move on to impl on the page
     # Note: You need to update the schema_parser/2 function to handle XML format if you want to use it.
-    {:ok, result_xml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
-      outputFormat: "XML"
-    })
-    IO.inspect result_xml
+    {:ok, result_xml} =
+      Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
+        output_format: "XML"
+      })
 
-    {:ok, result_yml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
-      inputSchema: "{ name: { first: String, last: String }, age: Number }",
-      outputFormat: "YAML"
-    })
-    IO.inspect result_yml
+    IO.inspect(result_xml)
+
+    {:ok, result_yml} =
+      Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
+        input_schema: "{ name: { first: String, last: String }, age: Number }",
+        output_format: "YAML"
+      })
+
+    IO.inspect(result_yml)
   end
 end

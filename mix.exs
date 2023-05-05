@@ -1,4 +1,4 @@
-defmodule Langchainex.MixProject do
+defmodule LangchainEx.MixProject do
   use Mix.Project
 
   def project do
