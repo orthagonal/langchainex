@@ -16,7 +16,7 @@ jobs:
   build:
 
     name: Build and test
-    runs-on: ubuntu20
+    runs-on: ubunt-latest
 
     steps:
     - uses: actions/checkout@v3
