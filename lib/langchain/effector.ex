@@ -6,7 +6,7 @@ defmodule LangChain.Effector do
   be trusted to do the right thing without supervision.
   """
   defstruct [
-    mayI?: &LangChain.Effector.defaultMayI?/2,
+    may_i?: &LangChain.Effector.default_may_i?/2,
     no!: &LangChain.Effector.default_no!/2,
     yes!: &LangChain.Effector.default_yes!/2
   ]
@@ -16,7 +16,7 @@ defmodule LangChain.Effector do
   Returns `true` to allow the action by default.
   Override this function with custom permission handling logic.
   """
-  def defaultMayI?(_action, _context) do
+  def default_may_i?(_action, _context) do
     IO.puts "Default permission request function called. Override this function with your custom logic."
     true
   end

@@ -17,7 +17,7 @@ defmodule LangChain.ScraperTest do
       {:ok, json} ->
         %{
           chain_link |
-          rawResponses: outputs,
+          raw_responses: outputs,
           output: json
         }
       {:error, response} ->
@@ -25,7 +25,7 @@ defmodule LangChain.ScraperTest do
         IO.inspect response_text
         %{
           chain_link |
-          rawResponses: outputs,
+          raw_responses: outputs,
           output: response_text
         }
     end
@@ -35,11 +35,11 @@ defmodule LangChain.ScraperTest do
     # Define a sample ScrapeChain
     input_schema = "{ name: String, age: Number }"
 
-    chat = Chat.addPromptTemplates(%Chat{}, [
+    chat = Chat.add_prompt_templates(%Chat{}, [
       %{
         role: "user",
         prompt: %PromptTemplate{
-          template: "Using the schema <%= inputSchema %>, extract relevant information from the text: <%= inputText %>"
+          template: "Using the schema <%= input_schema %>, extract relevant information from the text: <%= input_text %>"
         }
       },
       %{
@@ -53,7 +53,7 @@ defmodule LangChain.ScraperTest do
     chain_link = %ChainLink{
       name: "schema_extractor",
       input: chat,
-      outputParser: &schema_parser/2
+      output_parser: &schema_parser/2
     }
 
     chain = %Chain{links: [chain_link]}
@@ -97,13 +97,13 @@ defmodule LangChain.ScraperTest do
     # actually don't worry too much about this for now move on to impl on the page
     # Note: You need to update the schema_parser/2 function to handle XML format if you want to use it.
     {:ok, result_xml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
-      outputFormat: "XML"
+      output_format: "XML"
     })
     IO.inspect result_xml
 
     {:ok, result_yml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
-      inputSchema: "{ name: { first: String, last: String }, age: Number }",
-      outputFormat: "YAML"
+      input_schema: "{ name: { first: String, last: String }, age: Number }",
+      output_format: "YAML"
     })
     IO.inspect result_yml
   end

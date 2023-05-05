@@ -7,20 +7,20 @@ defmodule LangChain.Chat do
   """
 
   @derive Jason.Encoder
-  defstruct [template: "", inputVariables: [], partialVariables: %{}, promptMessages: [], llm: %LangChain.LLM{
+  defstruct [template: "", input_variables: [], partial_variables: %{}, prompt_messages: [], llm: %LangChain.LLM{
     provider: :openai,
     temperature: 0.1,
-    maxTokens: 200,
-    modelName: "gpt-3.5-turbo",  # model must support chat dialogue history
+    max_tokens: 200,
+    model_name: "gpt-3.5-turbo",  # model must support chat dialogue history
   }]
 
   @doc """
   loops over every prompt and formats it with the values supplied
   """
   def format(chat, values) do
-    resultMessages = Enum.map(chat.promptMessages, fn promptMessage ->
-      { :ok, text } = LangChain.PromptTemplate.format(promptMessage.prompt, values)
-      Map.put(promptMessage, :text, text)
+    resultMessages = Enum.map(chat.prompt_messages, fn prompt_message ->
+      { :ok, text } = LangChain.PromptTemplate.format(prompt_message.prompt, values)
+      Map.put(prompt_message, :text, text)
     end)
     {:ok, resultMessages}
   end
@@ -32,8 +32,8 @@ defmodule LangChain.Chat do
     case Map.has_key?(chat, :output_parser) do
       true -> {:error, "Chat cannot be serialized if output_parser is set"}
       false -> {:ok, %{
-        inputVariables: chat.inputVariables,
-        promptMessages: Enum.map(chat.promptMessages, &Jason.encode!/1)
+        input_variables: chat.input_variables,
+        prompt_messages: Enum.map(chat.prompt_messages, &Jason.encode!/1)
       }}
     end
   end
@@ -41,8 +41,8 @@ defmodule LangChain.Chat do
   @doc """
   add more PromptTemplates to the Chat
   """
-  def addPromptTemplates(chat_prompt_template, prompt_list) do
-    updated_prompt_messages = chat_prompt_template.promptMessages ++ prompt_list
-    %{chat_prompt_template | promptMessages: updated_prompt_messages}
+  def add_prompt_templates(chat_prompt_template, prompt_list) do
+    updated_prompt_messages = chat_prompt_template.prompt_messages ++ prompt_list
+    %{chat_prompt_template | prompt_messages: updated_prompt_messages}
   end
 end
