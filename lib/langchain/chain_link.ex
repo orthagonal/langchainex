@@ -19,10 +19,10 @@ defmodule LangChain.ChainLink do
     errors: []  # list of errors that occurred during evaluation
   ]
 
+  @doc """
+  calls the chainLink, filling in the input prompt and parsing the output
+  """
   def call(chainLink, previousValues \\ %{}) do
-    @doc """
-    calls the chainLink, filling in the input prompt and parsing the output
-    """
     {:ok, evaluatedTemplates } = LangChain.Chat.format(chainLink.input, previousValues)
     # extract just the role and text fields from each prompt
     modelInputs = Enum.map(evaluatedTemplates, fn evaluatedTemplate -> Map.take(evaluatedTemplate, [:role, :text]) end)
@@ -35,9 +35,11 @@ defmodule LangChain.ChainLink do
     end
   end
 
-  # you can define your own parser functions, but this is the default
-  # the output of the ChainLink will be used as variables in the next link
-  # by default the simple text response goes in the :text key
+  @doc """
+  you can define your own parser functions, but this is the default
+  the output of the ChainLink will be used as variables in the next link
+  by default the simple text response goes in the :text key
+  """
   defp noParse(chainLink, outputs \\ []) do
     %{
       chainLink |

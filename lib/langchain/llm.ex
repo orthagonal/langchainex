@@ -1,7 +1,7 @@
-@doc """
-  A generic LLM interface for interacting with different LLM providers
-  """
 defmodule LangChain.LLM do
+@moduledoc """
+  A generic LLM interface for interacting with different LLM providers
+"""
   # these are the defaults values for a LLM model
   defstruct [
     provider: :openai,
