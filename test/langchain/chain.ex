@@ -7,22 +7,27 @@ defmodule LangChain.ChainTest do
   def temp_parser(chain_link, outputs) do
     output = %{
       outputs: outputs,
-      text: outputs |> List.first |> Map.get(:text),
+      text: outputs |> List.first() |> Map.get(:text),
       processed_by: chain_link.name
     }
 
     %LangChain.ChainLink{
-      chain_link |
-      raw_responses: outputs,
-      output: output
+      chain_link
+      | raw_responses: outputs,
+        output: output
     }
   end
 
   test "Test individual Link" do
-    chat = LangChain.Chat.add_prompt_templates(%LangChain.Chat{}, [
-      %{role: "user", prompt: %LangChain.PromptTemplate{template: "memorize <%= spell %>"}},
-      %{role: "user", prompt: %LangChain.PromptTemplate{template: "cast <%= spell %> on lantern"}},
-    ])
+    chat =
+      LangChain.Chat.add_prompt_templates(%LangChain.Chat{}, [
+        %{role: "user", prompt: %LangChain.PromptTemplate{template: "memorize <%= spell %>"}},
+        %{
+          role: "user",
+          prompt: %LangChain.PromptTemplate{template: "cast <%= spell %> on lantern"}
+        }
+      ])
+
     link = %LangChain.ChainLink{
       name: "enchanter",
       input: chat,
@@ -34,18 +39,26 @@ defmodule LangChain.ChainTest do
     # make sure it's the right link and the output has the right keys
     assert "enchanter" == new_link_state.output.processed_by
     assert Map.keys(new_link_state.output) == [:outputs, :processed_by, :text]
-    IO.inspect new_link_state.output.text # the AI's response won't be the same every time!
+    # the AI's response won't be the same every time!
+    IO.inspect(new_link_state.output.text)
   end
 
   test "Test Chain with multiple ChainLinks" do
-    chat1 = Chat.add_prompt_templates(%Chat{}, [
-      %{role: "user", prompt: %PromptTemplate{template: "memorize <%= spell %>"}},
-      %{role: "user", prompt: %PromptTemplate{template: "cast <%= spell %> on lantern"}},
-    ])
+    chat1 =
+      Chat.add_prompt_templates(%Chat{}, [
+        %{role: "user", prompt: %PromptTemplate{template: "memorize <%= spell %>"}},
+        %{role: "user", prompt: %PromptTemplate{template: "cast <%= spell %> on lantern"}}
+      ])
 
-    chat2 = Chat.add_prompt_templates(%Chat{}, [
-      %{role: "user", prompt: %PromptTemplate{template: "This LLM <%= if contains_zork do \"is\" else \"is not\" end %> cool."}},
-    ])
+    chat2 =
+      Chat.add_prompt_templates(%Chat{}, [
+        %{
+          role: "user",
+          prompt: %PromptTemplate{
+            template: "This LLM <%= if contains_zork do \"is\" else \"is not\" end %> cool."
+          }
+        }
+      ])
 
     link1 = %ChainLink{
       name: "enchanter",
@@ -82,25 +95,25 @@ defmodule LangChain.ChainTest do
 
   defp temp_parser1(chain_link, outputs) do
     %{
-      chain_link |
-      raw_responses: outputs,
-      output: %{
-        enchanter_text: outputs |> List.first |> Map.get(:text),
-        processed_by: chain_link.name,
-        # match any case
-        contains_zork: Regex.match?(~r/zork/i, outputs |> List.first |> Map.get(:text))
-      }
+      chain_link
+      | raw_responses: outputs,
+        output: %{
+          enchanter_text: outputs |> List.first() |> Map.get(:text),
+          processed_by: chain_link.name,
+          # match any case
+          contains_zork: Regex.match?(~r/zork/i, outputs |> List.first() |> Map.get(:text))
+        }
     }
   end
 
   defp temp_parser2(chain_link, outputs) do
     %{
-      chain_link |
-      raw_responses: outputs,
-      output: %{
-        duration_text: outputs |> List.first |> Map.get(:text),
-        processed_by: chain_link.name
-      }
+      chain_link
+      | raw_responses: outputs,
+        output: %{
+          duration_text: outputs |> List.first() |> Map.get(:text),
+          processed_by: chain_link.name
+        }
     }
   end
 end

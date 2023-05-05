@@ -3,14 +3,13 @@ defmodule LangChain.LLM do
     A generic LLM interface for interacting with different LLM providers
   """
   # these are the defaults values for a LLM model
-  defstruct [
-    provider: :openai,
-    model_name: "text-ada-001",
-    max_tokens: 25,
-    temperature: 0.5,
-    n: 1,
-    options: %{} # further provider-specific options can go here
-  ]
+  defstruct provider: :openai,
+            model_name: "text-ada-001",
+            max_tokens: 25,
+            temperature: 0.5,
+            n: 1,
+            # further provider-specific options can go here
+            options: %{}
 
   # chats is the list of chat msgs in the form:
   #   %{text: "Here's some context: This is a context"},

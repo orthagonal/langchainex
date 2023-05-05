@@ -80,7 +80,8 @@ defmodule LangChain.Scraper do
       output_parser = Map.get(opts, :output_parser, scrape_chain.output_parser)
       output_format = Map.get(opts, :output_format, "JSON")
 
-      temp_scrape_chain = LangChain.ScrapeChain.new(scrape_chain.chain, input_schema, output_parser)
+      temp_scrape_chain =
+        LangChain.ScrapeChain.new(scrape_chain.chain, input_schema, output_parser)
 
       # override the output_format if provided
       input_variables = %{
@@ -96,12 +97,15 @@ defmodule LangChain.Scraper do
 
   # # todo: should I move this to the ScrapeChain module?
   defp default_scrape_chain() do
-    input_schema = "{ name: String, age: Number }" # can be overruled with the input_schema option
-    chat = Chat.add_prompt_templates(%Chat{}, [
-      %{
-        role: "user",
-        prompt: %PromptTemplate{
-          template: "Schema: \"\"\"
+    # can be overruled with the input_schema option
+    input_schema = "{ name: String, age: Number }"
+
+    chat =
+      Chat.add_prompt_templates(%Chat{}, [
+        %{
+          role: "user",
+          prompt: %PromptTemplate{
+            template: "Schema: \"\"\"
           <%= input_schema %>
         \"\"\"
         Text: \"\"\"
@@ -132,11 +136,11 @@ defmodule LangChain.Scraper do
     response_text = outputs |> List.first() |> Map.get(:text)
 
     %{
-      chain_link |
-      raw_responses: outputs,
-      output: %{
-        text: response_text,
-      }
+      chain_link
+      | raw_responses: outputs,
+        output: %{
+          text: response_text
+        }
     }
   end
 
@@ -149,16 +153,16 @@ defmodule LangChain.Scraper do
     case Jason.decode(response_text) do
       {:ok, json} ->
         %{
-          chain_link |
-          raw_responses: outputs,
-          output: json
+          chain_link
+          | raw_responses: outputs,
+            output: json
         }
 
       {:error, response} ->
         %{
-          chain_link |
-          raw_responses: outputs,
-          output: response_text
+          chain_link
+          | raw_responses: outputs,
+            output: response_text
         }
     end
   end

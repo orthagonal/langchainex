@@ -43,7 +43,7 @@ defmodule LangChain.ScraperTest do
         role: "user",
         prompt: %PromptTemplate{
           template: "Using the schema <%= input_schema %>, extract relevant information from the text: <%= input_text %>"
-        }
+        }}
       ])
 
     chain_link = %ChainLink{
