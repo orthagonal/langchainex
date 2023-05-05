@@ -48,6 +48,7 @@ defmodule LangChain.BaseMemory do
       output_values: %{},
       memory_variables: %{}
     }
+
     {:ok, state}
   end
 
@@ -81,11 +82,14 @@ defmodule Utils do
     case input_key do
       nil ->
         keys = Map.keys(input_values)
+
         if length(keys) == 1 do
           key = hd(keys)
           Map.get(input_values, key)
         else
-          raise ArgumentError, message: "Input values have multiple keys, memory only supported when one key currently: #{inspect(keys)}"
+          raise ArgumentError,
+            message:
+              "Input values have multiple keys, memory only supported when one key currently: #{inspect(keys)}"
         end
 
       key ->

@@ -9,11 +9,9 @@ defmodule LangChain.ScrapeChain do
   """
 
   @derive Jason.Encoder
-  defstruct [
-    chain: %LangChain.Chain{},
-    inputSchema: "",
-    outputParser: &LangChain.ScrapeChain.noParse/1
-  ]
+  defstruct chain: %LangChain.Chain{},
+            inputSchema: "",
+            outputParser: &LangChain.ScrapeChain.noParse/1
 
   @doc """
   Creates a new ScrapeChain struct with the given chain, inputSchema, and outputParser,
@@ -70,7 +68,7 @@ defmodule LangChain.ScrapeChain do
     scrape_chain.outputParser.(result)
   end
 
-  @doc"""
+  @doc """
   Executes the ScrapeChain with a specific inputText and inputSchema and returns the parsed result:
     inputVariables = %{
       inputText: "John Doe is 30 years old.",
@@ -83,6 +81,7 @@ defmodule LangChain.ScrapeChain do
       inputText: input_text,
       inputSchema: scrape_chain.inputSchema
     }
+
     result = LangChain.Chain.call(scrape_chain.chain, inputVariables)
     # Parse the result using the outputParser
     scrape_chain.outputParser.(result)

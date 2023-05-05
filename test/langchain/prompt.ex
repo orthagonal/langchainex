@@ -5,8 +5,9 @@ defmodule LangChain.PromptTemplateTest do
     prompt = %LangChain.PromptTemplate{
       template: "<%= foo %><%= bar %>",
       inputVariables: [:foo],
-      partialVariables: %{bar: "baz" }
+      partialVariables: %{bar: "baz"}
     }
+
     res = LangChain.PromptTemplate.format(prompt, %{foo: "fop"})
     assert {:ok, "fopbaz"} == res
   end
@@ -17,6 +18,7 @@ defmodule LangChain.PromptTemplateTest do
       inputVariables: [],
       partialVariables: %{bar: "baz", foo: "boo"}
     }
+
     assert {:ok, "boobaz"} == LangChain.PromptTemplate.format(prompt, %{})
   end
 
@@ -26,8 +28,9 @@ defmodule LangChain.PromptTemplateTest do
       inputVariables: [:foo, :bar],
       partialVariables: %{}
     }
+
     assert [:foo, :bar] == prompt.inputVariables
-    {:ok, partial_prompt} = LangChain.PromptTemplate.partial(prompt, %{ foo: "foo"})
+    {:ok, partial_prompt} = LangChain.PromptTemplate.partial(prompt, %{foo: "foo"})
     # IO.inspect partial_prompt.inputVariables
     assert [:bar] == partial_prompt.inputVariables
     assert {:ok, "foobaz"} == LangChain.PromptTemplate.format(partial_prompt, %{bar: "baz"})

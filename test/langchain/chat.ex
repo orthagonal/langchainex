@@ -15,7 +15,8 @@ defmodule LangChain.ChatTest do
     }
 
     ai_prompt = %LangChain.PromptTemplate{
-      template: "I'm an AI named <%= aiName %> and <%= spell %> is like <%= anotherSpell %> or <%= spellThree %> except better",
+      template:
+        "I'm an AI named <%= aiName %> and <%= spell %> is like <%= anotherSpell %> or <%= spellThree %> except better",
       inputVariables: [:foo, :bar],
       src: :ai
     }
@@ -39,69 +40,80 @@ defmodule LangChain.ChatTest do
 
   test "Test format" do
     chat = create_chat()
-    {:ok, results} = LangChain.Chat.format(chat, %{
-      spell: "rezrov",
-      anotherSpell: "gnusto",
-      spellThree: "throck",
-      "aiName": "Shodan",
-    })
+
+    {:ok, results} =
+      LangChain.Chat.format(chat, %{
+        spell: "rezrov",
+        anotherSpell: "gnusto",
+        spellThree: "throck",
+        aiName: "Shodan"
+      })
+
     messages = results |> Enum.map(fn item -> item.text end)
-    assert ["Here is a spell name: rezrov", "Do you know what rezrov actually does?",
-    "I'm an AI named Shodan and rezrov is like gnusto or throck except better",
-    "List all the spells in the above conversation except throck"] = messages
-  end
-
-
-  test "Test serialize" do
-    {:ok, chatSerialized } = create_chat()
-      |> LangChain.Chat.serialize()
-    assert chatSerialized = %{
-      inputVariables: [:context, :foo, :bar],
-      promptMessages: ["{\"prompt\":{\"inputVariables\":[\"context\"],\"partialVariables\":{},\"src\":\"user\",\"template\":\"Here's some context: {context}\"}}",
-       "{\"prompt\":{\"inputVariables\":[\"foo\",\"bar\",\"context\"],\"partialVariables\":{},\"src\":\"user\",\"template\":\"Hello {foo}, I'm {bar}. Thanks for the {context}\"}}",
-       "{\"prompt\":{\"inputVariables\":[\"foo\",\"bar\"],\"partialVariables\":{},\"src\":\"user\",\"template\":\"I'm an AI. I'm {foo}. I'm {bar}.\"}}",
-       "{\"prompt\":{\"inputVariables\":[\"foo\",\"bar\"],\"partialVariables\":{},\"src\":\"user\",\"template\":\"I'm a generic message. I'm {foo}. I'm {bar}.\"},\"role\":\"test\"}"]
-    }
-
-    chatDeserialized = Enum.map(chatSerialized.promptMessages, fn item ->
-      Jason.decode!(item)
-    end)
 
     assert [
-      %{
-        "prompt" => %{
-          "inputVariables" => ["context"],
-          "partialVariables" => %{},
-          "src" => "user",
-          "template" => "Here's some context: {context}"
-        }
-      },
-      %{
-        "prompt" => %{
-          "inputVariables" => ["foo", "bar", "context"],
-          "partialVariables" => %{},
-          "src" => "user",
-          "template" => "Hello {foo}, I'm {bar}. Thanks for the {context}"
-        }
-      },
-      %{
-        "prompt" => %{
-          "inputVariables" => ["foo", "bar"],
-          "partialVariables" => %{},
-          "src" => "user",
-          "template" => "I'm an AI. I'm {foo}. I'm {bar}."
-        }
-      },
-      %{
-        "prompt" => %{
-          "inputVariables" => ["foo", "bar"],
-          "partialVariables" => %{},
-          "src" => "user",
-          "template" => "I'm a generic message. I'm {foo}. I'm {bar}."
-        },
-        "role" => "test"
-      }
-    ] = chatDeserialized
+             "Here is a spell name: rezrov",
+             "Do you know what rezrov actually does?",
+             "I'm an AI named Shodan and rezrov is like gnusto or throck except better",
+             "List all the spells in the above conversation except throck"
+           ] = messages
+  end
+
+  test "Test serialize" do
+    {:ok, chatSerialized} =
+      create_chat()
+      |> LangChain.Chat.serialize()
+
+    assert chatSerialized = %{
+             inputVariables: [:context, :foo, :bar],
+             promptMessages: [
+               "{\"prompt\":{\"inputVariables\":[\"context\"],\"partialVariables\":{},\"src\":\"user\",\"template\":\"Here's some context: {context}\"}}",
+               "{\"prompt\":{\"inputVariables\":[\"foo\",\"bar\",\"context\"],\"partialVariables\":{},\"src\":\"user\",\"template\":\"Hello {foo}, I'm {bar}. Thanks for the {context}\"}}",
+               "{\"prompt\":{\"inputVariables\":[\"foo\",\"bar\"],\"partialVariables\":{},\"src\":\"user\",\"template\":\"I'm an AI. I'm {foo}. I'm {bar}.\"}}",
+               "{\"prompt\":{\"inputVariables\":[\"foo\",\"bar\"],\"partialVariables\":{},\"src\":\"user\",\"template\":\"I'm a generic message. I'm {foo}. I'm {bar}.\"},\"role\":\"test\"}"
+             ]
+           }
+
+    chatDeserialized =
+      Enum.map(chatSerialized.promptMessages, fn item ->
+        Jason.decode!(item)
+      end)
+
+    assert [
+             %{
+               "prompt" => %{
+                 "inputVariables" => ["context"],
+                 "partialVariables" => %{},
+                 "src" => "user",
+                 "template" => "Here's some context: {context}"
+               }
+             },
+             %{
+               "prompt" => %{
+                 "inputVariables" => ["foo", "bar", "context"],
+                 "partialVariables" => %{},
+                 "src" => "user",
+                 "template" => "Hello {foo}, I'm {bar}. Thanks for the {context}"
+               }
+             },
+             %{
+               "prompt" => %{
+                 "inputVariables" => ["foo", "bar"],
+                 "partialVariables" => %{},
+                 "src" => "user",
+                 "template" => "I'm an AI. I'm {foo}. I'm {bar}."
+               }
+             },
+             %{
+               "prompt" => %{
+                 "inputVariables" => ["foo", "bar"],
+                 "partialVariables" => %{},
+                 "src" => "user",
+                 "template" => "I'm a generic message. I'm {foo}. I'm {bar}."
+               },
+               "role" => "test"
+             }
+           ] = chatDeserialized
   end
 
   # more to do here mostly dealing with validating the templates
