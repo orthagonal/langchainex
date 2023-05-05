@@ -1,4 +1,3 @@
-
 defmodule LangChain.Chain do
   @moduledoc """
   A chain of ChainLinks to be processed in order, usually ending in an anchor for user confirmation.
@@ -6,7 +5,8 @@ defmodule LangChain.Chain do
 
   @derive Jason.Encoder
   defstruct [
-    links: []  # List of ChainLinks, processed in order
+    # List of ChainLinks, processed in order
+    links: []
   ]
 
   @doc """
@@ -24,11 +24,12 @@ defmodule LangChain.Chain do
   """
   def call(lang_chain, previous_values, anchor \\ false) do
     # Use Enum.reduce to process the ChainLinks and accumulate the output in previous_values
-    result = Enum.reduce(lang_chain.links, previous_values, fn chain_link, acc ->
-      updated_chain_link = LangChain.ChainLink.call(chain_link, acc)
-      # Merge the output of the current ChainLink with the accumulated previous values
-      Map.merge(acc, updated_chain_link.output)
-    end)
+    result =
+      Enum.reduce(lang_chain.links, previous_values, fn chain_link, acc ->
+        updated_chain_link = LangChain.ChainLink.call(chain_link, acc)
+        # Merge the output of the current ChainLink with the accumulated previous values
+        Map.merge(acc, updated_chain_link.output)
+      end)
 
     if anchor do
       case LangChain.Anchor.confirm(:query, result) do

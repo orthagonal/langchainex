@@ -9,10 +9,14 @@ defmodule LangChain.PromptTemplate do
 
   @derive Jason.Encoder
   defstruct [
-    template: "", # template is a string
-    inputVariables: [], # inputVariables is a list of variables that need to be specified for that template
-    partialVariables: %{}, # partialVariables is a map of variables that have already been specified and can be applied to the template
-    src: :user # src is the source of the message, currently one of :user, :system, :ai, :generic
+    # template is a string
+    template: "",
+    # inputVariables is a list of variables that need to be specified for that template
+    inputVariables: [],
+    # partialVariables is a map of variables that have already been specified and can be applied to the template
+    partialVariables: %{},
+    # src is the source of the message, currently one of :user, :system, :ai, :generic
+    src: :user
   ]
 
   @doc """
@@ -21,11 +25,14 @@ defmodule LangChain.PromptTemplate do
   """
   def format(template, values) do
     # env is a keyword list merging values and partials and convert
-    env = Map.merge(values, template.partialVariables)
+    env =
+      Map.merge(values, template.partialVariables)
       |> Map.to_list()
-      |> Enum.map(fn {k, v} -> {k, v}
+      |> Enum.map(fn {k, v} ->
+        {k, v}
+
         if is_function(v) do
-          case  v.() do
+          case v.() do
             {:ok, res} -> {k, res}
             _ -> {k, "[template function #{k} failed to render]"}
           end
@@ -33,6 +40,7 @@ defmodule LangChain.PromptTemplate do
           {k, v}
         end
       end)
+
     outcome = template.template |> EEx.eval_string(env)
     {:ok, outcome}
   end
@@ -45,11 +53,13 @@ defmodule LangChain.PromptTemplate do
     keys = Map.keys(partial)
     inputVariablesWithoutPartial = template.inputVariables -- keys
     partialVariables = Map.merge(template.partialVariables, partial)
-    {:ok, %LangChain.PromptTemplate{
-      template: template.template,
-      inputVariables: inputVariablesWithoutPartial,
-      partialVariables: partialVariables
-    }}
+
+    {:ok,
+     %LangChain.PromptTemplate{
+       template: template.template,
+       inputVariables: inputVariablesWithoutPartial,
+       partialVariables: partialVariables
+     }}
   end
 
   # defp serialize_prompt_message(prompt_message) do

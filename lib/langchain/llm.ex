@@ -1,16 +1,15 @@
 defmodule LangChain.LLM do
-@moduledoc """
-  A generic LLM interface for interacting with different LLM providers
-"""
+  @moduledoc """
+    A generic LLM interface for interacting with different LLM providers
+  """
   # these are the defaults values for a LLM model
-  defstruct [
-    provider: :openai,
-    modelName: "text-ada-001",
-    maxTokens: 25,
-    temperature: 0.5,
-    n: 1,
-    options: %{} # further provider-specific options can go here
-  ]
+  defstruct provider: :openai,
+            modelName: "text-ada-001",
+            maxTokens: 25,
+            temperature: 0.5,
+            n: 1,
+            # further provider-specific options can go here
+            options: %{}
 
   # chats is the list of chat msgs in the form:
   #   %{text: "Here's some context: This is a context"},
@@ -33,5 +32,4 @@ defmodule LangChain.LLM do
       _ -> "unknown provider #{model.provider}"
     end
   end
-
 end
