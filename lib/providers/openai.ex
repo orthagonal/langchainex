@@ -26,9 +26,9 @@ defmodule LangChain.Providers.OpenAI do
     converted = chats_to_openai(msgs)
 
     case ExOpenAI.Chat.create_chat_completion(converted, model.model_name, n: model.n) do
-      {:ok, openai_Response} ->
+      {:ok, openai_response} ->
         response =
-          openai_Response.choices
+          openai_response.choices
           |> openai_to_chats()
 
         {:ok, response}
