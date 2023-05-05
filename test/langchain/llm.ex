@@ -4,8 +4,8 @@ defmodule LangChain.ChatTest do
   # test "Test OpenAI" do
   #   model = %LangChain.LLM{
   #     provider: :openai,
-  #     modelName: "text-ada-001",
-  #     maxTokens: 10,
+  #     model_name: "text-ada-001",
+  #     max_tokens: 10,
   #     temperature: 0.5
   #   }
   #   { :ok, response } = LLM.call(model, "print hello world")
@@ -17,7 +17,7 @@ defmodule LangChain.ChatTest do
   test "test gpt-3.5-turbo" do
     model = %LangChain.LLM{
       provider: :openai,
-      modelName: "gpt-3.5-turbo"
+      model_name: "gpt-3.5-turbo",
     }
 
     {:ok, response} =

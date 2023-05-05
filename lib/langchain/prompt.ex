@@ -3,30 +3,25 @@ defmodule LangChain.PromptTemplate do
   a PromptTemplate is just a normal string template,
   you can pass it a set of values and it will interpolate them.
   You can also partially evaluate the template by calling the partial/2 function
-  inputVariables will contain the list of variables that still need to be specified to
+  input_variables will contain the list of variables that still need to be specified to
   complete the template.
   """
 
   @derive Jason.Encoder
   defstruct [
-    # template is a string
-    template: "",
-    # inputVariables is a list of variables that need to be specified for that template
-    inputVariables: [],
-    # partialVariables is a map of variables that have already been specified and can be applied to the template
-    partialVariables: %{},
-    # src is the source of the message, currently one of :user, :system, :ai, :generic
-    src: :user
+    template: "", # template is a string
+    input_variables: [], # input_variables is a list of variables that need to be specified for that template
+    partial_variables: %{}, # partial_variables is a map of variables that have already been specified and can be applied to the template
+    src: :user # src is the source of the message, currently one of :user, :system, :ai, :generic
   ]
 
   @doc """
-  converts to eex and then interpolates the values+partialVariables.
-  (eex wants values and partialVariables to be specified as a map with atomic keys)
+  converts to eex and then interpolates the values+partial_variables.
+  (eex wants values and partial_variables to be specified as a map with atomic keys)
   """
   def format(template, values) do
     # env is a keyword list merging values and partials and convert
-    env =
-      Map.merge(values, template.partialVariables)
+    env = Map.merge(values, template.partial_variables)
       |> Map.to_list()
       |> Enum.map(fn {k, v} ->
         {k, v}
@@ -46,20 +41,18 @@ defmodule LangChain.PromptTemplate do
   end
 
   @doc """
-  partially apply the variables in 'partial' to the partialVariables and
-  remove them from the inputVariables
+  partially apply the variables in 'partial' to the partial_variables and
+  remove them from the input_variables
   """
   def partial(template, partial) do
     keys = Map.keys(partial)
-    inputVariablesWithoutPartial = template.inputVariables -- keys
-    partialVariables = Map.merge(template.partialVariables, partial)
-
-    {:ok,
-     %LangChain.PromptTemplate{
-       template: template.template,
-       inputVariables: inputVariablesWithoutPartial,
-       partialVariables: partialVariables
-     }}
+    input_variables_without_partial = template.input_variables -- keys
+    partial_variables = Map.merge(template.partial_variables, partial)
+    {:ok, %LangChain.PromptTemplate{
+      template: template.template,
+      input_variables: input_variables_without_partial,
+      partial_variables: partial_variables
+    }}
   end
 
   # defp serialize_prompt_message(prompt_message) do

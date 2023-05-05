@@ -50,16 +50,16 @@ In your code:
   character_schema = "{
     name: String,
     class: String,
-    hitPoints: Int,          
+    hit_points: Int,          
     inventory: [String]
   }"
 
-  {:ok, result } = LangChain.Scraper.scrape(:scraper, description, "default_scraper", %{ outputFormat: "YAML", inputSchema: character_schema }) 
+  {:ok, result } = LangChain.Scraper.scrape(:scraper, description, "default_scraper", %{ output_format: "YAML", input_schema: character_schema }) 
 
   IO.puts result.text 
   " name: Nermal
     class: magic user
-    hitPoints: 30
+    hit_points: 30
     inventory:
       - wand of healing
       - cloak of protection

@@ -1,5 +1,8 @@
-defmodule Langchainex do
+defmodule LangchainEx do
   @moduledoc """
-  Documentation for `Langchainex`.
+  Documentation for `LangchainEx`.
   """
+  def hello do
+    :world
+  end
 end

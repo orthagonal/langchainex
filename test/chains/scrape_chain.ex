@@ -11,9 +11,9 @@ defmodule ScrapeChainTest do
     case Jason.decode(response_text) do
       {:ok, json} ->
         %{
-          chain_link
-          | rawResponses: outputs,
-            output: json
+          chain_link |
+          raw_responses: outputs,
+          output: json
         }
 
       {:error, response} ->
@@ -21,37 +21,32 @@ defmodule ScrapeChainTest do
         IO.inspect(response_text)
 
         %{
-          chain_link
-          | rawResponses: outputs,
-            output: response_text
+          chain_link |
+          raw_responses: outputs,
+          output: response_text
         }
     end
   end
 
   test "scrape function should process input_text and input_schema and return parsed result" do
     # Create PromptTemplate structs for each prompt message
-    chat =
-      Chat.addPromptTemplates(%Chat{}, [
-        %{
-          role: "user",
-          prompt: %PromptTemplate{
-            template:
-              "Using the schema <%= inputSchema %>, extract relevant information from the text: <%= inputText %>"
-          }
-        },
-        %{
-          role: "user",
-          prompt: %PromptTemplate{
-            template: "Put the extracted data in JSON format so that a computer can parse it. "
-          }
-        }
-      ])
+    chat = Chat.add_prompt_templates(%Chat{}, [
+      %{
+        role: "user",
+        prompt: %PromptTemplate{template: "Using the schema <%= input_schema %>, extract relevant information from the text: <%= input_text %>"}
+      },
+      %{
+        role: "user",
+        prompt: %PromptTemplate{template: "Put the extracted data in JSON format so that a computer can parse it. "}
+      }
+
+    ])
 
     # Create a ChainLink with the chat and parser function
     chain_link = %ChainLink{
       name: "schema_extractor",
       input: chat,
-      outputParser: &schema_parser/2
+      output_parser: &schema_parser/2
     }
 
     # Create a Chain with the ChainLink

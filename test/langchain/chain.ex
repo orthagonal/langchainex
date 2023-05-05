@@ -4,72 +4,59 @@ defmodule LangChain.ChainTest do
 
   # takes list of all outputs and the ChainLink that evaluated them
   # returns the new state of the ChainLink
-  def tempParser(chainLink, outputs) do
+  def temp_parser(chain_link, outputs) do
     output = %{
       outputs: outputs,
-      text: outputs |> List.first() |> Map.get(:text),
-      processed_by: chainLink.name
+      text: outputs |> List.first |> Map.get(:text),
+      processed_by: chain_link.name
     }
 
     %LangChain.ChainLink{
-      chainLink
-      | rawResponses: outputs,
-        output: output
+      chain_link |
+      raw_responses: outputs,
+      output: output
     }
   end
 
   test "Test individual Link" do
-    chat =
-      LangChain.Chat.addPromptTemplates(%LangChain.Chat{}, [
-        %{role: "user", prompt: %LangChain.PromptTemplate{template: "memorize <%= spell %>"}},
-        %{
-          role: "user",
-          prompt: %LangChain.PromptTemplate{template: "cast <%= spell %> on lantern"}
-        }
-      ])
-
+    chat = LangChain.Chat.add_prompt_templates(%LangChain.Chat{}, [
+      %{role: "user", prompt: %LangChain.PromptTemplate{template: "memorize <%= spell %>"}},
+      %{role: "user", prompt: %LangChain.PromptTemplate{template: "cast <%= spell %> on lantern"}},
+    ])
     link = %LangChain.ChainLink{
       name: "enchanter",
       input: chat,
-      outputParser: &tempParser/2
+      output_parser: &temp_parser/2
     }
 
     # when we evaluate a chain link, we get a new chain link with the output variables
-    newLinkState = LangChain.ChainLink.call(link, %{spell: "frotz"})
+    new_link_state = LangChain.ChainLink.call(link, %{spell: "frotz"})
     # make sure it's the right link and the output has the right keys
-    assert "enchanter" == newLinkState.output.processed_by
-    assert Map.keys(newLinkState.output) == [:outputs, :processed_by, :text]
-    # the AI's response won't be the same every time!
-    IO.inspect(newLinkState.output.text)
+    assert "enchanter" == new_link_state.output.processed_by
+    assert Map.keys(new_link_state.output) == [:outputs, :processed_by, :text]
+    IO.inspect new_link_state.output.text # the AI's response won't be the same every time!
   end
 
   test "Test Chain with multiple ChainLinks" do
-    chat1 =
-      Chat.addPromptTemplates(%Chat{}, [
-        %{role: "user", prompt: %PromptTemplate{template: "memorize <%= spell %>"}},
-        %{role: "user", prompt: %PromptTemplate{template: "cast <%= spell %> on lantern"}}
-      ])
+    chat1 = Chat.add_prompt_templates(%Chat{}, [
+      %{role: "user", prompt: %PromptTemplate{template: "memorize <%= spell %>"}},
+      %{role: "user", prompt: %PromptTemplate{template: "cast <%= spell %> on lantern"}},
+    ])
 
-    chat2 =
-      Chat.addPromptTemplates(%Chat{}, [
-        %{
-          role: "user",
-          prompt: %PromptTemplate{
-            template: "This LLM <%= if contains_zork do \"is\" else \"is not\" end %> cool."
-          }
-        }
-      ])
+    chat2 = Chat.add_prompt_templates(%Chat{}, [
+      %{role: "user", prompt: %PromptTemplate{template: "This LLM <%= if contains_zork do \"is\" else \"is not\" end %> cool."}},
+    ])
 
     link1 = %ChainLink{
       name: "enchanter",
       input: chat1,
-      outputParser: &tempParser1/2
+      output_parser: &temp_parser1/2
     }
 
     link2 = %ChainLink{
       name: "duration",
       input: chat2,
-      outputParser: &tempParser2/2
+      output_parser: &temp_parser2/2
     }
 
     chain = %Chain{
@@ -93,27 +80,27 @@ defmodule LangChain.ChainTest do
     IO.inspect(result[:duration_text])
   end
 
-  defp tempParser1(chain_link, outputs) do
+  defp temp_parser1(chain_link, outputs) do
     %{
-      chain_link
-      | rawResponses: outputs,
-        output: %{
-          enchanter_text: outputs |> List.first() |> Map.get(:text),
-          processed_by: chain_link.name,
-          # match any case
-          contains_zork: Regex.match?(~r/zork/i, outputs |> List.first() |> Map.get(:text))
-        }
+      chain_link |
+      raw_responses: outputs,
+      output: %{
+        enchanter_text: outputs |> List.first |> Map.get(:text),
+        processed_by: chain_link.name,
+        # match any case
+        contains_zork: Regex.match?(~r/zork/i, outputs |> List.first |> Map.get(:text))
+      }
     }
   end
 
-  defp tempParser2(chain_link, outputs) do
+  defp temp_parser2(chain_link, outputs) do
     %{
-      chain_link
-      | rawResponses: outputs,
-        output: %{
-          duration_text: outputs |> List.first() |> Map.get(:text),
-          processed_by: chain_link.name
-        }
+      chain_link |
+      raw_responses: outputs,
+      output: %{
+        duration_text: outputs |> List.first |> Map.get(:text),
+        processed_by: chain_link.name
+      }
     }
   end
 end
