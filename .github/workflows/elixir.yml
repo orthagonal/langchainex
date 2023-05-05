@@ -16,7 +16,7 @@ jobs:
   build:
 
     name: Build and test
-    runs-on: ubunt-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
