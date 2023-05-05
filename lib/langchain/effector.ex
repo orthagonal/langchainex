@@ -18,6 +18,7 @@ defmodule LangChain.Effector do
     IO.puts(
       "Default permission request function called. Override this function with your custom logic."
     )
+
     true
   end
 

@@ -17,11 +17,7 @@ defmodule LangChain.ChatTest do
   test "test gpt-3.5-turbo" do
     model = %LangChain.LLM{
       provider: :openai,
-<<<<<<< HEAD
       model_name: "gpt-3.5-turbo"
-=======
-      model_name: "gpt-3.5-turbo",
->>>>>>> ec662107a4d15557c6fac5844422bd5d3660e98b
     }
 
     {:ok, response} =
