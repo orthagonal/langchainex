@@ -9,6 +9,7 @@ defmodule LangChain.PromptTemplate do
 
   @derive Jason.Encoder
   defstruct [
+<<<<<<< HEAD
     # template is a string
     template: "",
     # input_variables is a list of variables that need to be specified for that template
@@ -17,6 +18,12 @@ defmodule LangChain.PromptTemplate do
     partial_variables: %{},
     # src is the source of the message, currently one of :user, :system, :ai, :generic
     src: :user
+=======
+    template: "", # template is a string
+    input_variables: [], # input_variables is a list of variables that need to be specified for that template
+    partial_variables: %{}, # partial_variables is a map of variables that have already been specified and can be applied to the template
+    src: :user # src is the source of the message, currently one of :user, :system, :ai, :generic
+>>>>>>> ec662107a4d15557c6fac5844422bd5d3660e98b
   ]
 
   @doc """
@@ -25,8 +32,12 @@ defmodule LangChain.PromptTemplate do
   """
   def format(template, values) do
     # env is a keyword list merging values and partials and convert
+<<<<<<< HEAD
     env =
       Map.merge(values, template.partial_variables)
+=======
+    env = Map.merge(values, template.partial_variables)
+>>>>>>> ec662107a4d15557c6fac5844422bd5d3660e98b
       |> Map.to_list()
       |> Enum.map(fn {k, v} ->
         {k, v}
@@ -53,6 +64,7 @@ defmodule LangChain.PromptTemplate do
     keys = Map.keys(partial)
     input_variables_without_partial = template.input_variables -- keys
     partial_variables = Map.merge(template.partial_variables, partial)
+<<<<<<< HEAD
 
     {:ok,
      %LangChain.PromptTemplate{
@@ -60,6 +72,13 @@ defmodule LangChain.PromptTemplate do
        input_variables: input_variables_without_partial,
        partial_variables: partial_variables
      }}
+=======
+    {:ok, %LangChain.PromptTemplate{
+      template: template.template,
+      input_variables: input_variables_without_partial,
+      partial_variables: partial_variables
+    }}
+>>>>>>> ec662107a4d15557c6fac5844422bd5d3660e98b
   end
 
   # defp serialize_prompt_message(prompt_message) do

@@ -97,6 +97,7 @@ defmodule LangChain.Scraper do
 
   # # todo: should I move this to the ScrapeChain module?
   defp default_scrape_chain() do
+<<<<<<< HEAD
     # can be overruled with the input_schema option
     input_schema = "{ name: String, age: Number }"
 
@@ -106,6 +107,14 @@ defmodule LangChain.Scraper do
           role: "user",
           prompt: %PromptTemplate{
             template: "Schema: \"\"\"
+=======
+    input_schema = "{ name: String, age: Number }" # can be overruled with the input_schema option
+    chat = Chat.add_prompt_templates(%Chat{}, [
+      %{
+        role: "user",
+        prompt: %PromptTemplate{
+          template: "Schema: \"\"\"
+>>>>>>> ec662107a4d15557c6fac5844422bd5d3660e98b
           <%= input_schema %>
         \"\"\"
         Text: \"\"\"
@@ -153,16 +162,16 @@ defmodule LangChain.Scraper do
     case Jason.decode(response_text) do
       {:ok, json} ->
         %{
-          chain_link
-          | raw_responses: outputs,
-            output: json
+          chain_link |
+          raw_responses: outputs,
+          output: json
         }
 
       {:error, response} ->
         %{
-          chain_link
-          | raw_responses: outputs,
-            output: response_text
+          chain_link |
+          raw_responses: outputs,
+          output: response_text
         }
     end
   end
