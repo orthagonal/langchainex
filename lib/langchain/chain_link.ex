@@ -37,7 +37,6 @@ defmodule LangChain.ChainLink do
         chain_link.output_parser.(chain_link, response)
 
       {:error, reason} ->
-        IO.inspect(reason)
         chain_link |> Map.put(:errors, [reason])
     end
   end

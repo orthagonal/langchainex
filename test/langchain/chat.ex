@@ -1,4 +1,7 @@
 defmodule LangChain.ChatTest do
+  @moduledoc """
+  Tests for LangChain.Chat
+  """
   use ExUnit.Case
 
   def create_chat() do

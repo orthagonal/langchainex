@@ -95,7 +95,6 @@ defmodule LangChain.Scraper do
     end
   end
 
-  # # todo: should I move this to the ScrapeChain module?
   defp default_scrape_chain() do
     # can be overruled with the input_schema option
     input_schema = "{ name: String, age: Number }"

@@ -1,4 +1,7 @@
 defmodule LangChain.BaseMemory do
+  @moduledoc """
+  A GenServer that stores and retrieves memory variables, Memory supports the agent genservers
+  """
   use GenServer
 
   defmacro __using__(_) do
@@ -78,6 +81,9 @@ defmodule LangChain.BaseMemory do
 end
 
 defmodule Utils do
+  @moduledoc """
+  Utility functions for memory
+  """
   def get_input_value(input_values, input_key \\ nil) do
     case input_key do
       nil ->

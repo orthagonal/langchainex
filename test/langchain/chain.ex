@@ -1,4 +1,7 @@
 defmodule LangChain.ChainTest do
+  @moduledoc """
+  Tests for LangChain.Chain
+  """
   use ExUnit.Case
   alias LangChain.{LLM, Chat, Chain, ChainLink, PromptTemplate}
 
@@ -40,7 +43,7 @@ defmodule LangChain.ChainTest do
     assert "enchanter" == new_link_state.output.processed_by
     assert Map.keys(new_link_state.output) == [:outputs, :processed_by, :text]
     # the AI's response won't be the same every time!
-    IO.inspect(new_link_state.output.text)
+    # IO.inspect(new_link_state.output.text)
   end
 
   test "Test Chain with multiple ChainLinks" do
@@ -89,8 +92,8 @@ defmodule LangChain.ChainTest do
            ]
 
     # # Inspect the text outputs from both links (AI responses won't be the same every time)
-    IO.inspect(result[:enchanter_text])
-    IO.inspect(result[:duration_text])
+    # IO.inspect(result[:enchanter_text])
+    # IO.inspect(result[:duration_text])
   end
 
   defp temp_parser1(chain_link, outputs) do
