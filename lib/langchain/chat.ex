@@ -22,16 +22,16 @@ defmodule LangChain.Chat do
   loops over every prompt and formats it with the values supplied
   """
   def format(chat, values) do
-    resultMessages =
+    result_messages =
       Enum.map(chat.prompt_messages, fn prompt_message ->
         {:ok, text} = LangChain.PromptTemplate.format(prompt_message.prompt, values)
         Map.put(prompt_message, :text, text)
       end)
 
-    {:ok, resultMessages}
+    {:ok, result_messages}
   end
 
-  def toChatMessages do
+  def to_chat_messages do
   end
 
   def serialize(chat) do

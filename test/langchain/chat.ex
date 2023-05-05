@@ -60,11 +60,11 @@ defmodule LangChain.ChatTest do
   end
 
   test "Test serialize" do
-    {:ok, chatSerialized} =
+    {:ok, chat_serialized} =
       create_chat()
       |> LangChain.Chat.serialize()
 
-    assert chatSerialized = %{
+    assert chat_serialized = %{
              input_variables: [:context, :foo, :bar],
              prompt_messages: [
                "{\"prompt\":{\"input_variables\":[\"context\"],\"partial_variables\":{},\"src\":\"user\",\"template\":\"Here's some context: {context}\"}}",
@@ -74,8 +74,8 @@ defmodule LangChain.ChatTest do
              ]
            }
 
-    chatDeserialized =
-      Enum.map(chatSerialized.prompt_messages, fn item ->
+    chat_deserialized =
+      Enum.map(chat_serialized.prompt_messages, fn item ->
         Jason.decode!(item)
       end)
 
@@ -113,7 +113,7 @@ defmodule LangChain.ChatTest do
                },
                "role" => "test"
              }
-           ] = chatDeserialized
+           ] = chat_deserialized
   end
 
   # more to do here mostly dealing with validating the templates
