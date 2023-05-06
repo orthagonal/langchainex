@@ -17,9 +17,9 @@ defmodule LangChain.ScrapeChain do
   Creates a new ScrapeChain struct with the given chain, input_schema, and output_parser,
   you set up a scrapeChain with an input_schema and an output_parser, then you can call
   it with whatever text you want.
-  
+
   ## Example:
-  
+
   # create a chat to extract data:
   chat = Chat.add_prompt_templates(%Chat{}, [
     %{
@@ -37,14 +37,14 @@ defmodule LangChain.ScrapeChain do
       }
     }
   ])
-  
+
   # create a ChainLink with the chat and parser function
   chain_link = %ChainLink{
     name: "schema_extractor",
     input: chat,
     output_parser: &schema_parser/2
   }
-  
+
   chain = %Chain{links: [chain_link]}
   input_schema = "{ name: String, age: Number, birthdate: Date }"
   schema_chain = LangChain.ScrapeChain.new(chain, input_schema)
@@ -58,9 +58,19 @@ defmodule LangChain.ScrapeChain do
   end
 
   @doc """
-  Executes the scrapechain on a simple string input and returns the parsed result:
-  
+  Executes the scrapechain and returns the parsed result, can be called against
+  the schema you defined when you made the chain, or you can override that schema:
+
     result = LangChain.ScrapeChain.scrape(schema_chain, "John Doe is 30 years old")
+    # result will be %{ name: "John Doe", age: 30, birthdate: "1987-01-01"}
+
+    # override the default schema
+    input_variables = %{
+      input_text: "John Doe is 30 years old.",
+      input_schema: "{ firstName: String, lastName: String, age: Number, birthdate: Date }"
+    }
+    alt_result = LangChain.ScrapeChain.scrape(schema_chain, input_variables)
+    # alt_result will be %{ firstName: "John", lastName: "Doe", age: 30, birthdate: "1987-01-01"}
   """
   def scrape(scrape_chain, input_variables) when is_map(input_variables) do
     result = LangChain.Chain.call(scrape_chain.chain, input_variables)
@@ -68,13 +78,6 @@ defmodule LangChain.ScrapeChain do
     scrape_chain.output_parser.(result)
   end
 
-  @doc """
-  Executes the ScrapeChain with a specific input_text and input_schema and returns the parsed result:
-    input_variables = %{
-      input_text: "John Doe is 30 years old.",
-      input_schema: "{ name: String, age: Number, birthdate: Date }"
-    }
-  """
   def scrape(scrape_chain, input_text) when is_binary(input_text) do
     # Fill in the input_text and input_schema values and run the Chain
     input_variables = %{
