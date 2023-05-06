@@ -38,6 +38,7 @@ defmodule LangChain.Chat do
     case Map.has_key?(chat, :output_parser) do
       true ->
         {:error, "Chat cannot be serialized if output_parser is set"}
+
       false ->
         {:ok,
          %{
