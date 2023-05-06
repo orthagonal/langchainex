@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies
       run: mix deps.get
     # mix format on dev not matching up to the one in github runner
-    #- name: Run format check
-    #  run: mix format --check-formatted
+    - name: Run format check
+      run: mix format --check-formatted
     - name: Run tests
       run: mix test
