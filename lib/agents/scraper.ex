@@ -158,7 +158,8 @@ defmodule LangChain.Scraper do
         }
 
       {:error, _response} ->
-        IO.puts "The JSON I got was not formatted correctly"
+        IO.puts("The JSON I got was not formatted correctly")
+
         %{
           chain_link
           | raw_responses: outputs,
