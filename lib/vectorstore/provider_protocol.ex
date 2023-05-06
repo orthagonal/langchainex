@@ -7,11 +7,3 @@ defprotocol LangChain.VectorStore.Provider do
   def embed(provider, document_list)
   def load(provider, directory, embeddings)
 end
-
-# defprotocol LangChain.VectorStore.Provider do
-#   def add_vectors(provider, vector_list)
-#   def similarity_search(provider, query, k, filter)
-#   def similarity_search_with_score(provider, query, k, filter)
-#   def embed(provider, document_list)
-#   def load(provider, directory, embeddings)
-# end

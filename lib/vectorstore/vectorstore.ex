@@ -10,7 +10,7 @@ defmodule LangChain.VectorStore do
   You can specify a provider when you launch the GenServer in your Application tree,
   so you can have multiple VectorStore servers running in your application, each with a different provider.
     options:
-    :provider           -- the actual vector db provider you are using
+    :provider           -- the actual vector db provider you are using, must implement the VectorStore.Provider protocol
     :embed_documents    -- optional function for embedding multiple docs presented as strings
     :embed_query        -- optional function for embedding a single query when presented as a string
   """
@@ -62,10 +62,17 @@ defmodule LangChain.VectorStore do
     GenServer.cast(pid, {:add_documents, document_list})
   end
 
+  @doc """
+  Add a list of vectors to the vector store.
+  """
   def add_vectors(pid, vector_list) do
     GenServer.cast(pid, {:add_vectors, vector_list})
   end
 
+  @doc """
+  perform a similarity search on the vector store
+  if query is a string it will be run through embed_query first
+  """
   def similarity_search(pid, query, k, filter) when is_binary(query) do
     GenServer.call(pid, {:similarity_search_string, query, k, filter})
   end
@@ -74,6 +81,10 @@ defmodule LangChain.VectorStore do
     GenServer.call(pid, {:similarity_search, query, k, filter})
   end
 
+  @doc """
+  perform a similarity search on the vector store and return score
+  if query is a string it will be run through embed_query first
+  """
   def similarity_search_with_score(pid, query, k, filter) when is_binary(query) do
     GenServer.call(pid, {:similarity_search_with_score_string, query, k, filter})
   end
@@ -82,6 +93,9 @@ defmodule LangChain.VectorStore do
     GenServer.call(pid, {:similarity_search_with_score, query, k, filter})
   end
 
+  @doc """
+  load a vector store from a directory
+  """
   def load(pid, directory, embeddings) do
     GenServer.call(pid, {:load, directory, embeddings})
   end
