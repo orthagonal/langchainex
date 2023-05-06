@@ -2,7 +2,7 @@
 defmodule LangChain.Chat do
   @moduledoc """
   A Chat is a list of multiple PromptTemplates along with all their input variables
-  
+
   """
 
   @derive Jason.Encoder
@@ -38,7 +38,6 @@ defmodule LangChain.Chat do
     case Map.has_key?(chat, :output_parser) do
       true ->
         {:error, "Chat cannot be serialized if output_parser is set"}
-
       false ->
         {:ok,
          %{
