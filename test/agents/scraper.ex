@@ -1,4 +1,7 @@
 defmodule LangChain.ScraperTest do
+  @moduledoc """
+  Tests for LangChain.Scraper
+  """
   use ExUnit.Case, async: true
   alias LangChain.{ScrapeChain, Scraper, ChainLink, Chat, PromptTemplate, Chain}
 
@@ -23,9 +26,6 @@ defmodule LangChain.ScraperTest do
         }
 
       {:error, response} ->
-        IO.inspect(response)
-        IO.inspect(response_text)
-
         %{
           chain_link
           | raw_responses: outputs,
@@ -77,9 +77,6 @@ defmodule LangChain.ScraperTest do
     # Test the :scrape call with the second ScrapeChain
     {:ok, result2} = Scraper.scrape(pid, input_text, :sample_chain2)
 
-    IO.inspect(result1)
-    IO.inspect(result2)
-
     # # verify that result1 and result2 both have the "age" field of 30 and the "name" field of "John Doe" or name.first of "John" and name.last of "Doe"
     assert Map.get(result1, "age") == 30
     assert Map.get(result1, "name") == "John Doe"
@@ -91,7 +88,9 @@ defmodule LangChain.ScraperTest do
     {:ok, scraper_pid} = Scraper.start_link()
     input_text = "John Doe is 30 years old."
     {:ok, result} = Scraper.scrape(scraper_pid, input_text)
-    IO.inspect(result)
+
+    # IO.inspect(result)
+
     # Test with a custom output format (e.g., XML)
     # add support for calling if it is a map
     # actually don't worry too much about this for now move on to impl on the page
@@ -101,7 +100,7 @@ defmodule LangChain.ScraperTest do
         output_format: "XML"
       })
 
-    IO.inspect(result_xml)
+    # IO.inspect(result_xml)
 
     {:ok, result_yml} =
       Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
@@ -109,6 +108,6 @@ defmodule LangChain.ScraperTest do
         output_format: "YAML"
       })
 
-    IO.inspect(result_yml)
+    # IO.inspect(result_yml)
   end
 end

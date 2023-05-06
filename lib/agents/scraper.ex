@@ -95,7 +95,6 @@ defmodule LangChain.Scraper do
     end
   end
 
-  # # todo: should I move this to the ScrapeChain module?
   defp default_scrape_chain() do
     # can be overruled with the input_schema option
     input_schema = "{ name: String, age: Number }"
@@ -126,7 +125,7 @@ defmodule LangChain.Scraper do
 
     chain = %Chain{links: [chain_link]}
     output_parser = &output_parser/1
-    scrape_chain = ScrapeChain.new(chain, input_schema, output_parser)
+    ScrapeChain.new(chain, input_schema, output_parser)
   end
 
   @doc """
@@ -158,7 +157,8 @@ defmodule LangChain.Scraper do
             output: json
         }
 
-      {:error, response} ->
+      {:error, _response} ->
+        IO.puts "The JSON I got was not formatted correctly"
         %{
           chain_link
           | raw_responses: outputs,

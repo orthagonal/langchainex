@@ -37,16 +37,13 @@ defmodule LangChain.ChainLink do
         chain_link.output_parser.(chain_link, response)
 
       {:error, reason} ->
-        IO.inspect(reason)
         chain_link |> Map.put(:errors, [reason])
     end
   end
 
-  @doc """
-  you can define your own parser functions, but this is the default
-  the output of the ChainLink will be used as variables in the next link
-  by default the simple text response goes in the :text key
-  """
+  # you can define your own parser functions, but this is the default
+  # the output of the ChainLink will be used as variables in the next link
+  # by default the simple text response goes in the :text key
   defp no_parse(chain_link, outputs \\ []) do
     %{
       chain_link

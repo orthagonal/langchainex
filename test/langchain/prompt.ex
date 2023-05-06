@@ -1,4 +1,7 @@
 defmodule LangChain.PromptTemplateTest do
+  @moduledoc """
+  Tests for LangChain.PromptTemplate
+  """
   use ExUnit.Case
 
   test "Test using partial when values are a map" do

@@ -1,4 +1,7 @@
 defmodule ScrapeChainTest do
+  @moduledoc """
+  Tests for ScrapeChain
+  """
   use ExUnit.Case
 
   alias LangChain.{Chat, ChainLink, Chain, PromptTemplate}
@@ -17,9 +20,6 @@ defmodule ScrapeChainTest do
         }
 
       {:error, response} ->
-        IO.inspect(response)
-        IO.inspect(response_text)
-
         %{
           chain_link
           | raw_responses: outputs,
@@ -62,8 +62,6 @@ defmodule ScrapeChainTest do
     input_text = "John Doe is 30 years old."
 
     result = LangChain.ScrapeChain.scrape(schema_chain, input_text)
-    IO.puts("****************")
-    IO.inspect(result)
     assert Map.get(result, "age") == 30
     assert Map.get(result, "name") == "John Doe"
 
@@ -71,7 +69,7 @@ defmodule ScrapeChainTest do
     input_schema2 = "{ name: { first: String, last: String }, age: Number }"
     schema_chain2 = LangChain.ScrapeChain.new(chain, input_schema2)
     result2 = LangChain.ScrapeChain.scrape(schema_chain2, input_text)
-    IO.inspect(result2)
+
     assert Map.get(result2, "name") == %{"first" => "John", "last" => "Doe"}
     assert Map.get(result2, "age") == 30
   end

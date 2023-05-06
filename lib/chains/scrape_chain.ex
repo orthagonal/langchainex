@@ -17,9 +17,9 @@ defmodule LangChain.ScrapeChain do
   Creates a new ScrapeChain struct with the given chain, input_schema, and output_parser,
   you set up a scrapeChain with an input_schema and an output_parser, then you can call
   it with whatever text you want.
-
+  
   ## Example:
-
+  
   # create a chat to extract data:
   chat = Chat.add_prompt_templates(%Chat{}, [
     %{
@@ -37,14 +37,14 @@ defmodule LangChain.ScrapeChain do
       }
     }
   ])
-
+  
   # create a ChainLink with the chat and parser function
   chain_link = %ChainLink{
     name: "schema_extractor",
     input: chat,
     output_parser: &schema_parser/2
   }
-
+  
   chain = %Chain{links: [chain_link]}
   input_schema = "{ name: String, age: Number, birthdate: Date }"
   schema_chain = LangChain.ScrapeChain.new(chain, input_schema)
@@ -59,7 +59,7 @@ defmodule LangChain.ScrapeChain do
 
   @doc """
   Executes the scrapechain on a simple string input and returns the parsed result:
-
+  
     result = LangChain.ScrapeChain.scrape(schema_chain, "John Doe is 30 years old")
   """
   def scrape(scrape_chain, input_variables) when is_map(input_variables) do
