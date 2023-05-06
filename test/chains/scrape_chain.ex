@@ -20,7 +20,6 @@ defmodule ScrapeChainTest do
         }
 
       {:error, response} ->
-
         %{
           chain_link
           | raw_responses: outputs,

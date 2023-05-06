@@ -3,15 +3,15 @@ defmodule LangChain.Scraper do
   A Scraper is a GenServer that scrapes natural language text and tries to turn it into some kind of
   structured data. It comes with a built in "default_scraper" that can generally extract data
   from text according to the schema you gave it.  Examples:
-
+  
    {:ok, scraper_pid} = Scraper.start_link()
    input_text = "John Doe is 30 years old."
    {:ok, result} = Scraper.scrape(scraper_pid, input_text)
-
+  
   {:ok, result_xml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
     output_format: "XML"
   })
-
+  
   {:ok, result_yml} = Scraper.scrape(scraper_pid, input_text, "default_scraper", %{
     input_schema: "{ name: { first: String, last: String }, age: Number }",
     output_format: "YAML"
