@@ -8,7 +8,9 @@ defmodule LangchainEx.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      package: package()
+      package: package(),
+      # prevents protocol consolidation warning
+      consolidate_protocols: Mix.env() != :test
     ]
   end
 
