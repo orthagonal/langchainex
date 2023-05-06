@@ -1,19 +1,18 @@
 defmodule LangChain.VectorStore do
   @moduledoc """
-  The VectorStore Genserver, provides all your services for storing and searching vectors.  It runs as a GenServer
-  so it can perform operations in the background.
-  """
-  use GenServer
-  alias LangChain.VectorStore.Provider
+    ## VectorStore Genserver, provides all the services for storing and searching vectors
 
-  @doc """
   You can specify a provider when you launch the GenServer in your Application tree,
   so you can have multiple VectorStore servers running in your application, each with a different provider.
-    options:
+
+    ## options:
     :provider           -- the actual vector db provider you are using, must implement the VectorStore.Provider protocol
     :embed_documents    -- optional function for embedding multiple docs presented as strings
     :embed_query        -- optional function for embedding a single query when presented as a string
   """
+  use GenServer
+  alias LangChain.VectorStore.Provider
+
   def start_link(opts \\ []) do
     provider = Keyword.get(opts, :provider) || default_provider()
     embed_documents = Keyword.get(opts, :embed_documents) || default_embed_documents()
