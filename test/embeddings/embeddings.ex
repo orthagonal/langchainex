@@ -7,12 +7,15 @@ defmodule LangChain.DocumentEmbedderTest do
         provider: :openai,
         temperature: 0.1,
         max_tokens: 200,
-        model_name: "text-embedding-ada-002"  # only certain models support embedding on openai
+        # only certain models support embedding on openai
+        model_name: "text-embedding-ada-002"
       }
+
       documents = [
         "This is a sample document.",
         "This is another sample document."
       ]
+
       assert {:ok, embeddings} = LangChain.Embeddings.embed_documents(llm, documents)
       IO.inspect(embeddings)
       assert length(embeddings) == length(documents)
