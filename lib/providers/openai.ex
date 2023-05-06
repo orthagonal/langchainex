@@ -68,4 +68,25 @@ defmodule LangChain.Providers.OpenAI do
     choices
     |> Enum.map(fn choice -> %{text: choice.message.content, role: choice.message.role} end)
   end
+
+  @doc """
+  embed a list of documents
+  """
+  def embed_documents(model, documents) do
+    opts = []
+
+    with {:ok, results} <- ExOpenAI.Embeddings.create_embedding(documents, model.model_name, opts) do
+      case results do
+        %ExOpenAI.Components.CreateEmbeddingResponse{data: data} ->
+          embeddings = Enum.map(data, fn %{embedding: embedding} -> embedding end)
+          {:ok, embeddings}
+
+        _ ->
+          {:error, "unexpected response from OpenAI API"}
+      end
+    else
+      error ->
+        {:error, error}
+    end
+  end
 end
