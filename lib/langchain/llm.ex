@@ -24,10 +24,11 @@ defmodule LangChain.LLM do
     end
   end
 
-  # call is a single chat msg
+  # call is a single chat msg for one prompt
   def call(model, prompt) do
     case model.provider do
       :openai -> LangChain.Providers.OpenAI.call(model, prompt)
+      :replicate -> LangChain.Providers.Replicate.call(model, prompt)
       # :gpt3 -> handle_gpt3_call(model, prompt)
       _ -> "unknown provider #{model.provider}"
     end
