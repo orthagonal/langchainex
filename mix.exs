@@ -8,7 +8,9 @@ defmodule LangchainEx.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      package: package()
+      package: package(),
+      # prevents protocol consolidation warning
+      consolidate_protocols: Mix.env() != :test
     ]
   end
 
@@ -21,6 +23,7 @@ defmodule LangchainEx.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:elixir_uuid, "~> 1.2"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:ex_openai, "~> 1.1.0"},
       {:jason, "~> 1.2"}
