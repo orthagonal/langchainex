@@ -154,7 +154,7 @@ defmodule LangChain.VectorStore do
   end
 
   defp _similarity_search_with_score(state, query, k, filter) do
-    Provider.similarity_search(state.provider, query, k, filter)
+    Provider.similarity_search_with_score(state.provider, query, k, filter)
   end
 
   defp _load(state, directory, embeddings) do

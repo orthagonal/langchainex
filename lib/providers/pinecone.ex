@@ -42,7 +42,7 @@ defmodule LangChain.VectorStore.PineconeProvider do
       add_pinecone_vectors(provider.config_name, pinecone_vectors)
     end
 
-    def add_pinecone_vectors(config_name, vectors) do
+    defp add_pinecone_vectors(config_name, vectors) do
       base = get_base(config_name, "vectors/upsert")
 
       body =
@@ -68,18 +68,48 @@ defmodule LangChain.VectorStore.PineconeProvider do
       end
     end
 
-    def similarity_search(pinecone_db, query, k, filter) do
+    def similarity_search(provider, query, k, _filter) do
       IO.puts("similarity_search is called")
-      {:ok, []}
+      similarity_search_impl(provider.config_name, query, k, false)
     end
 
-    def similarity_search_with_score(pinecone_db, query, k, filter) do
+    def similarity_search_with_score(provider, query, k, _filter) do
       IO.puts("similarity_search_with_score is called")
-      {:ok, []}
+      similarity_search_impl(provider.config_name, query, k, true)
+    end
+
+    defp similarity_search_impl(config_name, query, k, include_scores) do
+      base = get_base(config_name, "query")
+
+      body =
+        %{
+          "vector" => query,
+          "topK" => k,
+          "includeValues" => "true",
+          "includeMetadata" => "false"
+        }
+        |> Jason.encode!()
+
+      with {:ok, response} <- HTTPoison.post(base.url, body, base.headers) do
+        decoded_response = Jason.decode!(response.body)
+        IO.inspect(decoded_response)
+        results = decoded_response["matches"]
+
+        if include_scores do
+          {:ok,
+           Enum.map(results, fn result ->
+             %{score: Map.get(result, "score", 0), vector: Map.get(result, "values", [])}
+           end)}
+        else
+          {:ok, Enum.map(results, fn result -> Map.get(result, "values", []) end)}
+        end
+      else
+        {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
+      end
     end
 
     def embed(pinecone_db, document_list) do
-      IO.puts("embed is called")
+      throw("PineconeProvider.embed is called but has not been implemented")
       []
     end
 

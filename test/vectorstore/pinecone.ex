@@ -1,26 +1,28 @@
-# defmodule VectorStoreProviderTest do
-#   use ExUnit.Case
-#   alias LangChain.VectorStore.Provider
-#   alias LangChain.VectorStore.PineconeProvider
+defmodule VectorStoreProviderTest do
+  use ExUnit.Case
+  alias LangChain.VectorStore.Provider
+  alias LangChain.VectorStore.PineconeProvider
 
-#   setup do
-#     provider = %PineconeProvider{
-#       config_name: :pinecone
-#     }
-#     {:ok, provider: provider}
-#   end
+  setup do
+    provider = %PineconeProvider{
+      config_name: :pinecone
+    }
 
-#   test "add_vectors/2", %{provider: provider} do
-#     # make 3 vectors of size 1536 each, since the openai davicini model uses that size vector
-#     vectors = Enum.map(1..3, fn _ ->
-#       Enum.map(1..1536, fn _ -> :rand.uniform() end)
-#     end)
+    {:ok, provider: provider}
+  end
 
-#     {:ok, added_vectors_count} = Provider.add_vectors(provider, vectors)
+  test "add_vectors/2", %{provider: provider} do
+    # make 3 vectors of size 1536 each, since the openai davicini model uses that size vector
+    vectors =
+      Enum.map(1..3, fn _ ->
+        Enum.map(1..1536, fn _ -> :rand.uniform() end)
+      end)
 
-#     assert added_vectors_count == length(vectors)
-#   end
-# end
+    {:ok, added_vectors_count} = Provider.add_vectors(provider, vectors)
+
+    assert added_vectors_count == length(vectors)
+  end
+end
 
 defmodule PineconeVectorStoreTest do
   use ExUnit.Case
@@ -57,12 +59,23 @@ defmodule PineconeVectorStoreTest do
     result = VectorStore.add_vectors(pid, vector_list)
 
     # assert added_vectors_count == length(vector_list)
-    Process.sleep(15_000)
+    Process.sleep(5_000)
   end
 
-  # test "add_documents/2", %{pid: pid} do
-  #   document_list = ["doc1", "doc2", "doc3"]
-  #   assert :ok = VectorStore.add_documents(pid, document_list)
-  #   Process.sleep(15_000)
-  # end
+  test "search_similarity/4", %{pid: pid} do
+    query = Enum.map(1..1536, fn _ -> :rand.uniform() end)
+    top_k = 10
+
+    {:ok, result} = VectorStore.similarity_search(pid, query, top_k, [])
+    assert length(result) == top_k
+  end
+
+  test "search_similarity_with_score/4", %{pid: pid} do
+    query = Enum.map(1..1536, fn _ -> :rand.uniform() end)
+    top_k = 10
+
+    {:ok, result} = VectorStore.similarity_search_with_score(pid, query, top_k, [])
+    assert length(result) == top_k
+    assert Enum.all?(result, fn result -> result.score >= 0.0 and result.score <= 1.0 end)
+  end
 end
