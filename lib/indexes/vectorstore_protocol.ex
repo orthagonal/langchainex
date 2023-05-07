@@ -1,8 +1,7 @@
-  #  The Protocol for a VectorStore Provider, you can implement your own
-  #  backend providers for storing and searching vectors by implementing the following protocol
-  # and then pass them to a VectorStore GenServer when you start it.
+#  The Protocol for a VectorStore Provider, you can implement your own
+#  backend providers for storing and searching vectors by implementing the following protocol
+# and then pass them to a VectorStore GenServer when you start it.
 defprotocol LangChain.VectorStore.Provider do
-
   @doc """
     add a list of vectors to the provider
     result is the number of vectors added
