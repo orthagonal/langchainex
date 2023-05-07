@@ -9,7 +9,7 @@ config :ex_openai,
   # optional, passed to [HTTPoison.Request](https://hexdocs.pm/httpoison/HTTPoison.Request.html) options
   http_options: [recv_timeout: 50_000]
 
-  # you can have multiple pinecone db configs, this one is named :pinecone but you can add more
+# you can have multiple pinecone db configs, this one is named :pinecone but you can add more
 config :langchainex, :pinecone,
   # log in to Pinecone dashboard and go to API Keys to find this
   api_key: System.get_env("PINECONE_API_KEY"),
@@ -21,6 +21,5 @@ config :langchainex, :pinecone,
   # Pinecone dashboard -> Indexes, look under 'environment' to find this, it's also in the full index url
   # eg myindex-abcd123.svc.us-east-1-aws.pinecone.io the environment is us-east-1-aws
   environment: System.get_env("PINECONE_ENVIRONMENT")
-
 
 config :logger, :console, format: "[$level] $message\n"
