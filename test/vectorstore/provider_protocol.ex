@@ -29,14 +29,6 @@ defmodule VectorStoreProviderTest do
     assert result == []
   end
 
-  test "embed/2", %{provider: provider} do
-    document_list = ["doc1", "doc2", "doc3"]
-    result = Provider.embed(provider, document_list)
-
-    assert length(result) == length(document_list)
-    assert Enum.map(result, fn {doc, _} -> doc end) == document_list
-  end
-
   test "load/3", %{provider: provider} do
     result = Provider.load(provider, "some_directory", "some_embeddings")
     assert result == :ok

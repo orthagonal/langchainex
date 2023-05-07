@@ -24,12 +24,12 @@ defmodule VectorStoreTest do
 
   test "add_documents/2", %{pid: pid} do
     document_list = ["doc1", "doc2", "doc3"]
-    assert :ok = VectorStore.add_documents(pid, document_list)
+    assert {:ok, _} = VectorStore.add_documents(pid, document_list)
   end
 
   test "add_vectors/2", %{pid: pid} do
     vector_list = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    assert :ok = VectorStore.add_vectors(pid, vector_list)
+    assert {:ok, _} = VectorStore.add_vectors(pid, vector_list)
   end
 
   test "similarity_search/4 with query as string", %{pid: pid} do
