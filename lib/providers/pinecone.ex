@@ -30,7 +30,6 @@ defmodule LangChain.VectorStore.PineconeProvider do
     end
 
     def add_vectors(provider, vectors) do
-
       pinecone_vectors =
         Enum.map(vectors, fn vector ->
           %{id: UUID.uuid4(), values: vector}
