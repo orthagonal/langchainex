@@ -30,9 +30,6 @@ defmodule LangChain.VectorStore.PineconeProvider do
     end
 
     def add_vectors(provider, vectors) do
-      IO.puts("pinecone add vecdtors called")
-      IO.inspect(provider)
-      IO.inspect(vectors)
 
       pinecone_vectors =
         Enum.map(vectors, fn vector ->
@@ -69,12 +66,10 @@ defmodule LangChain.VectorStore.PineconeProvider do
     end
 
     def similarity_search(provider, query, k, _filter) do
-      IO.puts("similarity_search is called")
       similarity_search_impl(provider.config_name, query, k, false)
     end
 
     def similarity_search_with_score(provider, query, k, _filter) do
-      IO.puts("similarity_search_with_score is called")
       similarity_search_impl(provider.config_name, query, k, true)
     end
 
@@ -92,7 +87,6 @@ defmodule LangChain.VectorStore.PineconeProvider do
 
       with {:ok, response} <- HTTPoison.post(base.url, body, base.headers) do
         decoded_response = Jason.decode!(response.body)
-        IO.inspect(decoded_response)
         results = decoded_response["matches"]
 
         if include_scores do
