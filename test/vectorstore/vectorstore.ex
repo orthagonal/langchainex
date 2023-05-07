@@ -56,3 +56,4 @@ defmodule VectorStoreTest do
     assert :ok = VectorStore.load(pid, "some_directory", "some_embeddings")
   end
 end
+

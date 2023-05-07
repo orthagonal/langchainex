@@ -12,6 +12,7 @@ defmodule LangChain.VectorStore do
   """
   use GenServer
   alias LangChain.VectorStore.Provider
+  require Logger
 
   def start_link(opts \\ []) do
     provider = Keyword.get(opts, :provider) || default_provider()
@@ -29,11 +30,8 @@ defmodule LangChain.VectorStore do
   end
 
   defp default_embed_documents() do
-    # Implement default logic for embed_documents function or return a function that raises an error
-    # if it should be explicitly set.
-    # Example:
     fn
-      _, _ -> raise "No embed_documents function provided"
+      _, _ -> []
     end
   end
 
@@ -42,7 +40,7 @@ defmodule LangChain.VectorStore do
     # if it should be explicitly set.
     # Example:
     fn
-      _, _ -> raise "No embed_query function provided"
+      _, _ -> []
     end
   end
 
@@ -58,14 +56,14 @@ defmodule LangChain.VectorStore do
 
   # Public API
   def add_documents(pid, document_list) do
-    GenServer.cast(pid, {:add_documents, document_list})
+    GenServer.call(pid, {:add_documents, document_list})
   end
 
   @doc """
   Add a list of vectors to the vector store.
   """
   def add_vectors(pid, vector_list) do
-    GenServer.cast(pid, {:add_vectors, vector_list})
+    GenServer.call(pid, {:add_vectors, vector_list})
   end
 
   @doc """
@@ -100,15 +98,15 @@ defmodule LangChain.VectorStore do
   end
 
   # Callbacks
-  def handle_cast({:add_documents, document_list}, state) do
+  def handle_call({:add_documents, document_list}, _from, state) do
     embeddings = state.embed_documents.(document_list, state.provider)
-    _add_vectors(state, embeddings)
-    {:noreply, state}
+    result = _add_vectors(state, embeddings)
+    {:reply, {:ok, result }, state}
   end
 
-  def handle_cast({:add_vectors, vector_list}, state) do
-    new_state = _add_vectors(state, vector_list)
-    {:noreply, new_state}
+  def handle_call({:add_vectors, vector_list}, _from, state) do
+    result = _add_vectors(state, vector_list)
+    {:reply, {:ok, result }, state}
   end
 
   def handle_call({:similarity_search_string, query, k, filter}, _from, state) do
@@ -140,7 +138,14 @@ defmodule LangChain.VectorStore do
 
   # Private API
   defp _add_vectors(state, vector_list) do
-    Provider.add_vectors(state.provider, vector_list)
+    try do
+      # Logger.debug("why no state???")
+      Provider.add_vectors(state.provider, vector_list)
+    rescue
+      error ->
+        Logger.error("Error occurred: #{inspect(error)}")
+    end
+    state
   end
 
   defp _similarity_search(state, query, k, filter) do
