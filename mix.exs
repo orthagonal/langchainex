@@ -23,6 +23,7 @@ defmodule LangchainEx.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:elixir_uuid, "~> 1.2"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:ex_openai, "~> 1.1.0"},
       {:jason, "~> 1.2"}
