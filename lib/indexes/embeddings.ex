@@ -1,3 +1,10 @@
+# Embeddings are binary strings that have been converted to vectors of numbers so that neural networks can
+# read them. An embedding must match the input size of the model and use the same encoding scheme, so you
+# can implement EmbeddingProtocol for your own custom models as needed.
+
+# Embedding providers currently included with this project include:
+# - LangChain.Embedding.OpenAIProvider   -- embeds documents for openai models, see test/providers/openai.exs for an example
+
 defprotocol LangChain.EmbeddingProtocol do
   @doc """
   Embed a list of documents
@@ -9,35 +16,3 @@ defprotocol LangChain.EmbeddingProtocol do
   """
   def embed_query(provider, model, query)
 end
-
-# defmodule LangChain.Embeddings do
-#   @moduledoc """
-#     The Embeddings module provides an abstract base for embedding documents.  An embedding is a vector
-#     representation of a document, you plug them in to a language model so that you can ask questions about
-#     the content of your documents.
-#   """
-
-#   @derive Jason.Encoder
-#   defstruct embeddings: [],
-#             model: %LangChain.LLM{}
-
-#   @doc """
-#     embed a list of documents
-#   """
-#   def embed_documents(model, documents) when is_list(documents) do
-#     case model.provider do
-#       :openai -> LangChain.Providers.OpenAI.embed_documents(model, documents)
-#       _ -> "unknown provider #{model.provider}"
-#     end
-#   end
-
-#   @doc """
-#   embed a single query
-#   """
-#   def embed_query(model, query) do
-#     case model.provider do
-#       :openai -> LangChain.Providers.OpenAI.embed_query(model, query)
-#       _ -> "unknown provider #{model.provider}"
-#     end
-#   end
-# end

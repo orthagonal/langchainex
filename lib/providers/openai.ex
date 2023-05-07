@@ -1,3 +1,4 @@
+# any openai-specific code goes in this file
 defmodule LangChain.Providers.OpenAI do
   @moduledoc """
   A module for interacting with OpenAI's main language models

@@ -1,3 +1,5 @@
+# any pinecone-specific code goes in this file
+
 defmodule LangChain.VectorStore.PineconeProvider do
   @moduledoc """
   A Pinecone implementation of the LangChain.VectorStore.Provider protocol.
