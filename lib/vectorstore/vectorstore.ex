@@ -101,12 +101,12 @@ defmodule LangChain.VectorStore do
   def handle_call({:add_documents, document_list}, _from, state) do
     embeddings = state.embed_documents.(document_list, state.provider)
     result = _add_vectors(state, embeddings)
-    {:reply, {:ok, result }, state}
+    {:reply, {:ok, result}, state}
   end
 
   def handle_call({:add_vectors, vector_list}, _from, state) do
     result = _add_vectors(state, vector_list)
-    {:reply, {:ok, result }, state}
+    {:reply, {:ok, result}, state}
   end
 
   def handle_call({:similarity_search_string, query, k, filter}, _from, state) do
@@ -145,6 +145,7 @@ defmodule LangChain.VectorStore do
       error ->
         Logger.error("Error occurred: #{inspect(error)}")
     end
+
     state
   end
 

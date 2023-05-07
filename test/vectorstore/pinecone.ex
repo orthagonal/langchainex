@@ -49,12 +49,13 @@ defmodule PineconeVectorStoreTest do
   end
 
   test "add_vectors/2", %{pid: pid} do
-    vector_list = Enum.map(1..3, fn _ ->
-      Enum.map(1..1536, fn _ -> :rand.uniform() end)
-    end)
+    vector_list =
+      Enum.map(1..3, fn _ ->
+        Enum.map(1..1536, fn _ -> :rand.uniform() end)
+      end)
 
     result = VectorStore.add_vectors(pid, vector_list)
-    IO.inspect result
+
     # assert added_vectors_count == length(vector_list)
     Process.sleep(15_000)
   end
@@ -64,5 +65,4 @@ defmodule PineconeVectorStoreTest do
   #   assert :ok = VectorStore.add_documents(pid, document_list)
   #   Process.sleep(15_000)
   # end
-
 end

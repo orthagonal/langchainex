@@ -1,5 +1,4 @@
 defmodule LangChain.VectorStore.PineconeProvider do
-
   defstruct config_name: :pinecone
 
   defimpl LangChain.VectorStore.Provider do
@@ -9,7 +8,8 @@ defmodule LangChain.VectorStore.PineconeProvider do
 
     defp get_base(config_name, operation) do
       {
-        :ok, [
+        :ok,
+        [
           api_key: api_key,
           index_name: index_name,
           project_id: project_id,
@@ -18,6 +18,7 @@ defmodule LangChain.VectorStore.PineconeProvider do
       } = Application.fetch_env(:langchainex, config_name)
 
       base_url = "https://#{index_name}-#{project_id}.svc.#{environment}.pinecone.io"
+
       %{
         url: "#{base_url}/#{operation}",
         headers: [
@@ -29,21 +30,26 @@ defmodule LangChain.VectorStore.PineconeProvider do
     end
 
     def add_vectors(provider, vectors) do
-      IO.puts "pinecone add vecdtors called"
-      IO.inspect provider
-      IO.inspect vectors
-      pinecone_vectors = Enum.map(vectors, fn vector ->
-        %{id: UUID.uuid4(), values: vector}
-      end)
+      IO.puts("pinecone add vecdtors called")
+      IO.inspect(provider)
+      IO.inspect(vectors)
+
+      pinecone_vectors =
+        Enum.map(vectors, fn vector ->
+          %{id: UUID.uuid4(), values: vector}
+        end)
+
       add_pinecone_vectors(provider.config_name, pinecone_vectors)
     end
 
     def add_pinecone_vectors(config_name, vectors) do
       base = get_base(config_name, "vectors/upsert")
-      body = %{
-        "vectors" => Enum.map(vectors, &(%{"id" => &1.id, "values" => &1.values}))
-      }
-      |> Jason.encode!()
+
+      body =
+        %{
+          "vectors" => Enum.map(vectors, &%{"id" => &1.id, "values" => &1.values})
+        }
+        |> Jason.encode!()
 
       res = HTTPoison.post(base.url, body, base.headers)
       # the call should yield the number of vectors added
@@ -51,10 +57,11 @@ defmodule LangChain.VectorStore.PineconeProvider do
       with {:ok, response} <- HTTPoison.post(base.url, body, base.headers) do
         decoded_response = Jason.decode!(response.body)
         size = decoded_response["upsertedCount"]
+
         if is_nil(size) do
-          {:error, decoded_response }
+          {:error, decoded_response}
         else
-          {:ok, size }
+          {:ok, size}
         end
       else
         {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
@@ -80,6 +87,5 @@ defmodule LangChain.VectorStore.PineconeProvider do
       IO.puts("load is called")
       :ok
     end
-
   end
 end
