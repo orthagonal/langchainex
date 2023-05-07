@@ -1,7 +1,7 @@
 defmodule LangChain.Retriever.FileSystemProviderTest do
-	use ExUnit.Case
-	doctest LangChain.Retriever.FileSystemProvider
-	alias LangChain.Retriever.FileSystemProvider
+  use ExUnit.Case
+  doctest LangChain.Retriever.FileSystemProvider
+  alias LangChain.Retriever.FileSystemProvider
 
   test "returns the contents of a single file as a string inside a list" do
     # Create a temporary file with content
@@ -46,5 +46,4 @@ defmodule LangChain.Retriever.FileSystemProviderTest do
     # Assert that the function returns an error tuple
     assert {:error, :invalid_path} = result
   end
-
 end

@@ -1,7 +1,5 @@
 defmodule LangChain.Retriever.FileSystemProvider do
-
   defimpl LangChain.Retriever do
-
     def get_relevant_documents(path) do
       cond do
         File.regular?(path) ->
@@ -12,6 +10,7 @@ defmodule LangChain.Retriever.FileSystemProvider do
         File.dir?(path) ->
           # If the path is a directory, list its contents
           {:ok, files} = File.ls(path)
+
           Enum.reduce(files, [], fn file, acc ->
             # For each file in the directory, read its contents and add it to the accumulator list
             file_path = Path.join(path, file)
@@ -24,5 +23,5 @@ defmodule LangChain.Retriever.FileSystemProvider do
           {:error, :invalid_path}
       end
     end
-    end
   end
+end
