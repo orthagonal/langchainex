@@ -5,5 +5,5 @@ defprotocol LangChain.Retriever do
   @doc """
     Takes a string query and returns a list of documents
   """
-  def get_relevant_documents(query)
+  def get_relevant_documents(provider, query)
 end

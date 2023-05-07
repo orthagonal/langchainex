@@ -1,3 +1,4 @@
+# any mock implementations you need for testing and stubbing purposes should go in this file
 defmodule MockVectorStoreProvider do
   @moduledoc "A mock implementation of the LangChain.VectorStore.Provider protocol for testing purposes."
 

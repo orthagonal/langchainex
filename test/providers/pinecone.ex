@@ -18,6 +18,7 @@ defmodule VectorStoreProviderTest do
         Enum.map(1..1536, fn _ -> :rand.uniform() end)
       end)
 
+    # the pinecone 
     {:ok, added_vectors_count} = Provider.add_vectors(provider, vectors)
 
     assert added_vectors_count == length(vectors)

@@ -1,6 +1,14 @@
+# any implementations that deal with filesystem access should go in this file
+
 defmodule LangChain.Retriever.FileSystemProvider do
+  @moduledoc """
+  A filesystem implementation of the LangChain.Retriever protocol.
+  """
+
+  defstruct []
+
   defimpl LangChain.Retriever do
-    def get_relevant_documents(path) do
+    def get_relevant_documents(_provider, path) do
       cond do
         File.regular?(path) ->
           # If the path is a file, read its contents and return it as a string inside a list
