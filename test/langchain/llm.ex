@@ -4,18 +4,17 @@ defmodule LangChain.ChatTest do
   """
   use ExUnit.Case
 
-  # test "Test OpenAI" do
-  #   model = %LangChain.LLM{
-  #     provider: :openai,
-  #     model_name: "text-ada-001",
-  #     max_tokens: 10,
-  #     temperature: 0.5
-  #   }
-  #   { :ok, response } = LLM.call(model, "print hello world")
-  #   IO.inspect response
-  #   keys = Map.keys(response)
-  #   assert List.first(keys) == "choices"
-  # end
+  test "Test OpenAI" do
+    model = %LangChain.LLM{
+      provider: :openai,
+      model_name: "text-ada-001",
+      max_tokens: 10,
+      temperature: 0.5
+    }
+
+    {:ok, response} = LangChain.LLM.call(model, "print hello world")
+    assert response |> String.downcase() =~ "hello world"
+  end
 
   test "test gpt-3.5-turbo" do
     model = %LangChain.LLM{

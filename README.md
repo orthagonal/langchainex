@@ -3,8 +3,13 @@
 - [LangchainEx](#langchainex)
     - [Overview](#overview)
   - [Installation](#installation)
-  - [GenServers](#genservers)
+  - [tl;dr GenServers](#tldr-genservers)
     - [Scraper](#scraper)
+  - [LangChain Components](#langchain-components)
+    - [](#)
+  - [Providers](#providers)
+    - [Current Providers as of May 7th 2023:](#current-providers-as-of-may-7th-2023)
+    - [Incoming:](#incoming)
 
 
 ### Overview
@@ -16,6 +21,9 @@ you can use to build your own language chain applications
 as well as high-level GenServers for accomplishing common 
 natural-language processing tasks very quickly. 
 
+Under current development with new backend providers and features added every few days.
+
+
 ## Installation
 
 ```elixir
@@ -26,10 +34,8 @@ def deps do
 end
 ```
 
-Be sure to set your OPENAI_API_KEY and OPENAI_ORGANIZATION_KEY in your environment variables before using.
 
-
-## GenServers 
+## tl;dr GenServers 
 
 ### Scraper
 
@@ -66,3 +72,36 @@ In your code:
   "
     end
 ```
+
+## LangChain Components 
+
+ LangChainEx chains are composed in a hierarchical manner, starting at 
+ the most fundamental component and going up it is:
+
+- PromptTemplate
+- ChainLink
+- Chain
+  
+ PromptTemplates are just text templates. ChainLinks wrap a PromptTemplate , which are composed of PromptTemplates. 
+
+Components you can use to construct your own language chains
+### 
+
+
+
+
+## Providers
+
+### Current Providers as of May 7th 2023:
+ - OpenAI
+ - Pinecone Vector Storage
+
+### Incoming:
+ - Replicate API 
+ - HuggingFace API
+ - pg-vector (Postgres Vector Storage)
+ - weaviate (Weaviate Vector Storage)
+
+See config.ex for list of currently supported providers
+
+

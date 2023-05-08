@@ -12,12 +12,19 @@ defmodule LangChain.Providers.OpenAI do
   end
 
   def call(model, prompt) do
-    ExOpenAI.Completions.create_completion(
-      model.model_name,
-      prompt: prompt,
-      temperature: model.temperature,
-      max_tokens: model.max_tokens
-    )
+    {:ok, response} =
+      ExOpenAI.Completions.create_completion(
+        model.model_name,
+        prompt: prompt,
+        temperature: model.temperature,
+        max_tokens: model.max_tokens
+      )
+
+    extract_text(response)
+  end
+
+  defp extract_text(%ExOpenAI.Components.CreateCompletionResponse{choices: [%{text: text} | _]}) do
+    {:ok, text}
   end
 
   @doc """
