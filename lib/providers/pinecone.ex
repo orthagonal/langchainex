@@ -1,4 +1,13 @@
+# any pinecone-specific code goes in this file
+
 defmodule LangChain.VectorStore.PineconeProvider do
+  @moduledoc """
+  A Pinecone implementation of the LangChain.VectorStore.Provider protocol.
+  the 'config' argument just needs to be a struct with the config_name (ie :pinecone)
+  for the specific db you want to use, this implementation will grab that config from
+  config.exs for you.  You can have multiple pinecone configs in config.exs, just make
+  and multiple implementations of this module, each with a different config_name.
+  """
   defstruct config_name: :pinecone
 
   defimpl LangChain.VectorStore.Provider do
@@ -29,13 +38,13 @@ defmodule LangChain.VectorStore.PineconeProvider do
       }
     end
 
-    def add_vectors(provider, vectors) do
+    def add_vectors(config, vectors) do
       pinecone_vectors =
         Enum.map(vectors, fn vector ->
           %{id: UUID.uuid4(), values: vector}
         end)
 
-      add_pinecone_vectors(provider.config_name, pinecone_vectors)
+      add_pinecone_vectors(config.config_name, pinecone_vectors)
     end
 
     defp add_pinecone_vectors(config_name, vectors) do
@@ -64,12 +73,12 @@ defmodule LangChain.VectorStore.PineconeProvider do
       end
     end
 
-    def similarity_search(provider, query, k, _filter) do
-      similarity_search_impl(provider.config_name, query, k, false)
+    def similarity_search(config, query, k, _filter) do
+      similarity_search_impl(config.config_name, query, k, false)
     end
 
-    def similarity_search_with_score(provider, query, k, _filter) do
-      similarity_search_impl(provider.config_name, query, k, true)
+    def similarity_search_with_score(config, query, k, _filter) do
+      similarity_search_impl(config.config_name, query, k, true)
     end
 
     defp similarity_search_impl(config_name, query, k, include_scores) do

@@ -10,6 +10,7 @@ defmodule LangChain.VectorStore do
     :embed_documents    -- optional function for embedding multiple docs presented as strings
     :embed_query        -- optional function for embedding a single query when presented as a string
   """
+
   use GenServer
   alias LangChain.VectorStore.Provider
   require Logger

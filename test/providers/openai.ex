@@ -1,5 +1,8 @@
-defmodule LangChain.DocumentEmbedderTest do
+defmodule LangChain.Embedding.OpenAIProviderTest do
   use ExUnit.Case, async: true
+
+  alias LangChain.EmbeddingProtocol
+  alias LangChain.Embedding.OpenAIProvider
 
   describe "embed_documents/2" do
     test "embeds documents with OpenAI provider" do
@@ -16,7 +19,11 @@ defmodule LangChain.DocumentEmbedderTest do
         "This is another sample document."
       ]
 
-      assert {:ok, embeddings} = LangChain.Embeddings.embed_documents(llm, documents)
+      openai_provider = %OpenAIProvider{}
+
+      assert {:ok, embeddings} =
+               EmbeddingProtocol.embed_documents(openai_provider, llm, documents)
+
       IO.inspect(embeddings)
       assert length(embeddings) == length(documents)
     end
