@@ -1,3 +1,4 @@
+# any replicate-specific code should go in this file
 defmodule LangChain.Providers.Replicate do
   @moduledoc """
     A module for interacting with Replicate's API
