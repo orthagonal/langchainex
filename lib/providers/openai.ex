@@ -1,6 +1,7 @@
+# any openai-specific code goes in this file
 defmodule LangChain.Providers.OpenAI do
   @moduledoc """
-  A module for interacting with OpenAI's API
+  A module for interacting with OpenAI's main language models
   """
 
   @doc """
@@ -75,25 +76,39 @@ defmodule LangChain.Providers.OpenAI do
     choices
     |> Enum.map(fn choice -> %{text: choice.message.content, role: choice.message.role} end)
   end
+end
 
-  @doc """
-  embed a list of documents
+defmodule LangChain.Embedding.OpenAIProvider do
+  @moduledoc """
+  An OpenAI implementation of the LangChain.EmbeddingProtocol.
+  Use this for embedding your docs for openai models by specifying the
+  model_name in your LLM.
   """
-  def embed_documents(model, documents) do
-    opts = []
 
-    with {:ok, results} <- ExOpenAI.Embeddings.create_embedding(documents, model.model_name, opts) do
-      case results do
-        %ExOpenAI.Components.CreateEmbeddingResponse{data: data} ->
-          embeddings = Enum.map(data, fn %{embedding: embedding} -> embedding end)
-          {:ok, embeddings}
+  defstruct []
 
-        _ ->
-          {:error, "unexpected response from OpenAI API"}
+  defimpl LangChain.EmbeddingProtocol do
+    def embed_documents(_provider, model, documents) do
+      opts = []
+
+      with {:ok, results} <-
+             ExOpenAI.Embeddings.create_embedding(documents, model.model_name, opts) do
+        case results do
+          %ExOpenAI.Components.CreateEmbeddingResponse{data: data} ->
+            embeddings = Enum.map(data, fn %{embedding: embedding} -> embedding end)
+            {:ok, embeddings}
+
+          _ ->
+            {:error, "unexpected response from OpenAI API"}
+        end
+      else
+        error ->
+          {:error, error}
       end
-    else
-      error ->
-        {:error, error}
+    end
+
+    def embed_query(provider, model, query) do
+      embed_documents(provider, model, [query])
     end
   end
 end
