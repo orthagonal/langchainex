@@ -4,7 +4,7 @@ defmodule LangChain.ChatTest do
   """
   use ExUnit.Case
 
-  def create_chat() do
+  def create_chat do
     system_prompt = %LangChain.PromptTemplate{
       template: "Here is a spell name: <%= spell %>",
       input_variables: [:context],

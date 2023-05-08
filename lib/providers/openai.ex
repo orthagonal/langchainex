@@ -68,7 +68,8 @@ defmodule LangChain.Providers.OpenAI do
   #     finish_reason: "stop",
   #     index: 0,
   #     message: %{
-  #       content: "The product of 7 and 5 is 35. The square root of 35 rounded to 2-digit precision is approximately 5.92.",
+  #       content: "The product of 7 and 5 is 35.
+  #         The square root of 35 rounded to 2-digit precision is approximately 5.92.",
   #       role: "assistant"
   #     }
   #   }, ......
@@ -91,18 +92,12 @@ defmodule LangChain.Embedding.OpenAIProvider do
     def embed_documents(_provider, model, documents) do
       opts = []
 
-      with {:ok, results} <-
-             ExOpenAI.Embeddings.create_embedding(documents, model.model_name, opts) do
-        case results do
-          %ExOpenAI.Components.CreateEmbeddingResponse{data: data} ->
-            embeddings = Enum.map(data, fn %{embedding: embedding} -> embedding end)
-            {:ok, embeddings}
+      case ExOpenAI.Embeddings.create_embedding(documents, model.model_name, opts) do
+        {:ok, %ExOpenAI.Components.CreateEmbeddingResponse{data: data}} ->
+          embeddings = Enum.map(data, fn %{embedding: embedding} -> embedding end)
+          {:ok, embeddings}
 
-          _ ->
-            {:error, "unexpected response from OpenAI API"}
-        end
-      else
-        error ->
+        {:error, error} ->
           {:error, error}
       end
     end

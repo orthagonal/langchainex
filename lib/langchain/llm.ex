@@ -1,4 +1,6 @@
 defmodule LangChain.LLM do
+  alias LangChain.Providers.{OpenAI, Replicate}
+
   @moduledoc """
     A generic LLM interface for interacting with different LLM providers
   """
@@ -18,19 +20,19 @@ defmodule LangChain.LLM do
   #   %{text: "I'm a generic message. I'm Foo. I'm Bar.", role: "test"}
   def chat(model, chats) when is_list(chats) do
     case model.provider do
-      :openai -> LangChain.Providers.OpenAI.chat(model, chats)
+      :openai -> OpenAI.chat(model, chats)
       # :gpt3 -> handle_gpt3_call(model, prompt)
-      _ -> "unknown provider #{model.provider}"
+      _ -> {:error, "Unknown provider #{inspect(model.provider)}"}
     end
   end
 
   # call is a single chat msg for one prompt
   def call(model, prompt) do
     case model.provider do
-      :openai -> LangChain.Providers.OpenAI.call(model, prompt)
-      :replicate -> LangChain.Providers.Replicate.call(model, prompt)
+      :openai -> OpenAI.call(model, prompt)
+      :replicate -> Replicate.call(model, prompt)
       # :gpt3 -> handle_gpt3_call(model, prompt)
-      _ -> "unknown provider #{model.provider}"
+      _ -> {:error, "Unknown provider #{inspect(model.provider)}"}
     end
   end
 end

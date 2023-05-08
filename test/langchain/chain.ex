@@ -3,7 +3,7 @@ defmodule LangChain.ChainTest do
   Tests for LangChain.Chain
   """
   use ExUnit.Case
-  alias LangChain.{LLM, Chat, Chain, ChainLink, PromptTemplate}
+  alias LangChain.{Chain, ChainLink, Chat, LLM, PromptTemplate}
 
   # takes list of all outputs and the ChainLink that evaluated them
   # returns the new state of the ChainLink
