@@ -9,10 +9,10 @@ defprotocol LangChain.EmbeddingProtocol do
   @doc """
   Embed a list of documents
   """
-  def embed_documents(provider, model, documents)
+  def embed_documents(provider, documents)
 
   @doc """
   Embed a single query
   """
-  def embed_query(provider, model, query)
+  def embed_query(provider, query)
 end

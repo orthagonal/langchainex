@@ -6,26 +6,66 @@ defmodule LangChain.Embedding.OpenAIProviderTest do
 
   describe "embed_documents/2" do
     test "embeds documents with OpenAI provider" do
-      llm = %LangChain.LLM{
-        provider: :openai,
-        temperature: 0.1,
-        max_tokens: 200,
-        # only certain models support embedding on openai
-        model_name: "text-embedding-ada-002"
-      }
-
       documents = [
         "This is a sample document.",
         "This is another sample document."
       ]
 
-      openai_provider = %OpenAIProvider{}
+      openai_provider = %OpenAIProvider{
+        model_name: "text-embedding-ada-002"
+      }
 
-      assert {:ok, embeddings} =
-               EmbeddingProtocol.embed_documents(openai_provider, llm, documents)
-
-      IO.inspect(embeddings)
+      assert {:ok, embeddings} = EmbeddingProtocol.embed_documents(openai_provider, documents)
       assert length(embeddings) == length(documents)
+      # assert it's a vector of vectors containing floats
+      assert Enum.all?(embeddings, &is_list/1)
+
+      assert Enum.all?(embeddings, fn embedding ->
+               Enum.all?(embedding, &is_float/1)
+             end)
+    end
+  end
+end
+
+defmodule LangChain.Providers.OpenAITest do
+  use ExUnit.Case
+  alias LangChain.Providers.OpenAI
+  alias LangChain.LanguageModelProtocol
+
+  @model %OpenAI{
+    model_name: "text-ada-001",
+    max_tokens: 25,
+    temperature: 0.5,
+    n: 1
+  }
+
+  @gptModel %OpenAI{
+    model_name: "gpt-3.5-turbo",
+    max_tokens: 25,
+    temperature: 0.5,
+    n: 1
+  }
+
+  describe "OpenAI implementation of LanguageModelProtocol" do
+    test "call/2 returns a valid response" do
+      prompt = "Write a sentence containing the word *grue*."
+      assert {:ok, response} = LanguageModelProtocol.call(@model, prompt)
+      assert String.length(response) > 0
+      assert String.contains?(response, "grue")
+    end
+
+    test "chat/2 returns a valid response" do
+      msgs = [
+        %{text: "Write a sentence containing the word *grue*.", role: "user"},
+        %{text: "Include a reference to the Dead Mountaineers Hotel."}
+      ]
+
+      assert {:ok, response} = LanguageModelProtocol.chat(@gptModel, msgs)
+      assert is_list(response)
+      assert length(response) > 0
+      assert Enum.all?(response, &is_map/1)
+      assert Enum.all?(response, &Map.has_key?(&1, :text))
+      assert Enum.all?(response, &Map.has_key?(&1, :role))
     end
   end
 end

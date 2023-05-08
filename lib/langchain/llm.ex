@@ -1,36 +1,43 @@
 defmodule LangChain.LLM do
-  @moduledoc """
-    A generic LLM interface for interacting with different LLM providers
-  """
-  # these are the defaults values for a LLM model
-  defstruct provider: :openai,
-            model_name: "text-ada-001",
-            max_tokens: 25,
-            temperature: 0.5,
-            n: 1,
-            # further provider-specific options can go here
-            options: %{}
+  use GenServer
+  alias LangChain.LanguageModelProtocol
 
-  # chats is the list of chat msgs in the form:
-  #   %{text: "Here's some context: This is a context"},
-  #   %{text: "Hello Foo, I'm Bar. Thanks for the This is a context"},
-  #   %{text: "I'm an AI. I'm Foo. I'm Bar."},
-  #   %{text: "I'm a generic message. I'm Foo. I'm Bar.", role: "test"}
-  def chat(model, chats) when is_list(chats) do
-    case model.provider do
-      :openai -> LangChain.Providers.OpenAI.chat(model, chats)
-      # :gpt3 -> handle_gpt3_call(model, prompt)
-      _ -> "unknown provider #{model.provider}"
-    end
+  def start_link(opts \\ []) do
+    provider = Keyword.get(opts, :provider) || default_provider()
+    GenServer.start_link(__MODULE__, %{provider: provider})
   end
 
-  # call is a single chat msg for one prompt
-  def call(model, prompt) do
-    case model.provider do
-      :openai -> LangChain.Providers.OpenAI.call(model, prompt)
-      :replicate -> LangChain.Providers.Replicate.call(model, prompt)
-      # :gpt3 -> handle_gpt3_call(model, prompt)
-      _ -> "unknown provider #{model.provider}"
-    end
+  defp default_provider() do
+    IO.warn(
+      "No :provider option specified, will fallback to default provider from the application environment defined in :language_model_provider."
+    )
+
+    Application.get_env(:lang_chain, :language_model_provider)
+  end
+
+  # GenServer callbacks
+
+  def init(state) do
+    {:ok, state}
+  end
+
+  def handle_call({:call, prompt}, _from, state) do
+    result = LanguageModelProtocol.call(state.provider, prompt)
+    {:reply, result, state}
+  end
+
+  def handle_call({:chat, chats}, _from, state) do
+    result = LanguageModelProtocol.chat(state.provider, chats)
+    {:reply, result, state}
+  end
+
+  # Public functions
+
+  def call(pid, prompt) do
+    GenServer.call(pid, {:call, prompt})
+  end
+
+  def chat(pid, msgs) do
+    GenServer.call(pid, {:chat, msgs})
   end
 end
