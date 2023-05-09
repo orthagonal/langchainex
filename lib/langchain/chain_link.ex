@@ -87,14 +87,4 @@ defmodule LangChain.ChainLink do
         }
     end
   end
-
-  # need to implement for %LangChain.Chat{} as well
-  # def call(%{input: %LangChain.Chat{} = chat} = chain_link, previousValues \\ %{}) do
-  #   {:ok, evaluated_templates} = LangChain.Chat.format(chat, previousValues)
-
-  #   model_inputs =
-  #     Enum.map(evaluated_templates, fn evaluated_template ->
-  #       Map.take(evaluated_template, [:role, :text])
-  #     end)
-  # end
 end
