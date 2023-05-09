@@ -20,6 +20,7 @@ defmodule LangChain.Embedding.OpenAIProvider do
 
         {:error, error} ->
           {:error, error}
+        end
       end
     end
 
