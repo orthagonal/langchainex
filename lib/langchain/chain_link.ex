@@ -17,7 +17,7 @@ defmodule LangChain.ChainLink do
             # can be a string, a prompttemplate or an entire chat chain
             input: nil,
             # takes in the ChainLink and the list of all responses
-            output_parser: &no_parse/2,
+            output_parser: &LangChain.ChainLink.no_parse/2,
             # from the model, pass your own output_parser to parse the output of your chat interactions
             # the actual response returned by the model
             raw_responses: [],
