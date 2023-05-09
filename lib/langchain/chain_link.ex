@@ -33,7 +33,6 @@ defmodule LangChain.ChainLink do
   @doc """
   calls the chain_link, filling in the input prompt and parsing the output
   """
-  # when input is a PromptTemplate
   def call(
         %{input: %LangChain.PromptTemplate{} = prompt_template} = chain_link,
         llm_pid,
