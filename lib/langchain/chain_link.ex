@@ -81,7 +81,7 @@ defmodule LangChain.ChainLink do
   # by default the simple text response goes in the :text key
   defp no_parse(chain_link, outputs \\ []) do
     case outputs do
-      [_] ->
+      [] ->
         %{
           chain_link
           | raw_responses: outputs,
