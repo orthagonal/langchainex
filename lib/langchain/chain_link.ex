@@ -11,10 +11,10 @@ defmodule LangChain.ChainLink do
   # a ChainLink input can be either a string, a prompttemplate or an entire chat chain
   @type input :: %LangChain.Chat{} | %LangChain.PromptTemplate{} | String.t()
 
-
   @derive Jason.Encoder
   defstruct name: "Void",
-            input: nil,  # can be a string, a prompttemplate or an entire chat chain
+            # can be a string, a prompttemplate or an entire chat chain
+            input: nil,
             # takes in the ChainLink and the list of all responses
             output_parser: &LangChain.ChainLink.no_parse/2,
             # from the model, pass your own output_parser to parse the output of your chat interactions
@@ -29,29 +29,35 @@ defmodule LangChain.ChainLink do
             # the pid of the llm that processed this chain_link, nil if it has not been processed yet
             processed_by: nil
 
-
   @doc """
   calls the chain_link, filling in the input prompt and parsing the output
   """
   # when input is a PromptTemplate
-  def call(%{input: %LangChain.PromptTemplate{} = prompt_template} = chain_link, llm_pid, previousValues) do
+  def call(
+        %{input: %LangChain.PromptTemplate{} = prompt_template} = chain_link,
+        llm_pid,
+        previousValues
+      ) do
     {:ok, evaluated_prompt} = LangChain.PromptTemplate.format(prompt_template, previousValues)
+
     case LangChain.LLM.call(llm_pid, evaluated_prompt) do
       {:ok, response} ->
         chain_link.output_parser.(chain_link, response)
-        # %{
-        #   chain_link
-        #   | raw_responses: [response],
-        #     output: %{text: response},
-        #     processed_by: llm_pid
-        # }
+
+      # %{
+      #   chain_link
+      #   | raw_responses: [response],
+      #     output: %{text: response},
+      #     processed_by: llm_pid
+      # }
       {:error, reason} ->
         chain_link |> Map.put(:errors, [reason])
     end
   end
 
   # when input is a string
-  def call(%{input: text_input } = chain_link, llm_pid, previousValues) when is_binary(text_input) do
+  def call(%{input: text_input} = chain_link, llm_pid, previousValues)
+      when is_binary(text_input) do
     case LangChain.LLM.call(llm_pid, text_input) do
       {:ok, response} ->
         %{
@@ -60,6 +66,7 @@ defmodule LangChain.ChainLink do
             output: %{text: response},
             processed_by: llm_pid
         }
+
       {:error, reason} ->
         chain_link |> Map.put(:errors, [reason])
     end
@@ -86,12 +93,13 @@ defmodule LangChain.ChainLink do
           | raw_responses: outputs,
             output: %{text: outputs |> List.first() |> Map.get(:text)}
         }
+
       _ ->
         %{
           chain_link
           | raw_responses: outputs,
-            output: %{ text: outputs }
+            output: %{text: outputs}
         }
-      end
+    end
   end
 end

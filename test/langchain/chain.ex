@@ -5,7 +5,6 @@ defmodule LangChain.ChainTest do
   use ExUnit.Case
   alias LangChain.{Chain, ChainLink, Chat, LLM, PromptTemplate}
 
-
   # takes list of all outputs and the ChainLink that evaluated them
   # returns the new state of the ChainLink
   def temp_parser(chain_link, outputs) do
@@ -36,14 +35,16 @@ defmodule LangChain.ChainTest do
   end
 
   defp temp_parser3(chain_link, outputs) do
-    IO.puts "temp parser calledwith"
-    IO.inspect outputs
+    IO.puts("temp parser calledwith")
+    IO.inspect(outputs)
     IO.inspect(chain_link)
+
     %{
       chain_link
       | raw_responses: outputs,
         output: %{
-          duration_text: outputs,# |> List.first() |> Map.get(:text),
+          # |> List.first() |> Map.get(:text),
+          duration_text: outputs,
           processed_by: chain_link.name
         }
     }
@@ -51,7 +52,7 @@ defmodule LangChain.ChainTest do
 
   test "Test individual Link with raw string" do
     link = %LangChain.ChainLink{
-      input:  "Who wrote the novel Solaris?",
+      input: "Who wrote the novel Solaris?",
       name: "enchanter",
       output_parser: &temp_parser/2
     }
@@ -72,12 +73,23 @@ defmodule LangChain.ChainTest do
 
     # Make sure it's the right link and the output has the right keys
     assert Map.keys(new_link_state.output) == [:text]
-    assert Map.keys(new_link_state) == [:__struct__, :errors, :input, :name, :output, :output_parser, :process_with, :processed_by, :raw_responses]
+
+    assert Map.keys(new_link_state) == [
+             :__struct__,
+             :errors,
+             :input,
+             :name,
+             :output,
+             :output_parser,
+             :process_with,
+             :processed_by,
+             :raw_responses
+           ]
   end
 
   test "Test individual Link with prompttemplate" do
     link = %LangChain.ChainLink{
-      input:  %LangChain.PromptTemplate{template: "memorize <%= spell %>"},
+      input: %LangChain.PromptTemplate{template: "memorize <%= spell %>"},
       name: "enchanter",
       output_parser: &temp_parser/2
     }
@@ -102,21 +114,24 @@ defmodule LangChain.ChainTest do
   end
 
   test "Test Chain with multiple ChainLinks" do
-
     chain = %Chain{
       links: [
         %LangChain.ChainLink{
-          input:  %LangChain.PromptTemplate{ template: "I have memorized the spell <%= spell %>"},
+          input: %LangChain.PromptTemplate{template: "I have memorized the spell <%= spell %>"},
           name: "enchanter",
           output_parser: &temp_parser/2
         },
         %LangChain.ChainLink{
-          input:  %LangChain.PromptTemplate{ template: "I then cast <%= spell %> on the brass lantern.  What game am I playing?" },
+          input: %LangChain.PromptTemplate{
+            template: "I then cast <%= spell %> on the brass lantern.  What game am I playing?"
+          },
           name: "sorcerer",
           output_parser: &temp_parser2/2
         },
         %LangChain.ChainLink{
-          input:  %LangChain.PromptTemplate{ template: "This LLM <%= if contains_zork do \"is\" else \"is not\" end %> cool." },
+          input: %LangChain.PromptTemplate{
+            template: "This LLM <%= if contains_zork do \"is\" else \"is not\" end %> cool."
+          },
           name: "spellbreaker",
           output_parser: &temp_parser/2
         }
@@ -138,6 +153,13 @@ defmodule LangChain.ChainTest do
     result = Chain.call(chain, llm_pid, %{spell: "frotz"})
 
     # Check if the output contains keys from both links
-    assert Map.keys(result) ==  [:contains_zork, :enchanter_text, :outputs, :processed_by, :spell, :text]
+    assert Map.keys(result) == [
+             :contains_zork,
+             :enchanter_text,
+             :outputs,
+             :processed_by,
+             :spell,
+             :text
+           ]
   end
 end

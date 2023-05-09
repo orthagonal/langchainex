@@ -18,8 +18,8 @@ defmodule LangChain.Embedding.OpenAIProvider do
             embeddings = Enum.map(data, fn %{embedding: embedding} -> embedding end)
             {:ok, embeddings}
 
-        {:error, error} ->
-          {:error, error}
+          {:error, error} ->
+            {:error, error}
         end
       end
     end
@@ -40,20 +40,19 @@ defmodule LangChain.Providers.OpenAI do
             temperature: 0.5,
             n: 1
 
-
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.OpenAI do
     alias ExOpenAI.Components.CreateCompletionResponse
 
-      # these models require the prompt be presented as a 'chat'
-      # or sequence of messages
-      @chatmodels [
-        "gpt-4",
-        "gpt-4-0314",
-        "gpt-4-32k",
-        "gpt-4-32k-0314",
-        "gpt-3.5-turbo",
-        "gpt-3.5-turbo-0301"
-      ]
+    # these models require the prompt be presented as a 'chat'
+    # or sequence of messages
+    @chatmodels [
+      "gpt-4",
+      "gpt-4-0314",
+      "gpt-4-32k",
+      "gpt-4-32k-0314",
+      "gpt-3.5-turbo",
+      "gpt-3.5-turbo-0301"
+    ]
     defp chat_model?(model_name) do
       model_name in @chatmodels
     end
@@ -65,11 +64,13 @@ defmodule LangChain.Providers.OpenAI do
     def call(model, prompt) do
       if chat_model?(model.model_name) do
         msgs = [%{text: prompt, role: "user"}]
+
         case chat(model, msgs) do
           {:ok, response} ->
             # Extract the assistant's response text from the list of chats
             assistant_response = Enum.find(response, &(&1.role == "assistant"))
             {:ok, assistant_response.text}
+
           {:error, error} ->
             {:error, error}
         end
@@ -86,7 +87,6 @@ defmodule LangChain.Providers.OpenAI do
         extract_text(response)
       end
     end
-
 
     defp extract_text(%CreateCompletionResponse{choices: [%{text: text} | _]}) do
       {:ok, text}

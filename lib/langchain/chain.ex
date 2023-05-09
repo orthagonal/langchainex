@@ -42,7 +42,6 @@ defmodule LangChain.Chain do
     # end
   end
 
-
   # def call(lang_chain, previous_values, anchor \\ false) do
   #   # Use Enum.reduce to process the ChainLinks and accumulate the output in previous_values
   #   result =
