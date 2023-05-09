@@ -9,14 +9,15 @@ defmodule LangChain.Chat do
   defstruct template: "",
             input_variables: [],
             partial_variables: %{},
-            prompt_messages: [],
-            llm: %LangChain.LLM{
-              provider: :openai,
-              temperature: 0.1,
-              max_tokens: 200,
-              # model must support chat dialogue history
-              model_name: "gpt-3.5-turbo"
-            }
+            prompt_messages: []
+
+  # llm: %LangChain.LLM{
+  #   provider: :openai,
+  #   temperature: 0.1,
+  #   max_tokens: 200,
+  #   # model must support chat dialogue history
+  #   model_name: "gpt-3.5-turbo"
+  # }
 
   @doc """
   loops over every prompt and formats it with the values supplied

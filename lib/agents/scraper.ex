@@ -21,7 +21,7 @@ defmodule LangChain.Scraper do
 
   @timeout 120_000
 
-  alias LangChain.{Chain, ChainLink, Chat, PromptTemplate, ScrapeChain}
+  alias LangChain.{Chain, ChainLink, PromptTemplate, ScrapeChain}
   # Client API
 
   def start_link(opts \\ []) do
@@ -51,8 +51,8 @@ defmodule LangChain.Scraper do
   @doc """
   scrape some text using the default scraper
   """
-  def scrape(pid, input_text, name \\ "default_scraper", opts \\ %{}) do
-    GenServer.call(pid, {:scrape, name, input_text, opts}, @timeout)
+  def scrape(pid, input_text, llm_pid, name \\ "default_scraper", opts \\ %{}) do
+    GenServer.call(pid, {:scrape, name, llm_pid, input_text, opts}, @timeout)
   end
 
   def handle_call(:list, _from, state) do
@@ -69,7 +69,9 @@ defmodule LangChain.Scraper do
     {:reply, :ok, new_state}
   end
 
-  def handle_call({:scrape, name, input_text, opts}, _from, state) do
+  # ({:scrape, name, llm_pid, input_text, opts}, @timeout)
+  # pid, input_text, llm_pid, name \\ "default_scraper", opts \\ %{
+  def handle_call({:scrape, name, llm_pid, input_text, opts}, _from, state) do
     scrape_chain = Map.get(state, name)
 
     if is_nil(scrape_chain) do
@@ -90,7 +92,7 @@ defmodule LangChain.Scraper do
         output_format: output_format
       }
 
-      result = LangChain.ScrapeChain.scrape(temp_scrape_chain, input_variables)
+      result = LangChain.ScrapeChain.scrape(temp_scrape_chain, llm_pid, input_variables)
       {:reply, {:ok, result}, state}
     end
   end
@@ -99,27 +101,18 @@ defmodule LangChain.Scraper do
     # can be overruled with the input_schema option
     input_schema = "{ name: String, age: Number }"
 
-    chat =
-      Chat.add_prompt_templates(%Chat{}, [
-        %{
-          role: "user",
-          prompt: %PromptTemplate{
-            template: "Schema: \"\"\"
-          <%= input_schema %>
-        \"\"\"
-        Text: \"\"\"
-          <%= input_text %>
-        \"\"\
-        Extract the data from Text according to Schema and return it in <%= output_format %> format.
-        Format any datetime fields using ISO8601 standard.
-        "
-          }
-        }
-      ])
+    prompt = %PromptTemplate{
+      template: """
+      Schema: \"\"\"<%= input_schema %>\"\"\"
+      Text: \"\"\"<%= input_text %>\"\"\
+      Extract the data from Text according to Schema and return it in <%= output_format %> format.
+      Format any datetime fields using ISO8601 standard.
+      """
+    }
 
     chain_link = %ChainLink{
       name: "schema_extractor",
-      input: chat,
+      input: prompt,
       output_parser: &passthru_parser/2
     }
 
@@ -131,12 +124,10 @@ defmodule LangChain.Scraper do
   @doc """
   A default output parser that just returns the first response text
   """
-  def passthru_parser(chain_link, outputs) do
-    response_text = outputs |> List.first() |> Map.get(:text)
-
+  def passthru_parser(chain_link, response_text) do
     %{
       chain_link
-      | raw_responses: outputs,
+      | raw_responses: response_text,
         output: %{
           text: response_text
         }
@@ -147,9 +138,7 @@ defmodule LangChain.Scraper do
   A default output parser that just returns the first response text as json
   """
   def json_parser(chain_link, outputs) do
-    response_text = outputs |> List.first() |> Map.get(:text)
-
-    case Jason.decode(response_text) do
+    case Jason.decode(outputs) do
       {:ok, json} ->
         %{
           chain_link
@@ -158,12 +147,12 @@ defmodule LangChain.Scraper do
         }
 
       {:error, _response} ->
-        IO.puts("The JSON I got was not formatted correctly")
+        # json may not have been formatted correctly, try custom_parser
 
         %{
           chain_link
           | raw_responses: outputs,
-            output: response_text
+            output: outputs
         }
     end
   end

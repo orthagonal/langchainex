@@ -3,6 +3,8 @@ defmodule LangChain.Chain do
   A chain of ChainLinks to be processed in order, usually ending in an anchor for user confirmation.
   """
 
+  alias LangChain.Anchor.CLI
+
   @derive Jason.Encoder
   defstruct [
     # List of ChainLinks, processed in order
@@ -22,22 +24,42 @@ defmodule LangChain.Chain do
   Processes the ChainLinks in the chain and accumulates the output.
   If the optional `anchor` parameter is set to `true`, an anchor step will be added at the end of the chain for user confirmation.
   """
-  def call(lang_chain, previous_values, _anchor \\ false) do
+  def call(lang_chain, llm_pid, previous_values, anchor \\ false) do
     # Use Enum.reduce to process the ChainLinks and accumulate the output in previous_values
-    Enum.reduce(lang_chain.links, previous_values, fn chain_link, acc ->
-      updated_chain_link = LangChain.ChainLink.call(chain_link, acc)
-      # Merge the output of the current ChainLink with the accumulated previous values
-      Map.merge(acc, updated_chain_link.output)
-    end)
+    result =
+      Enum.reduce(lang_chain.links, previous_values, fn chain_link, acc ->
+        updated_chain_link = LangChain.ChainLink.call(chain_link, llm_pid, acc)
+        # Merge the output of the current ChainLink with the accumulated previous values
+        Map.merge(acc, updated_chain_link.output)
+      end)
 
-    # this confirm/2 function is not implemented yet
-    # if anchor do
-    #   case LangChain.Anchor.confirm(:query, result) do
-    #     :yes -> result
-    #     :no -> {:error, "User declined"}
-    #   end
-    # else
-    #   result
-    # end
+    # anchor behavior is under development still
+    if anchor do
+      case CLI.get_confirmation() do
+        :yes -> result
+        :no -> {:error, "User declined"}
+      end
+    else
+      result
+    end
   end
+
+  # def call(lang_chain, previous_values, anchor \\ false) do
+  #   # Use Enum.reduce to process the ChainLinks and accumulate the output in previous_values
+  #   result =
+  #     Enum.reduce(lang_chain.links, previous_values, fn chain_link, acc ->
+  #       updated_chain_link = LangChain.ChainLink.call(chain_link, acc)
+  #       # Merge the output of the current ChainLink with the accumulated previous values
+  #       Map.merge(acc, updated_chain_link.output)
+  #     end)
+
+  #   if anchor do
+  #     case LangChain.Anchor.confirm(:query, result) do
+  #       :yes -> result
+  #       :no -> {:error, "User declined"}
+  #     end
+  #   else
+  #     result
+  #   end
+  # end
 end
