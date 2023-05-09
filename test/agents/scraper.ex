@@ -43,14 +43,15 @@ defmodule LangChain.ScraperTest do
     end
   end
 
-  test "scrape/4 processes a given piece of natural-language text", %{pid: pid, llm_pid: llm_pid } do
+  test "scrape/4 processes a given piece of natural-language text", %{pid: pid, llm_pid: llm_pid} do
     # Define a sample ScrapeChain
     input_schema = "{ name: String, age: Number }"
 
     chain_link = %ChainLink{
       name: "schema_extractor",
-      input:  %PromptTemplate{
-        template: "Using the schema <%= input_schema %>, extract relevant information from the text: <%= input_text %>.
+      input: %PromptTemplate{
+        template:
+          "Using the schema <%= input_schema %>, extract relevant information from the text: <%= input_text %>.
         Use double quotes for all keys and present it so that it can be parsed by a standard parser."
       },
       output_parser: &schema_parser/2
@@ -84,7 +85,10 @@ defmodule LangChain.ScraperTest do
     assert Map.get(result2, "age") == 30
   end
 
-  test "successfully extracts information using the default scraper", %{pid: _pid, llm_pid: llm_pid } do
+  test "successfully extracts information using the default scraper", %{
+    pid: _pid,
+    llm_pid: llm_pid
+  } do
     {:ok, scraper_pid} = Scraper.start_link()
     input_text = "John Doe is 30 years old."
     {:ok, result} = Scraper.scrape(scraper_pid, input_text, llm_pid)

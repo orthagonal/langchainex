@@ -21,7 +21,7 @@ defmodule LangChain.Scraper do
 
   @timeout 120_000
 
-  alias LangChain.{Chain, ChainLink, Chat, PromptTemplate, ScrapeChain}
+  alias LangChain.{Chain, ChainLink, PromptTemplate, ScrapeChain}
   # Client API
 
   def start_link(opts \\ []) do
@@ -129,7 +129,6 @@ defmodule LangChain.Scraper do
   A default output parser that just returns the first response text
   """
   def passthru_parser(chain_link, response_text) do
-
     %{
       chain_link
       | raw_responses: response_text,
