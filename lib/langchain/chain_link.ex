@@ -8,6 +8,9 @@ defmodule LangChain.ChainLink do
     4. store any output
   """
 
+  # prevent mix format from worrying about the no_parse function
+  @compile {:nowarn_unused_function, [no_parse: 2]}
+
   # a ChainLink input can be either a string, a prompttemplate or an entire chat chain
   @type input :: %LangChain.Chat{} | %LangChain.PromptTemplate{} | String.t()
 
@@ -76,7 +79,6 @@ defmodule LangChain.ChainLink do
   #     end)
   # end
 
-  @formatter :disabled
   # you can define your own parser functions, but this is the default
   # the output of the ChainLink will be used as variables in the next link
   # by default the simple text response goes in the :text key
@@ -97,6 +99,4 @@ defmodule LangChain.ChainLink do
         }
     end
   end
-
-  @formatter :enabled
 end
