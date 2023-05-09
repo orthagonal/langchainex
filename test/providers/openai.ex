@@ -1,8 +1,10 @@
 defmodule LangChain.Embedding.OpenAIProviderTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
 
-  alias LangChain.EmbeddingProtocol
   alias LangChain.Embedding.OpenAIProvider
+  alias LangChain.EmbeddingProtocol
 
   describe "embed_documents/2" do
     test "embeds documents with OpenAI provider" do

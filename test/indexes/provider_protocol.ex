@@ -1,4 +1,6 @@
 defmodule VectorStoreProviderTest do
+  @moduledoc false
+
   use ExUnit.Case
   alias LangChain.VectorStore.Provider
   alias MockVectorStoreProvider

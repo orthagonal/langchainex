@@ -64,12 +64,12 @@ defmodule FileSystemProviderTest do
     assert result != {:error, :invalid_path}
     assert Enum.any?(result, &String.starts_with?(&1, "defmodule FileSystemProviderTest do"))
 
-    queryEx = %{path: path, file_extensions: [".ex"]}
-    resultEx = Retriever.get_relevant_documents(provider, queryEx)
+    query_ex = %{path: path, file_extensions: [".ex"]}
+    result_ex = Retriever.get_relevant_documents(provider, query_ex)
 
-    assert resultEx != {:error, :invalid_path}
+    assert result_ex != {:error, :invalid_path}
 
-    assert Enum.any?(resultEx, &String.starts_with?(&1, "defmodule FileSystemProviderTest do")) ==
+    assert Enum.any?(result_ex, &String.starts_with?(&1, "defmodule FileSystemProviderTest do")) ==
              false
   end
 

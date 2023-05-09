@@ -45,7 +45,7 @@ defmodule LangChain.Anchor.CLI do
   @doc """
   returns either :yes or :no depending on the user's input
   """
-  def get_confirmation() do
+  def get_confirmation do
     case IO.gets(">> ") do
       "y\n" -> :yes
       "n\n" -> :no
@@ -73,6 +73,7 @@ end
 #   end
 
 #   def get_confirmation() do
-#     raise "get_confirmation/0 is not supported in the Phoenix implementation. Use a form submission to get user confirmation."
+#     raise "get_confirmation/0 is not supported in the Phoenix implementation." <>
+#       " Use a form submission to get user confirmation."
 #   end
 # end

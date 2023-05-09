@@ -56,20 +56,21 @@ defmodule LangChain.VectorStore.PineconeProvider do
         }
         |> Jason.encode!()
 
-      res = HTTPoison.post(base.url, body, base.headers)
       # the call should yield the number of vectors added
       # otherwise it returns a helpful error message why not
-      with {:ok, response} <- HTTPoison.post(base.url, body, base.headers) do
-        decoded_response = Jason.decode!(response.body)
-        size = decoded_response["upsertedCount"]
+      case HTTPoison.post(base.url, body, base.headers) do
+        {:ok, response} ->
+          decoded_response = Jason.decode!(response.body)
+          size = decoded_response["upsertedCount"]
 
-        if is_nil(size) do
-          {:error, decoded_response}
-        else
-          {:ok, size}
-        end
-      else
-        {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
+          if is_nil(size) do
+            {:error, decoded_response}
+          else
+            {:ok, size}
+          end
+
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          {:error, reason}
       end
     end
 
@@ -93,31 +94,32 @@ defmodule LangChain.VectorStore.PineconeProvider do
         }
         |> Jason.encode!()
 
-      with {:ok, response} <- HTTPoison.post(base.url, body, base.headers) do
-        decoded_response = Jason.decode!(response.body)
-        results = decoded_response["matches"]
+      case HTTPoison.post(base.url, body, base.headers) do
+        {:ok, response} ->
+          results = Jason.decode!(response.body)["matches"]
 
-        if include_scores do
-          {:ok,
-           Enum.map(results, fn result ->
-             %{score: Map.get(result, "score", 0), vector: Map.get(result, "values", [])}
-           end)}
-        else
-          {:ok, Enum.map(results, fn result -> Map.get(result, "values", []) end)}
-        end
-      else
-        {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
+          if include_scores do
+            {:ok,
+             Enum.map(results, fn result ->
+               %{score: Map.get(result, "score", 0), vector: Map.get(result, "values", [])}
+             end)}
+          else
+            {:ok, Enum.map(results, fn result -> Map.get(result, "values", []) end)}
+          end
+
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          {:error, reason}
       end
     end
 
-    def embed(pinecone_db, document_list) do
+    def embed(_pinecone_db, _document_list) do
       throw("PineconeProvider.embed is called but has not been implemented")
       []
     end
 
-    def load(pinecone_db, directory, embeddings) do
-      IO.puts("load is called")
-      :ok
+    def load(_pinecone_db, _directory, _embeddings) do
+      throw("PineconeProvider.load is called but has not been implemented")
+      []
     end
   end
 end

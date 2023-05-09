@@ -1,36 +1,57 @@
 name: Elixir CI
 
 on:
+  push:
+    branches: [ "primary" ]
   pull_request:
     branches: [ "primary" ]
 
 permissions:
   contents: read
 
+env:
+  ELIXIR_VERSION: '1.14.3'
+  OTP_VERSION: '25'
+
 jobs:
   build:
     name: Build and test
     runs-on: ubuntu-22.04
+    env:
+      ImageOS: ubuntu20
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up environment
-      run: echo "ImageOS=ubuntu20" >> $GITHUB_ENV
     - name: Set up Elixir
-      uses: erlef/setup-beam@988e02bfe678367a02564f65ca2e37726dc0268f
+      uses: erlef/setup-beam@v1
       with:
-        elixir-version: '1.14.3'
-        otp-version: '25'
-    - name: Restore dependencies cache
+        elixir-version: ${{ env.ELIXIR_VERSION }}
+        otp-version: ${{ env.OTP_VERSION }}
+    - name: Cache deps
+      id: cache-deps
       uses: actions/cache@v3
+      env:
+        cache-name: cache-elixir-deps
       with:
         path: deps
-        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-        restore-keys: ${{ runner.os }}-mix-
+        key: mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: $mix-${{ env.cache-name }}-
+    - name: Cache compiled build
+      id: cache-build
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-compiled-build
+      with:
+        path: _build
+        key: mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: mix-${{ env.cache-name }}-
     - name: Install dependencies
       run: mix deps.get
-    # mix format on dev not matching up to the one in github runner
-    - name: Run format check
-      run: mix format --check-formatted
+    - name: Compiles without warnings
+      run: mix compile --warnings-as-errors
     - name: Run tests
       run: mix test
+    - name: Run mix format
+      run: mix format --check-formatted
+    - name: Run credo
+      run: mix credo --strict

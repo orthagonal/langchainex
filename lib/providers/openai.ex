@@ -18,11 +18,7 @@ defmodule LangChain.Embedding.OpenAIProvider do
             embeddings = Enum.map(data, fn %{embedding: embedding} -> embedding end)
             {:ok, embeddings}
 
-          _ ->
-            {:error, "unexpected response from OpenAI API"}
-        end
-      else
-        error ->
+        {:error, error} ->
           {:error, error}
       end
     end

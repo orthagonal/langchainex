@@ -22,7 +22,7 @@ defmodule LangChain.VectorStore do
     GenServer.start_link(__MODULE__, {provider, embed_documents, embed_query}, opts)
   end
 
-  defp default_provider() do
+  defp default_provider do
     IO.warn(
       "No :provider option specified, will fallback to default provider from the application environment defined in :vector_store_provider."
     )
@@ -30,16 +30,13 @@ defmodule LangChain.VectorStore do
     Application.get_env(:lang_chain, :vector_store_provider)
   end
 
-  defp default_embed_documents() do
+  defp default_embed_documents do
     fn
       _, _ -> []
     end
   end
 
-  defp default_embed_query() do
-    # Implement default logic for embed_query function or return a function that raises an error
-    # if it should be explicitly set.
-    # Example:
+  defp default_embed_query do
     fn
       _, _ -> []
     end

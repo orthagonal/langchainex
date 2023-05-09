@@ -36,7 +36,6 @@ defmodule LangChain.ChainLink do
   # when input is a PromptTemplate
   def call(%{input: %LangChain.PromptTemplate{} = prompt_template} = chain_link, llm_pid, previousValues) do
     {:ok, evaluated_prompt} = LangChain.PromptTemplate.format(prompt_template, previousValues)
-    IO.puts evaluated_prompt
     case LangChain.LLM.call(llm_pid, evaluated_prompt) do
       {:ok, response} ->
         chain_link.output_parser.(chain_link, response)

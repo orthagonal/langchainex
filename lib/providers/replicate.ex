@@ -6,11 +6,11 @@ defmodule LangChain.Providers.Replicate do
     and return any data, it can be used for LLM, image generation, image parsing, sound, etc
   """
 
-  def chat(model, chats) when is_list(chats) do
+  def chat(_model, chats) when is_list(chats) do
     # Implement your Replicate API chat call here
   end
 
-  def call(model, prompt) do
+  def call(_model, _prompt) do
     # Implement your Replicate API call here
   end
 end

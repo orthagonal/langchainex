@@ -31,14 +31,15 @@ defmodule LangChain.Chain do
         Map.merge(acc, updated_chain_link.output)
       end)
 
-    if anchor do
-      case LangChain.Anchor.confirm(:query, result) do
-        :yes -> result
-        :no -> {:error, "User declined"}
-      end
-    else
-      result
-    end
+    # this confirm/2 function is not implemented yet
+    # if anchor do
+    #   case LangChain.Anchor.confirm(:query, result) do
+    #     :yes -> result
+    #     :no -> {:error, "User declined"}
+    #   end
+    # else
+    #   result
+    # end
   end
 
 
