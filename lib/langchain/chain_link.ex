@@ -51,7 +51,7 @@ defmodule LangChain.ChainLink do
   end
 
   # when input is a simple string, note that this won't interpolate any variables
-  def call(%{input: text_input} = chain_link, llm_pid, _previousValues)
+  def call(%{input: text_input} = chain_link, llm_pid, _previous_values)
       when is_binary(text_input) do
     case LangChain.LLM.call(llm_pid, text_input) do
       {:ok, response} ->

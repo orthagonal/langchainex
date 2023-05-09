@@ -1,5 +1,7 @@
 defmodule LangChain.Embedding.OpenAIProviderTest do
-  @moduledoc false
+  @moduledoc """
+  test openai embeddings
+  """
 
   use ExUnit.Case, async: true
 
@@ -30,6 +32,9 @@ defmodule LangChain.Embedding.OpenAIProviderTest do
 end
 
 defmodule LangChain.Providers.OpenAITest do
+  @moduledoc """
+  test openai LLMs
+  """
   use ExUnit.Case
   alias LangChain.Providers.OpenAI
   alias LangChain.LanguageModelProtocol
@@ -41,7 +46,7 @@ defmodule LangChain.Providers.OpenAITest do
     n: 1
   }
 
-  @gptModel %OpenAI{
+  @gpt_model %OpenAI{
     model_name: "gpt-3.5-turbo",
     max_tokens: 25,
     temperature: 0.5,
@@ -62,7 +67,7 @@ defmodule LangChain.Providers.OpenAITest do
         %{text: "Include a reference to the Dead Mountaineers Hotel."}
       ]
 
-      assert {:ok, response} = LanguageModelProtocol.chat(@gptModel, msgs)
+      assert {:ok, response} = LanguageModelProtocol.chat(@gpt_model, msgs)
       assert is_list(response)
       assert length(response) > 0
       assert Enum.all?(response, &is_map/1)

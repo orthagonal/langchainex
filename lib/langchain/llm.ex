@@ -1,4 +1,7 @@
 defmodule LangChain.LLM do
+  @moduledoc """
+  Language Model GenServer
+  """
   use GenServer
   alias LangChain.LanguageModelProtocol
 

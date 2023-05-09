@@ -36,8 +36,6 @@ defmodule LangChain.ChainTest do
 
   defp temp_parser3(chain_link, outputs) do
     IO.puts("temp parser calledwith")
-    IO.inspect(outputs)
-    IO.inspect(chain_link)
 
     %{
       chain_link

@@ -1,4 +1,7 @@
 defmodule LangChain.LLMTest do
+  @moduledoc """
+  test LLM
+  """
   use ExUnit.Case, async: true
 
   alias LangChain.LLM
@@ -14,18 +17,8 @@ defmodule LangChain.LLMTest do
     result =
       LLM.call(pid, "Translate the following English text to French: 'Hello, how are you?'")
 
-    Process.sleep(10000)
+    Process.sleep(10_000)
     # assert {:ok, response} = result
     # assert is_binary(response)
   end
-
-  # test "chat/2 returns a response from the language model", %{pid: pid} do
-  #   msgs = [%{text: "Translate the following English text to French: 'Hello, how are you?'", role: "user"}]
-  #   result = LLM.chat(pid, msgs)
-  #   assert {:ok, response} = result
-  #   assert is_list(response)
-  #   assert Enum.count(response) == 1
-  #   assert %{text: text, role: "assistant"} = Enum.at(response, 0)
-  #   assert is_binary(text)
-  # end
 end
