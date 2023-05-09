@@ -1,5 +1,11 @@
 import Config
 
+# Replicate AI https://replicate.ai/docs
+config :langchainex, :replicate,
+  api_key: System.get_env("REPLICATE_API_KEY"),
+  # Replicate has a polling-based API, you can configure your polling interval
+  poll_interval: 1000
+
 # you can config your providers and API keys here
 config :ex_openai,
   # find it at https://platform.openai.com/account/api-keys
