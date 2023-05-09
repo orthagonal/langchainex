@@ -8,9 +8,13 @@ defmodule LangChain.ChainLink do
     4. store any output
   """
 
+  # a ChainLink input can be either a string, a prompttemplate or an entire chat chain
+  @type input :: %LangChain.Chat{} | %LangChain.PromptTemplate{} | String.t()
+
+
   @derive Jason.Encoder
   defstruct name: "Void",
-            input: %LangChain.Chat{},
+            input: nil,  # can be a string, a prompttemplate or an entire chat chain
             # takes in the ChainLink and the list of all responses
             output_parser: &LangChain.ChainLink.no_parse/2,
             # from the model, pass your own output_parser to parse the output of your chat interactions
@@ -19,47 +23,76 @@ defmodule LangChain.ChainLink do
             # output should be a map of %{ variable: value } produced by output_parser
             output: %{},
             # list of errors that occurred during evaluation
-            errors: []
+            errors: [],
+            # the pid of the LLM genserver that should process this chain
+            process_with: nil,
+            # the pid of the llm that processed this chain_link, nil if it has not been processed yet
+            processed_by: nil
+
 
   @doc """
   calls the chain_link, filling in the input prompt and parsing the output
   """
-  def call(%{input: %LangChain.Chat{} = chat} = chain_link, previousValues \\ %{}) do
-    {:ok, evaluated_templates} = LangChain.Chat.format(chat, previousValues)
-
-    model_inputs =
-      Enum.map(evaluated_templates, fn evaluated_template ->
-        Map.take(evaluated_template, [:role, :text])
-      end)
-
-    process_llm_call(chain_link, chat.llm, model_inputs)
-  end
-
-  def call(%{input: %LangChain.PromptTemplate{} = prompt_template} = chain_link, previousValues) do
+  # when input is a PromptTemplate
+  def call(%{input: %LangChain.PromptTemplate{} = prompt_template} = chain_link, llm_pid, previousValues) do
     {:ok, evaluated_prompt} = LangChain.PromptTemplate.format(prompt_template, previousValues)
-    model_input = %{role: prompt_template.src, text: evaluated_prompt}
-
-    process_llm_call(chain_link, chain_link.input.llm, [model_input])
-  end
-
-  defp process_llm_call(chain_link, llm, model_inputs) do
-    case LangChain.LLM.call(llm, model_inputs) do
+    IO.puts evaluated_prompt
+    case LangChain.LLM.call(llm_pid, evaluated_prompt) do
       {:ok, response} ->
         chain_link.output_parser.(chain_link, response)
-
+        # %{
+        #   chain_link
+        #   | raw_responses: [response],
+        #     output: %{text: response},
+        #     processed_by: llm_pid
+        # }
       {:error, reason} ->
         chain_link |> Map.put(:errors, [reason])
     end
   end
 
+  # when input is a string
+  def call(%{input: text_input } = chain_link, llm_pid, previousValues) when is_binary(text_input) do
+    case LangChain.LLM.call(llm_pid, text_input) do
+      {:ok, response} ->
+        %{
+          chain_link
+          | raw_responses: [response],
+            output: %{text: response},
+            processed_by: llm_pid
+        }
+      {:error, reason} ->
+        chain_link |> Map.put(:errors, [reason])
+    end
+  end
+
+  # need to implement for %LangChain.Chat{} as well
+  # def call(%{input: %LangChain.Chat{} = chat} = chain_link, previousValues \\ %{}) do
+  #   {:ok, evaluated_templates} = LangChain.Chat.format(chat, previousValues)
+
+  #   model_inputs =
+  #     Enum.map(evaluated_templates, fn evaluated_template ->
+  #       Map.take(evaluated_template, [:role, :text])
+  #     end)
+  # end
+
   # you can define your own parser functions, but this is the default
   # the output of the ChainLink will be used as variables in the next link
   # by default the simple text response goes in the :text key
   defp no_parse(chain_link, outputs \\ []) do
-    %{
-      chain_link
-      | raw_responses: outputs,
-        output: %{text: outputs |> List.first() |> Map.get(:text)}
-    }
+    case outputs do
+      [_] ->
+        %{
+          chain_link
+          | raw_responses: outputs,
+            output: %{text: outputs |> List.first() |> Map.get(:text)}
+        }
+      _ ->
+        %{
+          chain_link
+          | raw_responses: outputs,
+            output: %{ text: outputs }
+        }
+      end
   end
 end

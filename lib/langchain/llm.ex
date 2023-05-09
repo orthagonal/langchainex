@@ -34,10 +34,10 @@ defmodule LangChain.LLM do
   # Public functions
 
   def call(pid, prompt) do
-    GenServer.call(pid, {:call, prompt})
+    GenServer.call(pid, {:call, prompt}, 60_000)
   end
 
   def chat(pid, msgs) do
-    GenServer.call(pid, {:chat, msgs})
+    GenServer.call(pid, {:chat, msgs}, 60_000)
   end
 end
