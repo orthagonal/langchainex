@@ -1,4 +1,5 @@
 defmodule LangChain.ChainLink do
+  @compile {:nowarn_unused_function, [no_parse: 2]}
   @moduledoc """
     an individual chain_link in a language chain
     when called, a chainlink will
@@ -8,8 +9,6 @@ defmodule LangChain.ChainLink do
     4. store any output
   """
 
-  # prevent mix format from worrying about the no_parse function
-  @compile {:nowarn_unused_function, [no_parse: 2]}
 
   # a ChainLink input can be either a string, a prompttemplate or an entire chat chain
   @type input :: %LangChain.Chat{} | %LangChain.PromptTemplate{} | String.t()
