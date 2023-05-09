@@ -9,7 +9,6 @@ defmodule LangChain.ChainLink do
     4. store any output
   """
 
-
   # a ChainLink input can be either a string, a prompttemplate or an entire chat chain
   @type input :: %LangChain.Chat{} | %LangChain.PromptTemplate{} | String.t()
 
@@ -18,7 +17,7 @@ defmodule LangChain.ChainLink do
             # can be a string, a prompttemplate or an entire chat chain
             input: nil,
             # takes in the ChainLink and the list of all responses
-            output_parser: &LangChain.ChainLink.no_parse/2,
+            output_parser: &no_parse/2,
             # from the model, pass your own output_parser to parse the output of your chat interactions
             # the actual response returned by the model
             raw_responses: [],
@@ -68,16 +67,6 @@ defmodule LangChain.ChainLink do
     end
   end
 
-  # need to implement for %LangChain.Chat{} as well
-  # def call(%{input: %LangChain.Chat{} = chat} = chain_link, previousValues \\ %{}) do
-  #   {:ok, evaluated_templates} = LangChain.Chat.format(chat, previousValues)
-
-  #   model_inputs =
-  #     Enum.map(evaluated_templates, fn evaluated_template ->
-  #       Map.take(evaluated_template, [:role, :text])
-  #     end)
-  # end
-
   # you can define your own parser functions, but this is the default
   # the output of the ChainLink will be used as variables in the next link
   # by default the simple text response goes in the :text key
@@ -98,4 +87,14 @@ defmodule LangChain.ChainLink do
         }
     end
   end
+
+  # need to implement for %LangChain.Chat{} as well
+  # def call(%{input: %LangChain.Chat{} = chat} = chain_link, previousValues \\ %{}) do
+  #   {:ok, evaluated_templates} = LangChain.Chat.format(chat, previousValues)
+
+  #   model_inputs =
+  #     Enum.map(evaluated_templates, fn evaluated_template ->
+  #       Map.take(evaluated_template, [:role, :text])
+  #     end)
+  # end
 end
