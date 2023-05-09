@@ -57,10 +57,8 @@ defmodule LangChain.ScrapeChain do
   @doc """
   Executes the scrapechain and returns the parsed result, can be called against
   the schema you defined when you made the chain, or you can override that schema:
-  
     result = LangChain.ScrapeChain.scrape(schema_chain, "John Doe is 30 years old")
     # result will be %{ name: "John Doe", age: 30, birthdate: "1987-01-01"}
-  
     # override the default schema
     input_variables = %{
       input_text: "John Doe is 30 years old.",
