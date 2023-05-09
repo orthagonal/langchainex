@@ -76,6 +76,7 @@ defmodule LangChain.ChainLink do
   #     end)
   # end
 
+  @formatter :disabled
   # you can define your own parser functions, but this is the default
   # the output of the ChainLink will be used as variables in the next link
   # by default the simple text response goes in the :text key
@@ -96,4 +97,6 @@ defmodule LangChain.ChainLink do
         }
     end
   end
+
+  @formatter :enabled
 end
