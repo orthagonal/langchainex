@@ -7,7 +7,6 @@ defmodule LangChain.ScrapeChain do
   Once you define that chain, you can have the chain 'scrape' a text and return the
   formatted output in virtually any form.
   """
-
   @derive Jason.Encoder
   defstruct chain: %LangChain.Chain{},
             input_schema: "",
