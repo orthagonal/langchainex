@@ -9,27 +9,27 @@ defmodule LangChain.Retriever.FileSystemProvider do
   defimpl LangChain.Retriever do
     @doc """
     Retrieves relevant documents from the file system based on the provided query.
-    
+
     The query should be a map with the following keys:
       * `:path` (required) - The path to the file or directory to start the search from.
       * `:recursive` (optional, default: false) - If true, search for files in subdirectories as well.
       * `:file_extensions` (optional, default: []) - A list of file extensions to include in the results. If empty, all file extensions are included.
       * `:ignore_extensions` (optional, default: []) - A list of file extensions to exclude from the results.
-    
+
     Examples:
-    
+
         # Read the contents of a specific file
         Retriever.get_relevant_documents(provider, %{path: "path/to/file.ex"})
-    
+
         # Read the contents of all files in a specific directory
         Retriever.get_relevant_documents(provider, %{path: "path/to/directory"})
-    
+
         # Read the contents of all .ex files in a directory, including subdirectories
         Retriever.get_relevant_documents(provider, %{path: "path/to/directory", recursive: true, file_extensions: [".ex"]})
-    
+
         # Read the contents of all files in a directory, excluding .js files
         Retriever.get_relevant_documents(provider, %{path: "path/to/directory", ignore_extensions: [".js"]})
-    
+
     Returns a list of file contents or {:error, :invalid_path} if the provided path is invalid.
     """
     def get_relevant_documents(_provider, %{path: path} = query) do
