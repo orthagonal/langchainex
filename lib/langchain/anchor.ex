@@ -5,7 +5,7 @@ defmodule LangChain.Anchor.Behavior do
     hard to predict what it will actually do at run-time. This means that best practice is to anchor your chains so that
     at runtime a human (or at least a traditional hard-coded computer program) can confirm the AI isn't doing something
     harmful or WOPRish.
-  
+
     Anchors are implemented as a behavior so that you can implement your own anchor, in addition to
     the CLI and Web anchors in this library. By design they should be predictable and rigorous in terms
     of output.  Don't get creative and try to add natural-language processing to an anchor, because the
