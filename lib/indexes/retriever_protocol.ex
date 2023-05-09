@@ -7,7 +7,8 @@
 # of numbers) so they can be fed to different neural networks.
 
 # Retriever implementations currently included with this project include:
-# - LangChain.Retriever.FileSystemProvider   -- can get the contents of a file or a list of all the contents of all the files in the directory
+# - LangChain.Retriever.FileSystemProvider ->
+#     gets the contents of a file or a list of all the contents of all the files in the directory
 
 defprotocol LangChain.Retriever do
   @doc """

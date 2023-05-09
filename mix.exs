@@ -7,6 +7,7 @@ defmodule LangchainEx.MixProject do
       version: "0.1.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
       deps: deps(),
       package: package(),
       # prevents protocol consolidation warning
@@ -39,6 +40,12 @@ defmodule LangchainEx.MixProject do
         "docs" => "https://hexdocs.pm/langchainex"
       },
       description: "Language Chains for Elixir"
+    ]
+  end
+
+  defp aliases do
+    [
+      verify: ["compile --warnings-as-errors", "format --check-formatted", "credo --strict"]
     ]
   end
 end

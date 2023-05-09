@@ -1,7 +1,9 @@
 defmodule VectorStoreProviderTest do
+  @moduledoc false
+
   use ExUnit.Case
-  alias LangChain.VectorStore.Provider
   alias LangChain.VectorStore.PineconeProvider
+  alias LangChain.VectorStore.Provider
 
   setup do
     provider = %PineconeProvider{
@@ -12,13 +14,13 @@ defmodule VectorStoreProviderTest do
   end
 
   test "add_vectors/2", %{provider: provider} do
-    # make 3 vectors of size 1536 each, since the openai davicini model uses that size vector
+    # make 3 vectors of size 1536 each, since the openai davinci model uses that size vector
     vectors =
       Enum.map(1..3, fn _ ->
         Enum.map(1..1536, fn _ -> :rand.uniform() end)
       end)
 
-    # the pinecone 
+    # the pinecone
     {:ok, added_vectors_count} = Provider.add_vectors(provider, vectors)
 
     assert added_vectors_count == length(vectors)
@@ -26,6 +28,8 @@ defmodule VectorStoreProviderTest do
 end
 
 defmodule PineconeVectorStoreTest do
+  @moduledoc false
+
   use ExUnit.Case
   alias LangChain.VectorStore
   alias LangChain.VectorStore.PineconeProvider

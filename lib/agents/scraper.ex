@@ -21,7 +21,7 @@ defmodule LangChain.Scraper do
 
   @timeout 120_000
 
-  alias LangChain.{ScrapeChain, ChainLink, Chat, PromptTemplate, Chain}
+  alias LangChain.{Chain, ChainLink, Chat, PromptTemplate, ScrapeChain}
   # Client API
 
   def start_link(opts \\ []) do
@@ -95,7 +95,7 @@ defmodule LangChain.Scraper do
     end
   end
 
-  defp default_scrape_chain() do
+  defp default_scrape_chain do
     # can be overruled with the input_schema option
     input_schema = "{ name: String, age: Number }"
 

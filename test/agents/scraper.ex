@@ -3,7 +3,7 @@ defmodule LangChain.ScraperTest do
   Tests for LangChain.Scraper
   """
   use ExUnit.Case, async: true
-  alias LangChain.{ScrapeChain, Scraper, ChainLink, Chat, PromptTemplate, Chain}
+  alias LangChain.{Chain, ChainLink, Chat, PromptTemplate, Scraper, ScraperChain}
 
   setup do
     {:ok, pid} = Scraper.start_link()

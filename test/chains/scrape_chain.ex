@@ -4,7 +4,7 @@ defmodule ScrapeChainTest do
   """
   use ExUnit.Case
 
-  alias LangChain.{Chat, ChainLink, Chain, PromptTemplate}
+  alias LangChain.{Chain, ChainLink, Chat, PromptTemplate}
   alias ScrapeChain
 
   # Create a parser function for the ChainLink

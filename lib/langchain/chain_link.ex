@@ -24,7 +24,9 @@ defmodule LangChain.ChainLink do
   @doc """
   calls the chain_link, filling in the input prompt and parsing the output
   """
-  def call(%{input: %LangChain.Chat{} = chat} = chain_link, previousValues \\ %{}) do
+  def call(chain_link, previousValues \\ %{})
+
+  def call(%{input: %LangChain.Chat{} = chat} = chain_link, previousValues) do
     {:ok, evaluated_templates} = LangChain.Chat.format(chat, previousValues)
 
     model_inputs =
@@ -55,7 +57,7 @@ defmodule LangChain.ChainLink do
   # you can define your own parser functions, but this is the default
   # the output of the ChainLink will be used as variables in the next link
   # by default the simple text response goes in the :text key
-  defp no_parse(chain_link, outputs \\ []) do
+  def no_parse(chain_link, outputs \\ []) do
     %{
       chain_link
       | raw_responses: outputs,
