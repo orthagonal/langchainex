@@ -35,7 +35,7 @@ defmodule LangChain.ScrapeChain do
       }
     }
   ])
-  
+
   # create a ChainLink with the chat and parser function
   chain_link = %ChainLink{
     name: "schema_extractor",
