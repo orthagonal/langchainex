@@ -10,7 +10,7 @@ defmodule LangChain.LLM do
     GenServer.start_link(__MODULE__, %{provider: provider})
   end
 
-  defp default_provider() do
+  defp default_provider do
     IO.warn(
       "No :provider option specified, will fallback to default provider from the application environment defined in :language_model_provider."
     )

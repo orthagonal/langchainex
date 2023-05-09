@@ -36,8 +36,8 @@ defmodule LangChain.Providers.OpenAITest do
   test openai LLMs
   """
   use ExUnit.Case
-  alias LangChain.Providers.OpenAI
   alias LangChain.LanguageModelProtocol
+  alias LangChain.Providers.OpenAI
 
   @model %OpenAI{
     model_name: "text-ada-001",

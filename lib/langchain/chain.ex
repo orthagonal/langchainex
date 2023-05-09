@@ -3,6 +3,8 @@ defmodule LangChain.Chain do
   A chain of ChainLinks to be processed in order, usually ending in an anchor for user confirmation.
   """
 
+  alias LangChain.Anchor.CLI
+
   @derive Jason.Encoder
   defstruct [
     # List of ChainLinks, processed in order
@@ -33,7 +35,7 @@ defmodule LangChain.Chain do
 
     # anchor behavior is under development still
     if anchor do
-      case LangChain.Anchor.CLI.get_confirmation() do
+      case CLI.get_confirmation() do
         :yes -> result
         :no -> {:error, "User declined"}
       end

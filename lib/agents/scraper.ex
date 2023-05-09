@@ -103,12 +103,8 @@ defmodule LangChain.Scraper do
 
     prompt = %PromptTemplate{
       template: """
-        Schema: \"\"\"
-        <%= input_schema %>
-      \"\"\"
-      Text: \"\"\"
-        <%= input_text %>
-      \"\"\
+      Schema: \"\"\"<%= input_schema %>\"\"\"
+      Text: \"\"\"<%= input_text %>\"\"\
       Extract the data from Text according to Schema and return it in <%= output_format %> format.
       Format any datetime fields using ISO8601 standard.
       """
