@@ -2,7 +2,6 @@
 defmodule LangChain.Chat do
   @moduledoc """
   A Chat is a list of multiple PromptTemplates along with all their input variables
-  
   """
 
   @derive Jason.Encoder
