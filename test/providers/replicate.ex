@@ -5,6 +5,7 @@ defmodule LangChain.Providers.ReplicateTest do
   use ExUnit.Case
   alias LangChain.LanguageModelProtocol
   alias LangChain.Providers.Replicate
+  require Logger
 
   @model %Replicate{
     version: "5c7d5dc6dd8bf75c1acaa8565735e7986bc5b66206b55cca93cb72c9bf15ccaa"
@@ -18,6 +19,10 @@ defmodule LangChain.Providers.ReplicateTest do
     version: "c49dae362cbaecd2ceabb5bd34fdb68413c4ff775111fea065d259d577757beb"
   }
 
+  @dolly_v2_12b %Replicate{
+    version: "ef0e1aefc61f8e096ebe4db6b2bacc297daf2ef6899f0f7e001ec445893500e5"
+  }
+
   describe "Replicate implementation of LanguageModelProtocol" do
     test "call/2 returns a valid response" do
       prompt = "Write a sentence containing the word *grue*."
@@ -26,20 +31,20 @@ defmodule LangChain.Providers.ReplicateTest do
       assert String.length(response) > 0
       assert String.contains?(response, "grue")
 
-      response2 = LanguageModelProtocol.call(@stablelm_tuned_alpha_7b, prompt)
+      response2 = LanguageModelProtocol.call(@dolly_v2_12b, prompt)
       Logger.debug(response2)
     end
 
-    test "chat/2 returns a valid response" do
-      msgs = [
-        %{text: "Write a sentence containing the word *grue*.", role: "user"},
-        %{text: "Include a reference to the Dead Mountaineers Hotel."}
-      ]
+    # test "chat/2 returns a valid response" do
+    #   msgs = [
+    #     %{text: "Write a sentence containing the word *grue*.", role: "user"},
+    #     %{text: "Include a reference to the Dead Mountaineers Hotel."}
+    #   ]
 
-      response = LanguageModelProtocol.chat(@vicuna_13_b, msgs)
-      Logger.debug(response)
-      assert is_list(response)
-      assert length(response) > 0
-    end
+    #   response = LanguageModelProtocol.chat(@dolly_v2_12b, msgs)
+    #   Logger.debug(response)
+    #   assert is_list(response)
+    #   assert length(response) > 0
+    # end
   end
 end

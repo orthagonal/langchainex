@@ -68,9 +68,6 @@ defmodule LangChain.Providers.Replicate do
 
       base = get_base(nil, :predict)
 
-      Logger.debug(base)
-      Logger.debug(body)
-
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 201, body: body}} ->
           {:ok, Jason.decode!(body)["id"]}

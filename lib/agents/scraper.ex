@@ -22,6 +22,7 @@ defmodule LangChain.Scraper do
   @timeout 120_000
 
   alias LangChain.{Chain, ChainLink, PromptTemplate, ScrapeChain}
+
   # Client API
 
   def start_link(opts \\ []) do

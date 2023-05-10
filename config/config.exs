@@ -1,5 +1,8 @@
 import Config
 
+# Huggingface Inference API https://huggingface.co/docs/api-inference/index
+config :langchainex, :huggingface, api_key: System.get_env("HUGGINGFACE_API_KEY")
+
 # Replicate AI https://replicate.ai/docs
 config :langchainex, :replicate,
   api_key: System.get_env("REPLICATE_API_KEY"),
