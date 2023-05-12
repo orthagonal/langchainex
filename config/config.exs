@@ -4,7 +4,7 @@ import Config
 # models on your local CPU or GPU. You can use these models interchangeably
 # with all of the hosted API models in this project. You will want to also install
 # and compile EXLA to execute these models on any reasonable time frame
-config :langchainex, :bumblebee_enabled, false
+config :langchainex, :bumblebee_enabled, true
 
 # Weaviate API (they offer cloud services or you can host your own instance)
 config :langchainex, :weaviate,
