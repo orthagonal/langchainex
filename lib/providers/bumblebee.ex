@@ -56,39 +56,39 @@ defmodule LangChain.Providers.Bumblebee do
             defn_options: [compiler: EXLA]
           )
 
-        IO.inspect(prompt)
-        result = Nx.Serving.run(serving, "this is some stuff")
-        IO.puts("result should be rtn from Nx.Serving.run")
-        IO.inspect(result)
-        result
+        Nx.Serving.run(serving, "this is some stuff")
+        |> Map.get(:results, [])
+        |> Enum.map(fn result -> Map.get(result, :text, "") end)
+        |> Enum.join(" ")
       end
 
       # '{"inputs": {"past_user_inputs": ["Which movie is the best ?"],
       # "generated_responses": ["It is Die Hard for sure."], "text":"Can you explain why ?"}}' \
-      def chat(model, chats) when is_list(chats) do
-      end
 
-      def prepare_input(msgs) do
-        {past_user_inputs, generated_responses} =
-          Enum.reduce(msgs, {[], []}, fn msg, {user_inputs, responses} ->
-            role = Map.get(msg, :role, "user")
+      # pop the last item off this list and turn it into a string called 'message'
+      # and put the tail of the list is the 'history' which is strings
+      #   msgs = [
+      #     %{text: "Write a sentence containing the word *grue*.", role: "user"},
+      #     %{text: "Include a reference to the Dead Mountaineers Hotel."}
+      #   ]
+      def chat(config, chats) when is_list(chats) do
+        {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
+        IO.puts("loaded the model")
+        IO.inspect(model.spec)
+        {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
+        IO.inspect(tokenizer)
+        {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
+        IO.puts("got config")
+        serving = Bumblebee.Text.conversation(model, tokenizer, generation_config)
+        IO.puts("getting stuff")
+        message = List.last(chats).text
+        history = List.delete_at(chats, -1)
+        IO.puts("calling the chat function")
+        IO.inspect(message)
+        IO.inspect(history)
 
-            case role do
-              "user" -> {[msg.text | user_inputs], responses}
-              _ -> {user_inputs, [msg.text | responses]}
-            end
-          end)
-
-        last_text = List.last(msgs).text
-
-        %{
-          "inputs" => %{
-            "past_user_inputs" => Enum.reverse(past_user_inputs),
-            "generated_responses" => Enum.reverse(generated_responses),
-            "text" => last_text
-          }
-        }
-        |> Jason.encode!()
+        %{text: text, history: history} =
+          Nx.Serving.run(serving, %{text: message, history: history})
       end
     end
   end

@@ -3,14 +3,13 @@
 - [LangchainEx](#langchainex)
     - [Overview](#overview)
   - [Installation](#installation)
-  - [tl;dr GenServers](#tldr-genservers)
-    - [Scraper](#scraper)
   - [LangChain Components](#langchain-components)
-    - [](#)
   - [Providers](#providers)
     - [Current Language Model Providers as of May 11th 2023:](#current-language-model-providers-as-of-may-11th-2023)
     - [Current Vector DB Providers as of May 11th 2023:](#current-vector-db-providers-as-of-may-11th-2023)
     - [In Progress:](#in-progress)
+  - [tl;dr GenServers](#tldr-genservers)
+    - [Scraper](#scraper)
 
 
 ### Overview
@@ -34,6 +33,41 @@ def deps do
   ]
 end
 ```
+
+
+## LangChain Components 
+
+ LangChainEx chains are composed in a hierarchical manner, starting at 
+ the most fundamental component and going up it is:
+
+- PromptTemplate - EEx templates that can be filled in and passed to a language model 
+- ChainLink - A wrapper around a PromptTemplate that handles any local transformations of the input and output
+- Anchor - Alignment point in a chain where the AI tells you what it plans to do and gets your approval
+- Chain - A sequence of ChainLinks that can be executed in order 
+
+PromptTemplates are just text templates. ChainLinks handle the PromptTemplates. Anchors are
+verification points where the AIs are forced to align with human intentions.  Chains are
+ a sequence of ChainLinks.  Here's a diagram:
+ ChainLink 1 -> ChainLink 2 -> Anchor 1  -> ChainLink 3
+
+
+## Providers
+
+### Current Language Model Providers as of May 11th 2023:
+ - OpenAI
+ - Replicate  
+ - HuggingFace
+ - Bumblebee (runs models on your own hardware)
+
+### Current Vector DB Providers as of May 11th 2023:
+ - Pinecone Vector Storage
+
+### In Progress:
+ - weaviate vector storage
+ - Vespa vector storage
+ - 
+See config.ex for list of currently supported providers
+
 
 
 ## tl;dr GenServers 
@@ -73,39 +107,3 @@ In your code:
   "
     end
 ```
-
-## LangChain Components 
-
- LangChainEx chains are composed in a hierarchical manner, starting at 
- the most fundamental component and going up it is:
-
-- PromptTemplate
-- ChainLink
-- Chain
-  
- PromptTemplates are just text templates. ChainLinks wrap a PromptTemplate , which are composed of PromptTemplates. 
-
-Components you can use to construct your own language chains
-### 
-
-
-
-
-## Providers
-
-### Current Language Model Providers as of May 11th 2023:
- - OpenAI
- - Replicate API 
- - HuggingFace API
- - Bumblebee 
-
-### Current Vector DB Providers as of May 11th 2023:
- - Pinecone Vector Storage
-
-### In Progress:
- - pg-vector (Postgres Vector Storage)
- - weaviate (Weaviate Vector Storage)
-
-See config.ex for list of currently supported providers
-
-
