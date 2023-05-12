@@ -38,6 +38,7 @@ defmodule LangChain.Providers.OpenAITest do
   use ExUnit.Case
   alias LangChain.LanguageModelProtocol
   alias LangChain.Providers.OpenAI
+  require Logger
 
   @model %OpenAI{
     model_name: "text-ada-001",
@@ -68,6 +69,7 @@ defmodule LangChain.Providers.OpenAITest do
       ]
 
       assert {:ok, response} = LanguageModelProtocol.chat(@gpt_model, msgs)
+      Logger.debug(response)
       assert is_list(response)
       assert length(response) > 0
       assert Enum.all?(response, &is_map/1)

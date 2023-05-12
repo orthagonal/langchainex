@@ -8,8 +8,9 @@
   - [LangChain Components](#langchain-components)
     - [](#)
   - [Providers](#providers)
-    - [Current Providers as of May 7th 2023:](#current-providers-as-of-may-7th-2023)
-    - [Incoming:](#incoming)
+    - [Current Language Model Providers as of May 11th 2023:](#current-language-model-providers-as-of-may-11th-2023)
+    - [Current Vector DB Providers as of May 11th 2023:](#current-vector-db-providers-as-of-may-11th-2023)
+    - [In Progress:](#in-progress)
 
 
 ### Overview
@@ -92,13 +93,16 @@ Components you can use to construct your own language chains
 
 ## Providers
 
-### Current Providers as of May 7th 2023:
+### Current Language Model Providers as of May 11th 2023:
  - OpenAI
- - Pinecone Vector Storage
-
-### Incoming:
  - Replicate API 
  - HuggingFace API
+ - Bumblebee 
+
+### Current Vector DB Providers as of May 11th 2023:
+ - Pinecone Vector Storage
+
+### In Progress:
  - pg-vector (Postgres Vector Storage)
  - weaviate (Weaviate Vector Storage)
 

@@ -62,6 +62,8 @@ defmodule LangChain.Providers.OpenAI do
     end
 
     def call(model, prompt) do
+      # some models are conversational and others are single-prompt only,
+      # this handles fixing it up so it works either way
       if chat_model?(model.model_name) do
         msgs = [%{text: prompt, role: "user"}]
 

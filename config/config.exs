@@ -1,5 +1,20 @@
 import Config
 
+# Bumblebee is an awesome library that automates downloading and running Huggingface
+# models on your local CPU or GPU. You can use these models interchangeably
+# with all of the hosted API models in this project. You will want to also install
+# and compile EXLA to execute these models on any reasonable time frame
+config :langchainex, :bumblebee_enabled, false
+
+# Weaviate API (they offer cloud services or you can host your own instance)
+config :langchainex, :weaviate,
+  # see https://weaviate.io/developers/wcs/guides/authentication for Weaviate Cloud Service keys
+  api_key: System.get_env("WEAVIATE_API_KEY"),
+  index_name: System.get_env("WEAVIATE_INDEX_NAME", "langchainex"),
+  # url for your client, see https://console.weaviate.cloud/dashboard
+  client: System.get_env("WEAVIATE_CLIENT", "https://cloud.semi.technology"),
+  text_key: System.get_env("WEAVIATE_TEXT_KEY", "text")
+
 # Huggingface Inference API https://huggingface.co/docs/api-inference/index
 config :langchainex, :huggingface, api_key: System.get_env("HUGGINGFACE_API_KEY")
 

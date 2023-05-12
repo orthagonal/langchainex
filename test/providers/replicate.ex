@@ -23,6 +23,10 @@ defmodule LangChain.Providers.ReplicateTest do
     version: "ef0e1aefc61f8e096ebe4db6b2bacc297daf2ef6899f0f7e001ec445893500e5"
   }
 
+  @gpt_j_6b %Replicate{
+    version: "b3546aeec6c9891f0dd9929c2d3bedbf013c12e02e7dd0346af09c37e008c827"
+  }
+
   describe "Replicate implementation of LanguageModelProtocol" do
     test "call/2 returns a valid response" do
       prompt = "Write a sentence containing the word *grue*."
