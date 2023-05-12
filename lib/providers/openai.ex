@@ -1,13 +1,13 @@
 defmodule LangChain.Embedding.OpenAIProvider do
   @moduledoc """
-  An OpenAI implementation of the LangChain.EmbeddingProtocol.
+  An OpenAI implementation of the LangChain.EmbedderProtocol.
   Use this for embedding your docs for openai models by specifying the
   model_name in your LLM.
   """
 
   defstruct model_name: "text-ada-001"
 
-  defimpl LangChain.EmbeddingProtocol do
+  defimpl LangChain.EmbedderProtocol do
     def embed_documents(provider, documents) do
       opts = []
 

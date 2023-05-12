@@ -1,5 +1,73 @@
-# any huggingface-specific code should go in this file
 defmodule LangChain.Providers.Huggingface do
+  @moduledoc """
+  shared configuration for Huggingface API calls
+  """
+  @api_base_url "https://api-inference.huggingface.co/models"
+
+  @doc """
+  used by all the HF api calls, get the base url and headers for a given model
+  """
+  def get_base(model) do
+    {
+      :ok,
+      [
+        api_key: api_key
+      ]
+    } = Application.fetch_env(:langchainex, :huggingface)
+
+    %{
+      url: "#{@api_base_url}/#{model.model_name}",
+      headers: [
+        {"Authorization", "Bearer #{api_key}"},
+        {"Content-Type", "application/json"}
+      ]
+    }
+  end
+end
+
+defmodule LangChain.Providers.Huggingface.Embedder do
+  @moduledoc """
+  When you want to use the huggingface API to embed documents
+  Embedding will transform documents into vectors of numbers that you can then feed into a neural network
+  The embedding provider must match the input size of the model and use the same encoding scheme.
+  Use Sentence Transformer modles like
+  """
+  defstruct model_name: "gpt2"
+
+  defimpl LangChain.EmbedderProtocol do
+    def embed_documents(provider, documents) do
+      body =
+        Jason.encode!(%{
+          inputs: documents,
+          # see https://huggingface.co/docs/api-inference/detailed_parameters#feature-extraction-task for options
+          use_cache: true,
+          wait_for_model: false
+        })
+
+      base = LangChain.Providers.Huggingface.get_base(provider)
+      IO.inspect(base)
+
+      case HTTPoison.post(base.url, body, base.headers) do
+        {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+          # should just be list of dicts
+          IO.inspect(body)
+          decoded_body = Jason.decode!(body)
+
+          IO.inspect(decoded_body)
+
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          {:error, reason}
+      end
+    end
+
+    def embed_query(provider, query) do
+      embed_documents(provider, [query])
+    end
+  end
+end
+
+# any huggingface-specific code should go in this file
+defmodule LangChain.Providers.Huggingface.LanguageModel do
   @moduledoc """
     A module for interacting with Huggingface's API
     Huggingface is a host for ML models that take in any data
@@ -12,34 +80,15 @@ defmodule LangChain.Providers.Huggingface do
             top_k: nil,
             top_p: nil
 
-  defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Huggingface do
-    @api_base_url "https://api-inference.huggingface.co/models"
-
-    # get the Huggingface config from config.exs
-    defp get_base(model) do
-      {
-        :ok,
-        [
-          api_key: api_key
-        ]
-      } = Application.fetch_env(:langchainex, :huggingface)
-
-      %{
-        url: "#{@api_base_url}/#{model.model_name}",
-        headers: [
-          {"Authorization", "Bearer #{api_key}"},
-          {"Content-Type", "application/json"}
-        ]
-      }
-    end
-
+  defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Huggingface.LanguageModel do
+    # call with a single input prompt
     def call(model, prompt) do
       body =
         Jason.encode!(%{
           "inputs" => prompt
         })
 
-      base = get_base(model)
+      base = LangChain.Providers.Huggingface.get_base(model)
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
@@ -52,12 +101,11 @@ defmodule LangChain.Providers.Huggingface do
       end
     end
 
-    # '{"inputs": {"past_user_inputs": ["Which movie is the best ?"],
-    # "generated_responses": ["It is Die Hard for sure."], "text":"Can you explain why ?"}}' \
+    # call with a list of input prompts
     def chat(model, chats) when is_list(chats) do
       json_input = prepare_input(chats)
       body = Jason.encode!(json_input)
-      base = get_base(model)
+      base = LangChain.Providers.Huggingface.get_base(model)
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->

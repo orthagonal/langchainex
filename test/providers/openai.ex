@@ -6,7 +6,7 @@ defmodule LangChain.Embedding.OpenAIProviderTest do
   use ExUnit.Case, async: true
 
   alias LangChain.Embedding.OpenAIProvider
-  alias LangChain.EmbeddingProtocol
+  alias LangChain.EmbedderProtocol
 
   describe "embed_documents/2" do
     test "embeds documents with OpenAI provider" do
@@ -19,7 +19,7 @@ defmodule LangChain.Embedding.OpenAIProviderTest do
         model_name: "text-embedding-ada-002"
       }
 
-      assert {:ok, embeddings} = EmbeddingProtocol.embed_documents(openai_provider, documents)
+      assert {:ok, embeddings} = EmbedderProtocol.embed_documents(openai_provider, documents)
       assert length(embeddings) == length(documents)
       # assert it's a vector of vectors containing floats
       assert Enum.all?(embeddings, &is_list/1)
