@@ -5,8 +5,8 @@ defmodule LangChain.Providers.HuggingfaceTest do
   use ExUnit.Case
   alias LangChain.EmbedderProtocol
   alias LangChain.LanguageModelProtocol
-  alias LangChain.Providers.Huggingface.LanguageModel
   alias LangChain.Providers.Huggingface.Embedder
+  alias LangChain.Providers.Huggingface.LanguageModel
   require Logger
 
   @model %LanguageModel{

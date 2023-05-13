@@ -1,4 +1,4 @@
-defmodule LangChain.Embedding.OpenAIProvider do
+defmodule LangChain.Embedder.OpenAIProvider do
   @moduledoc """
   An OpenAI implementation of the LangChain.EmbedderProtocol.
   Use this for embedding your docs for openai models by specifying the
