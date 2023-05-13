@@ -105,7 +105,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     def chat(model, chats) when is_list(chats) do
       json_input = prepare_input(chats)
       body = Jason.encode!(json_input)
-      base = LangChain.Providers.Huggingface.get_base(model)
+      base = Huggingface.get_base(model)
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
