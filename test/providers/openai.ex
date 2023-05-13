@@ -6,6 +6,7 @@ defmodule LangChain.Embedder.OpenAIProviderTest do
   use ExUnit.Case, async: true
 
   alias LangChain.EmbedderProtocol
+
   alias LangChain.Embedder.OpenAIProvider
 
   describe "embed_documents/2" do
