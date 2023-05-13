@@ -3,13 +3,14 @@
 - [LangchainEx](#langchainex)
     - [Overview](#overview)
   - [Installation](#installation)
+  - [LangChain Components](#langchain-components)
+  - [Providers](#providers)
+    - [Current Providers as of May 11th 2023:](#current-providers-as-of-may-11th-2023)
+      - [Language Models](#language-models)
+      - [Vector Storage With](#vector-storage-with)
+    - [Incoming:](#incoming)
   - [tl;dr GenServers](#tldr-genservers)
     - [Scraper](#scraper)
-  - [LangChain Components](#langchain-components)
-    - [](#)
-  - [Providers](#providers)
-    - [Current Providers as of May 7th 2023:](#current-providers-as-of-may-7th-2023)
-    - [Incoming:](#incoming)
 
 
 ### Overview
@@ -40,12 +41,15 @@ end
  LangChainEx chains are composed in a hierarchical manner, starting at 
  the most fundamental component and going up it is:
 
-- PromptTemplate
-- ChainLink
-- Chain
-  
- PromptTemplates are just text templates. ChainLinks wrap a PromptTemplate , which are composed of PromptTemplates. 
+- PromptTemplate - EEx templates that can be filled in and passed to a language model 
+- ChainLink - A wrapper around a PromptTemplate that handles any local transformations of the input and output
+- Anchor - Alignment point in a chain where the AI tells you what it plans to do and gets your approval
+- Chain - A sequence of ChainLinks that can be executed in order 
 
+PromptTemplates are just text templates. ChainLinks handle the PromptTemplates. Anchors are
+verification points where the AIs are forced to align with human intentions.  Chains are
+ a sequence of ChainLinks.  Here's a diagram:
+ ChainLink 1 -> ChainLink 2 -> Anchor 1  -> ChainLink 3
 
 
 ## Providers
