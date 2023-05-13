@@ -65,22 +65,18 @@ defmodule LangChain.Providers.Bumblebee do
       # '{"inputs": {"past_user_inputs": ["Which movie is the best ?"],
       # "generated_responses": ["It is Die Hard for sure."], "text":"Can you explain why ?"}}' \
 
-      # pop the last item off this list and turn it into a string called 'message'
-      # and put the tail of the list is the 'history' which is strings
+      # input will be like:
       #   msgs = [
       #     %{text: "Write a sentence containing the word *grue*.", role: "user"},
       #     %{text: "Include a reference to the Dead Mountaineers Hotel."}
       #   ]
+      # pop the last item off this list and turn it into a string called 'message'
+      # and put the tail of the list is the 'history' which is strings
       def chat(config, chats) when is_list(chats) do
         {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
-        IO.puts("loaded the model")
-        IO.inspect(model.spec)
         {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
-        IO.inspect(tokenizer)
         {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
-        IO.puts("got config")
         serving = Bumblebee.Text.conversation(model, tokenizer, generation_config)
-        IO.puts("getting stuff")
         message = List.last(chats).text
         history = List.delete_at(chats, -1)
         IO.puts("calling the chat function")
@@ -89,6 +85,39 @@ defmodule LangChain.Providers.Bumblebee do
 
         %{text: text, history: history} =
           Nx.Serving.run(serving, %{text: message, history: history})
+      end
+    end
+  end
+end
+
+defmodule LangChain.Providers.Bumblebee.Embedder do
+  @moduledoc """
+  When you want to use the Bumblebee API to embed documents.
+  Embedding will transform documents into vectors of numbers that you can then feed into a neural network.
+  The embedding provider must match the input size of the model and use the same encoding scheme.
+  """
+
+  alias LangChain.EmbedderProtocol
+  defstruct model_name: "sentence-transformers/all-MiniLM-L6-v2"
+
+  @bumblebee_enabled Application.compile_env(:langchainex, :bumblebee_enabled)
+  if @bumblebee_enabled do
+    defimpl LangChain.EmbedderProtocol do
+      def embed_documents(provider, documents) do
+        {:ok, model_info} =
+          Bumblebee.load_model({:hf, provider.model_name}, log_params_diff: false)
+
+        {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, provider.model_name})
+
+        inputs = Bumblebee.apply_tokenizer(tokenizer, documents)
+
+        embedding = Axon.predict(model_info.model, model_info.params, inputs, compiler: EXLA)
+
+        {:ok, embedding}
+      end
+
+      def embed_query(provider, query) do
+        embed_documents(provider, [query])
       end
     end
   end
