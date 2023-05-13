@@ -12,8 +12,8 @@ defmodule SelfDocumenting do
     # get the contents of all files under the /lib directory
     path = Path.dirname(__ENV__.file) |> Path.dirname() |> Path.dirname() |> Path.join("lib")
     query = %{path: path, recursive: true}
-    fileSystemReader = %FileSystemProvider{}
-    project_source_code = Retriever.get_relevant_documents(fileSystemReader, query)
+    file_system_reader = %FileSystemProvider{}
+    project_source_code = Retriever.get_relevant_documents(file_system_reader, query)
     # now split them into chunks and with the newline character as the separator
     splitter = %Character{
       embedder_name: "gpt2",
