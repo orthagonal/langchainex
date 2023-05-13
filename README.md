@@ -5,9 +5,10 @@
   - [Installation](#installation)
   - [LangChain Components](#langchain-components)
   - [Providers](#providers)
-    - [Current Language Model Providers as of May 11th 2023:](#current-language-model-providers-as-of-may-11th-2023)
-    - [Current Vector DB Providers as of May 11th 2023:](#current-vector-db-providers-as-of-may-11th-2023)
-    - [In Progress:](#in-progress)
+    - [Current Providers as of May 11th 2023:](#current-providers-as-of-may-11th-2023)
+      - [Language Models](#language-models)
+      - [Vector Storage With](#vector-storage-with)
+    - [Incoming:](#incoming)
   - [tl;dr GenServers](#tldr-genservers)
     - [Scraper](#scraper)
 
@@ -53,19 +54,22 @@ verification points where the AIs are forced to align with human intentions.  Ch
 
 ## Providers
 
-### Current Language Model Providers as of May 11th 2023:
- - OpenAI
- - Replicate  
- - HuggingFace
- - Bumblebee (runs models on your own hardware)
+### Current Providers as of May 11th 2023:
 
-### Current Vector DB Providers as of May 11th 2023:
+#### Language Models 
+ - OpenAI
+ - Replicate API 
+ - HuggingFace API
+#### Vector Storage With
  - Pinecone Vector Storage
 
-### In Progress:
- - weaviate vector storage
- - Vespa vector storage
- - 
+### Incoming:
+
+ - bumblebee
+ - pg-vector (Postgres Vector Storage)
+ - weaviate (Weaviate Vector Storage)
+ - vespa
+ 
 See config.ex for list of currently supported providers
 
 
