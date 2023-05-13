@@ -44,7 +44,7 @@ defmodule LangChain.Providers.Huggingface.Embedder do
           wait_for_model: false
         })
 
-      base = LangChain.Providers.Huggingface.get_base(provider)
+      base = Huggingface.get_base(provider)
       IO.inspect(base)
 
       case HTTPoison.post(base.url, body, base.headers) do
@@ -73,6 +73,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     Huggingface is a host for ML models that take in any data
     and return any data, it can be used for LLM, image generation, image parsing, sound, etc
   """
+  alias LangChain.Providers.Huggingface
 
   defstruct model_name: "gpt2",
             max_new_tokens: 25,
@@ -88,7 +89,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           "inputs" => prompt
         })
 
-      base = LangChain.Providers.Huggingface.get_base(model)
+      base = Huggingface.get_base(model)
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
