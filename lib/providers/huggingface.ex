@@ -32,6 +32,7 @@ defmodule LangChain.Providers.Huggingface.Embedder do
   The embedding provider must match the input size of the model and use the same encoding scheme.
   Use Sentence Transformer modles like
   """
+  alias LangChain.Providers.Huggingface
   defstruct model_name: "gpt2"
 
   defimpl LangChain.EmbedderProtocol do
