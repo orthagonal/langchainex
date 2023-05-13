@@ -18,8 +18,8 @@ defmodule LangChain.TextSplitter.Character do
   defstruct embedder_name: "gpt2",
             separator: "\n\n",
             # mandatory, the max size of the chunks we want to split the text into
-            chunk_size: 10,
-            chunk_overlap: 0
+            chunk_size: 1000,
+            chunk_overlap: 200
 
   defimpl LangChain.TextSplitter do
     def split_strings(splitter, documents) do
