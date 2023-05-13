@@ -50,7 +50,7 @@ defmodule LangChain.Providers.Huggingface.Embedder do
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           # should just be list of dicts
-          decoded_body = Jason.decode!(body)
+          Jason.decode!(body)
 
         {:error, %HTTPoison.Error{reason: reason}} ->
           {:error, reason}
