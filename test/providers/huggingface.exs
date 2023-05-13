@@ -3,18 +3,27 @@ defmodule LangChain.Providers.HuggingfaceTest do
   test replicate LLMs
   """
   use ExUnit.Case
+  alias LangChain.EmbedderProtocol
   alias LangChain.LanguageModelProtocol
-  alias LangChain.Providers.Huggingface
+  alias LangChain.Providers.Huggingface.Embedder
+  alias LangChain.Providers.Huggingface.LanguageModel
   require Logger
 
-  @model %Huggingface{
+  @model %LanguageModel{
     model_name: "gpt2"
   }
-  @ms_gpt_model %Huggingface{
+  @ms_gpt_model %LanguageModel{
+    model_name: "microsoft/DialoGPT-large"
+  }
+  @embedder_gpt2 %Embedder{
+    # gpt2"
+    model_name: "sentence-transformers/distilbert-base-nli-mean-tokens"
+  }
+  @embedder_ms_gpt %Embedder{
     model_name: "microsoft/DialoGPT-large"
   }
 
-  describe "Huggingface implementation of LanguageModelProtocol" do
+  describe "Huggingface.LanguageModel implementation of LanguageModelProtocol" do
     test "call/2 returns a valid response" do
       prompt = "What time is it now?"
       response = LanguageModelProtocol.call(@model, prompt)
@@ -35,6 +44,32 @@ defmodule LangChain.Providers.HuggingfaceTest do
       Logger.debug(response)
       assert is_list(response)
       assert length(response) > 0
+    end
+  end
+
+  describe "Huggingface.Embedder implementation of EmbedderProtocol" do
+    test "embed_query/2 returns a valid response" do
+      prompt = "What time is it now?"
+      response = EmbedderProtocol.embed_query(@embedder_gpt2, prompt)
+      # Logger.debug(response)
+      # make sure it's a list of vectors
+      assert is_list(response)
+      assert length(response) > 0
+      assert is_list(Enum.at(response, 0))
+    end
+
+    test "embed_documents/2 returns a valid response" do
+      response =
+        EmbedderProtocol.embed_documents(@embedder_gpt2, [
+          "What time is it now?",
+          "Fourscore and seven years ago"
+        ])
+
+      Logger.debug(response)
+      # make sure it's a list of vectors
+      assert is_list(response)
+      assert length(response) > 0
+      assert is_list(Enum.at(response, 0))
     end
   end
 end
