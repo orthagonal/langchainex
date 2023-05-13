@@ -35,6 +35,41 @@ end
 ```
 
 
+## LangChain Components 
+
+ LangChainEx chains are composed in a hierarchical manner, starting at 
+ the most fundamental component and going up it is:
+
+- PromptTemplate
+- ChainLink
+- Chain
+  
+ PromptTemplates are just text templates. ChainLinks wrap a PromptTemplate , which are composed of PromptTemplates. 
+
+
+
+## Providers
+
+### Current Providers as of May 11th 2023:
+
+#### Language Models 
+ - OpenAI
+ - Replicate API 
+ - HuggingFace API
+#### Vector Storage With
+ - Pinecone Vector Storage
+
+### Incoming:
+
+ - bumblebee
+ - pg-vector (Postgres Vector Storage)
+ - weaviate (Weaviate Vector Storage)
+ - vespa
+ 
+See config.ex for list of currently supported providers
+
+
+
 ## tl;dr GenServers 
 
 ### Scraper
@@ -72,36 +107,3 @@ In your code:
   "
     end
 ```
-
-## LangChain Components 
-
- LangChainEx chains are composed in a hierarchical manner, starting at 
- the most fundamental component and going up it is:
-
-- PromptTemplate
-- ChainLink
-- Chain
-  
- PromptTemplates are just text templates. ChainLinks wrap a PromptTemplate , which are composed of PromptTemplates. 
-
-Components you can use to construct your own language chains
-### 
-
-
-
-
-## Providers
-
-### Current Providers as of May 7th 2023:
- - OpenAI
- - Pinecone Vector Storage
-
-### Incoming:
- - Replicate API 
- - HuggingFace API
- - pg-vector (Postgres Vector Storage)
- - weaviate (Weaviate Vector Storage)
-
-See config.ex for list of currently supported providers
-
-
