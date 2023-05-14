@@ -1,5 +1,5 @@
 # any replicate-specific code should go in this file
-defmodule LangChain.Providers.Replicate do
+defmodule LangChain.Providers.Replicate.LanguageModel do
   @moduledoc """
     A module for interacting with Replicate's API
     Replicate is a host for ML models that take in any data
@@ -10,11 +10,11 @@ defmodule LangChain.Providers.Replicate do
   defstruct model_name: "alpaca",
             # the replicate model call uses the 'version'
             version: "latest",
-            max_tokens: 25,
-            temperature: 0.5,
+            max_tokens: 2000,
+            temperature: 0.1,
             n: 1
 
-  defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Replicate do
+  defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Replicate.LanguageModel do
     @api_base_url "https://api.replicate.com/v1/predictions"
     @poll_interval 1000
 
@@ -78,6 +78,7 @@ defmodule LangChain.Providers.Replicate do
     end
 
     defp poll_for_prediction_result(prediction_id) do
+      IO.puts("polling for prediction result")
       base = get_base(prediction_id, :poll)
 
       case HTTPoison.get(base.url, base.headers) do
@@ -88,7 +89,8 @@ defmodule LangChain.Providers.Replicate do
             "succeeded" ->
               {:ok, response["output"]}
 
-            _ ->
+            result ->
+              IO.inspect(result)
               Process.sleep(@poll_interval)
               poll_for_prediction_result(prediction_id)
           end
@@ -99,11 +101,43 @@ defmodule LangChain.Providers.Replicate do
     end
 
     def chat(model, chats) when is_list(chats) do
-      chats
-      |> Enum.map(fn chat ->
-        call(model, chat.text)
-      end)
+      prompt =
+        chats
+        # Starts the index from 1
+        |> Enum.with_index(1)
+        |> Enum.map(fn {chat, index} ->
+          role = Map.get(chat, :role, "")
+          chat.text
+          # "dialogprompt$#{index}: { text: '#{chat.text}'" <>
+          #   if(role != "", do: ", role: '#{role}'", else: "") <> " }"
+        end)
+        |> Enum.join("\n")
+
+      IO.inspect(prompt)
+
+      call(model, prompt)
       |> handle_responses()
+    end
+
+    defp handle_responses(responses) when is_list(responses) do
+      IO.inspect(responses)
+      # if responses is a list of strings, just join the list and return
+      case Enum.all?(responses, &is_binary/1) do
+        true ->
+          Enum.join(responses, " ")
+
+        false ->
+          Enum.map(responses, fn response ->
+            case response do
+              %{"translation_text" => text} -> text
+              %{"generated_text" => text} -> text
+              %{"conversation" => %{"generated_responses" => [text | _]}} -> text
+              list when is_list(list) -> Enum.join(list, "\n")
+              string when is_binary(string) -> string
+              _ -> "Unknown response format"
+            end
+          end)
+      end
     end
 
     defp handle_responses(responses) do

@@ -10,9 +10,10 @@ defmodule SelfDocumenting do
   alias LangChain.Retriever
   alias LangChain.Retriever.FileSystemProvider
 
-  alias LangChain.EmbedderProtocol
-  alias LangChain.Providers.Huggingface.Embedder
-  alias LangChain.Providers.Huggingface.LanguageModel
+  # alias LangChain.EmbedderProtocol
+  # alias LangChain.Providers.Huggingface.Embedder
+  # alias LangChain.Providers.Huggingface.LanguageModel
+  alias LangChain.Providers.Replicate.LanguageModel
 
   # test "turn self into text chunks" do
   #   # get the contents of all files under the /lib directory
@@ -83,32 +84,37 @@ defmodule SelfDocumenting do
     src_as_msgs =
       Enum.map(chunk1, fn chunk ->
         %{
-          text: chunk,
-          role: "user"
+          text: "Source code: \"\"\"" <> chunk <> "\"\"\"",
+          role: "assistant"
         }
       end)
 
+    # model = %LanguageModel{
+    #   model_name: "google/flan-t5-xl"
+    #   # model_name: "microsoft/DialoGPT-large"
+    # }
+    # model = %LanguageModel{
+    #   model_name: "dolly_v2_12b",
+    #   version: "ef0e1aefc61f8e096ebe4db6b2bacc297daf2ef6899f0f7e001ec445893500e5"
+    # }
     model = %LanguageModel{
-      model_name: "google/flan-t5-xl"
-      # model_name: "microsoft/DialoGPT-large"
+      model_name: "vicuna-13b",
+      version: "e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e"
     }
 
     IO.puts("asking the question:")
 
     question =
-      src_as_msgs
-      |> Enum.take(1)
-      |> Enum.concat([
+      [
         %{
-          text: "Summarize the code above",
+          text: "Given this Elixir code, summarize it.",
           role: "user"
         }
-      ])
+      ] ++ (src_as_msgs |> Enum.take(1))
 
-    # IO.inspect(question)
     response = LanguageModelProtocol.chat(model, question)
     IO.puts(">>>>>>>>>>>>>>>>>>>>>>>>>>")
     IO.inspect(response)
-    Process.sleep(5_000)
+    # Process.sleep(60_000)
   end
 end
