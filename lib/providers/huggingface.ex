@@ -51,6 +51,7 @@ defmodule LangChain.Providers.Huggingface.Embedder do
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+          IO.inspect(body)
           # should just be list of dicts
           Jason.decode!(body)
 
@@ -148,6 +149,10 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       handle_response(decoded_body)
     end
 
+    defp handle_response(decoded_body, :chat) do
+      handle_chat_response(decoded_body)
+    end
+
     defp handle_response(%{"generated_text" => generated_text}) do
       generated_text
     end
@@ -156,9 +161,12 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       translation_text
     end
 
-    defp handle_response(%{"conversation" => %{"generated_responses" => responses}}) do
-      List.first(responses)
+    defp handle_chat_response(%{"conversation" => %{"generated_responses" => responses}}) do
+      responses
+      |> Enum.map(&%{text: &1, role: "assistant"})
     end
+
+    defp handle_chat_response(_), do: {:error, "Unexpected API response format"}
 
     defp handle_response(_), do: {:error, "Unexpected API response format"}
 

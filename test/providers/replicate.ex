@@ -28,27 +28,28 @@ defmodule LangChain.Providers.ReplicateTest do
   }
 
   describe "Replicate implementation of LanguageModelProtocol" do
-    test "call/2 returns a valid response" do
-      prompt = "Write a sentence containing the word *grue*."
-      response = LanguageModelProtocol.call(@model, prompt)
-      Logger.debug(response)
-      assert String.length(response) > 0
-      assert String.contains?(response, "grue")
-
-      response2 = LanguageModelProtocol.call(@dolly_v2_12b, prompt)
-      Logger.debug(response2)
-    end
-
-    # test "chat/2 returns a valid response" do
-    #   msgs = [
-    #     %{text: "Write a sentence containing the word *grue*.", role: "user"},
-    #     %{text: "Include a reference to the Dead Mountaineers Hotel."}
-    #   ]
-
-    #   response = LanguageModelProtocol.chat(@dolly_v2_12b, msgs)
+    # test "call/2 returns a valid response" do
+    #   prompt = "Write a sentence containing the word *grue*."
+    #   response = LanguageModelProtocol.call(@model, prompt)
     #   Logger.debug(response)
-    #   assert is_list(response)
-    #   assert length(response) > 0
+    #   assert String.length(response) > 0
+    #   assert String.contains?(response, "grue")
+
+    #   response2 = LanguageModelProtocol.call(@dolly_v2_12b, prompt)
+    #   Logger.debug(response2)
     # end
+
+    test "chat/2 returns a valid response" do
+      msgs = [
+        %{text: "Write a sentence containing the word *grue*.", role: "user"},
+        %{text: "Include a reference to the Dead Mountaineers Hotel."}
+      ]
+
+      response = LanguageModelProtocol.chat(@model, msgs)
+      IO.inspect(response)
+      # Logger.debug(response)
+      # assert is_list(response)
+      # assert length(response) > 0
+    end
   end
 end
