@@ -47,8 +47,9 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
 
         Nx.Serving.run(serving, prompt)
         |> Map.get(:results, [])
-        |> Enum.map(fn result -> Map.get(result, :text, "") end)
-        |> Enum.join(" ")
+        |> Enum.map_join(" ", fn result ->
+          Map.get(result, :text, "")
+        end)
       end
 
       # '{"inputs": {"past_user_inputs": ["Which movie is the best ?"],

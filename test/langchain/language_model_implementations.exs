@@ -1,4 +1,9 @@
 defmodule LangChain.LanguageModelProtocolTest do
+  @moduledoc """
+  This test is here to do a unified test of all the language model implementations
+  in one place, backed by their default models.  This ensures that our model is
+  'unified' and models can talk to each other no matter what their actual implementation is.
+  """
   use ExUnit.Case, async: true
   alias LangChain.LanguageModelProtocol
   require Logger
