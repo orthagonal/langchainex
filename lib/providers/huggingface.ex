@@ -98,7 +98,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
         request(model, prompt, :call)
       rescue
         _ ->
-          "Huggingface API-based model #{model.model_name}: I had an error trying to process #{prompt} "
+          "Huggingface API-based model #{model.model_name}: I had a technical malfunction trying to process #{prompt} "
       end
     end
 
@@ -107,7 +107,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
         request(model, prepare_input(chats), :chat)
       rescue
         _ ->
-          "Huggingface API-based model #{model.model_name}: I had an error trying to process #{IO.inspect(chats)} "
+          "Huggingface API-based model #{model.model_name}: I had a technical malfunction trying to process these chats."
       end
     end
 
@@ -164,9 +164,6 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     defp handle_response(_), do: {:error, "Unexpected API response format"}
 
     defp handle_chat_response(decoded_body) when is_list(decoded_body) do
-      IO.puts(" i got the list here")
-      IO.inspect(decoded_body)
-
       Enum.map_join(decoded_body, "\n", fn %{"generated_text" => inner_json_string} ->
         inner_json_string
       end)

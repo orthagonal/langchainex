@@ -57,10 +57,7 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
     # until the prediction is complete, then you get the output
     def call(model, prompt) do
       {:ok, prediction_id} = create_prediction(model, prompt)
-      Logger.debug(" got back prediction " <> prediction_id)
       {:ok, output} = poll_for_prediction_result(prediction_id)
-      IO.puts("got back output")
-      IO.inspect(output)
       # try to make sure output is always a simple string
       if is_list(output) do
         # join strings if they are a list:
