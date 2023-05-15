@@ -27,7 +27,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
       # get the Bumblebee config from config.exs
 
       # you can config bumblebee models from the mix.exs file
-      defp get_config_from_mix(model) do
+      defp get_config_from_mix(_model) do
         {
           :ok,
           mix_config
@@ -57,7 +57,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
             defn_options: [compiler: EXLA]
           )
 
-        Nx.Serving.run(serving, "this is some stuff")
+        Nx.Serving.run(serving, prompt)
         |> Map.get(:results, [])
         |> Enum.map(fn result -> Map.get(result, :text, "") end)
         |> Enum.join(" ")
@@ -79,10 +79,10 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
         {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
         serving = Bumblebee.Text.conversation(model, tokenizer, generation_config)
         message = List.last(chats).text
-        history = List.delete_at(chats, -1)
+        prior = List.delete_at(chats, -1)
 
         %{text: text, history: history} =
-          Nx.Serving.run(serving, %{text: message, history: history})
+          Nx.Serving.run(serving, %{text: message, history: prior})
       end
     end
   end

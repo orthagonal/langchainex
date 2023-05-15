@@ -1,6 +1,7 @@
 defmodule LangChain.LanguageModelProtocolTest do
   use ExUnit.Case, async: true
   alias LangChain.LanguageModelProtocol
+  require Logger
 
   # the inputs for the 'call' function
   @input_for_call "You remind me of the baby"
@@ -21,15 +22,14 @@ defmodule LangChain.LanguageModelProtocolTest do
   ]
 
   # checks the type of the response
-  defp yellow_function(response, expected_response) do
+  defp yellow_function(response, _expected_response) do
     is_binary(response)
   end
 
   # Check the content of the response
   # not catastrophic if this fails, it's an AI
   defp green_function(response, expected_response) do
-    # response == expected_response.generated_text
-    false
+    response == expected_response.generated_text
   end
 
   test "call/2 returns a valid response for all implementations" do
@@ -44,8 +44,8 @@ defmodule LangChain.LanguageModelProtocolTest do
             %{
               model: %{provider: model.provider, model_name: model.model_name},
               response: response,
-              yellow: yellow_function(response, @expected_output_for_call),
-              green: green_function(response, @expected_output_for_call)
+              yellow: yellow_function(response, @inputs_and_outputs.expected_output),
+              green: green_function(response, @inputs_and_outputs.expected_output)
             }
           rescue
             error in [RuntimeError, SomeOtherError] ->
@@ -59,14 +59,13 @@ defmodule LangChain.LanguageModelProtocolTest do
       )
       |> Enum.to_list()
 
-    Enum.each(results, fn
+    Enum.map(results, fn
       {:ok, {:error, reason}} ->
         # The task failed, so we print the error message
         IO.puts("A test failed with reason: #{inspect(reason)}")
 
       {:ok, result} ->
-        result
-        # The task finished successfully, so we do nothing
+        Logger.debug("Results: #{inspect(result)}")
         :ok
     end)
   end
