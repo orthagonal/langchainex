@@ -30,17 +30,18 @@ defmodule LangChain.Embedder.OpenAIProvider do
   end
 end
 
-defmodule LangChain.Providers.OpenAI do
+defmodule LangChain.Providers.OpenAI.LanguageModel do
   @moduledoc """
   A module for interacting with OpenAI's main language models
   """
 
-  defstruct model_name: "text-ada-001",
+  defstruct provider: :openai,
+            model_name: "gpt-3.5-turbo",
             max_tokens: 25,
             temperature: 0.5,
             n: 1
 
-  defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.OpenAI do
+  defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.OpenAI.LanguageModel do
     alias ExOpenAI.Components.CreateCompletionResponse
 
     # these models require the prompt be presented as a 'chat'
@@ -69,9 +70,18 @@ defmodule LangChain.Providers.OpenAI do
 
         case chat(model, msgs) do
           {:ok, response} ->
-            # Extract the assistant's response text from the list of chats
-            assistant_response = Enum.find(response, &(&1.role == "assistant"))
-            {:ok, assistant_response.text}
+            # Group the chat messages by role
+            role_groups = Enum.group_by(response, & &1.role)
+
+            # Format each group into a string and concatenate them
+            role_responses =
+              Enum.map(role_groups, fn {role, messages} ->
+                # Extract the texts from the messages and join them into one string
+                text = messages |> Enum.map(& &1.text) |> Enum.join(" ")
+                "#{role}: '#{text}'"
+              end)
+
+            role_responses |> Enum.join(", ")
 
           {:error, error} ->
             {:error, error}

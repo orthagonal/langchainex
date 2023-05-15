@@ -14,12 +14,12 @@ defmodule LangChain.Providers.ReplicateTest do
   }
 
   @vicuna_13_b %LanguageModel{
-    model_name: "vicuna_13_b"
+    model_name: "vicuna_13_b",
     version: "a68b84083b703ab3d5fbf31b6e25f16be2988e4c3e21fe79c2ff1c18b99e61c1"
   }
 
   @stablelm_tuned_alpha_7b %LanguageModel{
-    model_name: "stablelm-tuned-alpha-7b"
+    model_name: "stablelm-tuned-alpha-7b",
     version: "c49dae362cbaecd2ceabb5bd34fdb68413c4ff775111fea065d259d577757beb"
   }
 

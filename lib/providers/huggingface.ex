@@ -75,7 +75,8 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
   alias LangChain.Providers.Huggingface
 
   @fallback_chat_model %{
-    model_name: "gpt2",
+    provider: :huggingface,
+    model_name: "google/flan-t5-small",
     max_new_tokens: 25,
     temperature: 0.5,
     top_k: nil,
@@ -83,7 +84,8 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     polling_interval: 2000
   }
 
-  defstruct model_name: "gpt2",
+  defstruct provider: :huggingface,
+            model_name: "google/flan-t5-small",
             max_new_tokens: 25,
             temperature: 0.5,
             top_k: nil,

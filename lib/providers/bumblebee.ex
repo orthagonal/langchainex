@@ -1,18 +1,19 @@
 # any bumblebee-specific code should go in this file
 
-defmodule LangChain.Providers.Bumblebee do
+defmodule LangChain.Providers.Bumblebee.LanguageModel do
   @moduledoc """
     A module for interacting with Bumblebee models, unlike
     the other providers Bumblebee runs models on your
     local hardware, see https://hexdocs.pm/bumblebee/Bumblebee.html
-  
+
     When you load a model with Bumblebee it will download that model from
     the Huggingface API and cache it locally, so the first time you run
     a model it will take a while to download, but after that it will be
     much faster
   """
 
-  defstruct model_name: "gpt2",
+  defstruct provider: :bumblebee,
+            model_name: "gpt2",
             max_new_tokens: 25,
             temperature: 0.5,
             top_k: nil,
@@ -22,7 +23,7 @@ defmodule LangChain.Providers.Bumblebee do
   @bumblebee_enabled Application.compile_env(:langchainex, :bumblebee_enabled)
 
   if @bumblebee_enabled do
-    defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Bumblebee do
+    defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Bumblebee.LanguageModel do
       # get the Bumblebee config from config.exs
 
       # you can config bumblebee models from the mix.exs file

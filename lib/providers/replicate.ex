@@ -7,9 +7,11 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
   """
   require Logger
 
-  defstruct model_name: "alpaca",
-            # the replicate model call uses the 'version'
-            version: "latest",
+  defstruct provider: :replicate,
+            # the model name isn't used by replicate but is used by LangChain
+            model_name: "vicuna-13b",
+            # the replicate model call needs the 'version' to find it
+            version: "e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
             max_tokens: 2000,
             temperature: 0.1,
             n: 1
@@ -56,7 +58,12 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
       {:ok, prediction_id} = create_prediction(model, prompt)
       Logger.debug(" got back prediction " <> prediction_id)
       {:ok, output} = poll_for_prediction_result(prediction_id)
-      output
+      # try to make sure output is always a simple string
+      if is_list(output) do
+        output |> List.join()
+      else
+        output
+      end
     end
 
     defp create_prediction(model, input) do
@@ -78,19 +85,28 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
     end
 
     defp poll_for_prediction_result(prediction_id) do
-      IO.puts("polling for prediction result")
+      # IO.puts("polling for prediction result")
       base = get_base(prediction_id, :poll)
 
       case HTTPoison.get(base.url, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           response = Jason.decode!(body)
+          # IO.inspect(response)
 
           case response["status"] do
             "succeeded" ->
-              {:ok, response["output"]}
+              output =
+                if is_list(response["output"]) do
+                  # Join the output list into a single string
+                  Enum.join(response["output"], " ")
+                else
+                  # If output is already a string, just return it as is
+                  response["output"]
+                end
+
+              {:ok, output}
 
             result ->
-              IO.inspect(result)
               Process.sleep(@poll_interval)
               poll_for_prediction_result(prediction_id)
           end
@@ -99,6 +115,29 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
           {:error, reason}
       end
     end
+
+    # defp poll_for_prediction_result(prediction_id) do
+    #   IO.puts("polling for prediction result")
+    #   base = get_base(prediction_id, :poll)
+
+    #   case HTTPoison.get(base.url, base.headers) do
+    #     {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+    #       response = Jason.decode!(body)
+    #       IO.inspect(response)
+
+    #       case response["status"] do
+    #         "succeeded" ->
+    #           {:ok, response["output"]}
+
+    #         result ->
+    #           Process.sleep(@poll_interval)
+    #           poll_for_prediction_result(prediction_id)
+    #       end
+
+    #     {:error, %HTTPoison.Error{reason: reason}} ->
+    #       {:error, reason}
+    #   end
+    # end
 
     def chat(model, chats) when is_list(chats) do
       prompt =
