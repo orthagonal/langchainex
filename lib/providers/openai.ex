@@ -77,7 +77,7 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
             role_responses =
               Enum.map(role_groups, fn {role, messages} ->
                 # Extract the texts from the messages and join them into one string
-                text = messages |> Enum.map(& &1.text) |> Enum.join(" ")
+                text = messages |> Enum.map_join(& &1.text, " ")
                 "#{role}: '#{text}'"
               end)
 
