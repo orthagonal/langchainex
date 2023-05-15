@@ -2,8 +2,8 @@ defmodule VectorStoreProviderTest do
   @moduledoc false
 
   use ExUnit.Case
-  alias LangChain.VectorStore.WeaviateProvider
   alias LangChain.VectorStore.Provider
+  alias LangChain.VectorStore.WeaviateProvider
 
   setup do
     provider = %WeaviateProvider{
