@@ -69,7 +69,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
         try do
           _chat(config, chats)
         rescue
-          e ->
+          _e ->
             "Model Bumblebee #{config.model_name}: I had a technical malfunction trying to processing this "
         end
       end

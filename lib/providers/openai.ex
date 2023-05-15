@@ -141,10 +141,5 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
         end
       end)
     end
-
-    defp openai_to_chats(choices) do
-      choices
-      |> Enum.map(fn choice -> %{text: choice.message.content, role: choice.message.role} end)
-    end
   end
 end
