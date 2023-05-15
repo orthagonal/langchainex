@@ -67,25 +67,7 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
       # this handles fixing it up so it works either way
       if chat_model?(model.model_name) do
         msgs = [%{text: prompt, role: "user"}]
-
-        case chat(model, msgs) do
-          {:ok, response} ->
-            # Group the chat messages by role
-            role_groups = Enum.group_by(response, & &1.role)
-
-            # Format each group into a string and concatenate them
-            role_responses =
-              Enum.map(role_groups, fn {role, messages} ->
-                # Extract the texts from the messages and join them into one string
-                text = messages |> Enum.map_join(& &1.text, " ")
-                "#{role}: '#{text}'"
-              end)
-
-            role_responses |> Enum.join(", ")
-
-          {:error, error} ->
-            {:error, error}
-        end
+        chat(model, msgs)
       else
         {:ok, response} =
           ExOpenAI.Completions.create_completion(
@@ -101,22 +83,35 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
     end
 
     defp extract_text(%CreateCompletionResponse{choices: [%{text: text} | _]}) do
-      {:ok, text}
+      text
     end
 
     def chat(model, msgs) do
       converted = chats_to_openai(msgs)
 
       case ExOpenAI.Chat.create_chat_completion(converted, model.model_name, n: model.n) do
-        {:ok, openai_response} ->
-          response =
-            openai_response.choices
-            |> openai_to_chats()
+        {:ok, response} ->
+          cond do
+            # if it's a list just return the first 'text' field
+            is_list(response) ->
+              response
+              |> List.first()
+              |> Map.get(:text)
 
-          {:ok, response}
+            # if it's a map it should have a choices.message field with the 'content' or 'text'
+            is_map(response) ->
+              response
+              |> Map.get(:choices, %{})
+              |> List.first()
+              |> Map.get(:message, %{})
+              |> Map.get(:content, "I could not understand the result I got back")
+
+            true ->
+              "Here is the response I got back: #{inspect(response)}"
+          end
 
         {:error, error} ->
-          {:error, error}
+          "Model #{model.model_name}: I had an error processing #{msgs}.  This is the error message: #{inspect(error)}"
       end
     end
 
@@ -145,11 +140,6 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
             %{}
         end
       end)
-    end
-
-    defp openai_to_chats(choices) do
-      choices
-      |> Enum.map(fn choice -> %{text: choice.message.content, role: choice.message.role} end)
     end
   end
 end
