@@ -9,22 +9,25 @@ defmodule LangChain.Providers.BumblebeeTest do
   """
   use ExUnit.Case
   alias LangChain.LanguageModelProtocol
-  alias LangChain.Providers.Bumblebee
+  alias LangChain.Providers.Bumblebee.LanguageModel
   require Logger
 
   @tag timeout: :infinity
 
-  @model %Bumblebee{
+  @model %LanguageModel{
+    # model_name: "facebook/blenderbot-400M-distill"
     model_name: "gpt2"
   }
 
-  @fb_bb_model %Bumblebee{
-    model_name: "facebook/blenderbot-400M-distill"
+  @fb_bb_model %Language{
+    model_name: "gpt2"
+    # model_name: "facebook/blenderbot-400M-distill"
   }
 
   describe "Bumblebee implementation of LanguageModelProtocol" do
     test "call/2 returns a valid response" do
       prompt = "What time is it now?"
+      IO.puts("calling")
       response = LanguageModelProtocol.call(@model, prompt)
       Logger.debug(response)
       assert String.length(response) > 0
@@ -47,24 +50,24 @@ defmodule LangChain.Providers.BumblebeeTest do
   end
 
   # describe "Bumblebee.Embedder implementation of EmbedderProtocol" do
-  #   setup do
-  #     embedder_bumblebee = %LangChain.Providers.Bumblebee.Embedder{
-  #       model_name: "sentence-transformers/all-MiniLM-L6-v2"
-  #     }
+  #   #   setup do
+  #   #     embedder_bumblebee = %LangChain.Providers.Bumblebee.Embedder{
+  #   #       model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  #   #     }
 
-  #     {:ok, embedder: embedder_bumblebee}
-  #   end
+  #   #     {:ok, embedder: embedder_bumblebee}
+  #   #   end
 
-  #   test "embed_query/2 returns a valid response", %{embedder: embedder_bumblebee} do
-  #     prompt = "What time is it now?"
-  #     {:ok, response} = LangChain.EmbedderProtocol.embed_query(embedder_bumblebee, prompt)
+  #   #   test "embed_query/2 returns a valid response", %{embedder: embedder_bumblebee} do
+  #   #     prompt = "What time is it now?"
+  #   #     {:ok, response} = LangChain.EmbedderProtocol.embed_query(embedder_bumblebee, prompt)
 
-  #     IO.inspect(response)
-  #     # make sure it's a list of vectors
-  #     assert is_list(response)
-  #     assert length(response) > 0
-  #     assert is_list(Enum.at(response, 0))
-  #   end
+  #   #     IO.inspect(response)
+  #   #     # make sure it's a list of vectors
+  #   #     assert is_list(response)
+  #   #     assert length(response) > 0
+  #   #     assert is_list(Enum.at(response, 0))
+  #   #   end
 
   #   test "embed_documents/2 returns a valid response", %{embedder: embedder_bumblebee} do
   #     {:ok, response} =

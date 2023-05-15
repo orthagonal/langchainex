@@ -16,7 +16,7 @@ defmodule LangChain.VectorStore.WeaviateProvider do
     alias UUID
 
     defp get_base(config_name, operation) do
-      IO.inspect(Application.fetch_env(:langchainex, config_name))
+      # IO.inspect(Application.fetch_env(:langchainex, config_name))
 
       {
         :ok,
@@ -59,9 +59,7 @@ defmodule LangChain.VectorStore.WeaviateProvider do
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, response} ->
-          IO.inspect(response)
           decoded_response = Jason.decode!(response.body)
-          IO.inspect(decoded_response)
           {:ok, decoded_response}
 
         # size = decoded_response["upsertedCount"]
@@ -75,8 +73,6 @@ defmodule LangChain.VectorStore.WeaviateProvider do
         {:error, %HTTPoison.Error{reason: reason}} ->
           {:error, reason}
       end
-
-      IO.inspect("specify")
     end
 
     def add_vectors(config, vectors) do
@@ -100,9 +96,7 @@ defmodule LangChain.VectorStore.WeaviateProvider do
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, response} ->
-          IO.inspect(response)
           decoded_response = Jason.decode!(response.body)
-          IO.inspect(decoded_response)
           {:ok, decoded_response}
 
         # size = decoded_response["upsertedCount"]

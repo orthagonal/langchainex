@@ -1,3 +1,5 @@
+# any huggingface-specific code should go in this file
+
 defmodule LangChain.Providers.Huggingface do
   @moduledoc """
   shared configuration for Huggingface API calls
@@ -63,7 +65,6 @@ defmodule LangChain.Providers.Huggingface.Embedder do
   end
 end
 
-# any huggingface-specific code should go in this file
 defmodule LangChain.Providers.Huggingface.LanguageModel do
   @moduledoc """
     A module for interacting with Huggingface's API
@@ -72,62 +73,98 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
   """
   alias LangChain.Providers.Huggingface
 
-  defstruct model_name: "gpt2",
+  @fallback_chat_model %{
+    provider: :huggingface,
+    model_name: "google/flan-t5-small",
+    max_new_tokens: 25,
+    temperature: 0.5,
+    top_k: nil,
+    top_p: nil,
+    polling_interval: 2000
+  }
+
+  defstruct provider: :huggingface,
+            model_name: "google/flan-t5-small",
             max_new_tokens: 25,
             temperature: 0.5,
             top_k: nil,
-            top_p: nil
+            top_p: nil,
+            polling_interval: 2000,
+            fallback_chat_model: @fallback_chat_model
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Huggingface.LanguageModel do
-    # call with a single input prompt
     def call(model, prompt) do
-      body =
-        Jason.encode!(%{
-          "inputs" => prompt
-        })
-
-      base = Huggingface.get_base(model)
-
-      case HTTPoison.post(base.url, body, base.headers) do
-        {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          decoded_body = Jason.decode!(body)
-          first_result = Enum.at(decoded_body, 0)
-          Map.get(first_result, "generated_text")
-
-        {:error, %HTTPoison.Error{reason: reason}} ->
-          {:error, reason}
-      end
+      request(model, prompt, :call)
     end
 
-    # call with a list of input prompts
     def chat(model, chats) when is_list(chats) do
-      json_input = prepare_input(chats)
-      body = Jason.encode!(json_input)
+      request(model, prepare_input(chats), :chat)
+    end
+
+    # huggingface api can have a few different responses,
+    # one is if the model is still loading
+    # another is if the model you are calling is too big and needs dedicated hosting
+    defp request(model, input, func_name) do
       base = Huggingface.get_base(model)
+      body = Jason.encode!(%{"inputs" => input})
+
+      IO.puts("Requesting: #{base.url} with body: #{body}")
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+          IO.puts("Received 200 response: #{body}")
           decoded_body = Jason.decode!(body)
-          first_result = Enum.at(decoded_body, 0)
-          handle_response(first_result)
+          handle_response(decoded_body, func_name)
+
+        {:ok, %HTTPoison.Response{status_code: 503, body: _body}} ->
+          IO.puts("Received 503 response")
+          :timer.sleep(model.polling_interval)
+          request(model, input, func_name)
+
+        {:ok, %HTTPoison.Response{status_code: 403, body: _body}} ->
+          IO.puts("Received 403 response")
+
+          IO.puts(
+            "Model is too large to load, falling back to #{model.testfallback_chat_model.model_name}"
+          )
+
+          apply(__MODULE__, func_name, [model.testfallback_chat_model, input])
 
         {:error, %HTTPoison.Error{reason: reason}} ->
+          IO.puts("Received error: #{reason}")
           {:error, reason}
       end
     end
 
-    defp handle_response(response) do
-      case response do
-        {"conversation", %{"generated_responses" => generated_text}} ->
-          generated_text
-
-        {:error, _} = error ->
-          error
-
-        _ ->
-          {:error, "Unexpected API response format"}
-      end
+    defp handle_response(decoded_body, :call) when is_list(decoded_body) do
+      first_result = Enum.at(decoded_body, 0)
+      handle_response(first_result)
     end
+
+    defp handle_response(decoded_body, :call) do
+      handle_response(decoded_body)
+    end
+
+    defp handle_response(decoded_body, :chat) do
+      handle_chat_response(decoded_body)
+    end
+
+    defp handle_response(%{"generated_text" => generated_text}) do
+      generated_text
+    end
+
+    defp handle_response(%{"translation_text" => translation_text}) do
+      translation_text
+    end
+
+    defp handle_response(_), do: {:error, "Unexpected API response format"}
+
+    defp handle_chat_response(%{"conversation" => %{"generated_responses" => responses}}) do
+      responses
+      |> Enum.map(&%{text: &1, role: "assistant"})
+    end
+
+    defp handle_chat_response(_), do: {:error, "Unexpected API response format"}
 
     def prepare_input(msgs) do
       {past_user_inputs, generated_responses} =

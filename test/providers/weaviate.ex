@@ -2,8 +2,8 @@ defmodule VectorStoreProviderTest do
   @moduledoc false
 
   use ExUnit.Case
-  alias LangChain.VectorStore.WeaviateProvider
   alias LangChain.VectorStore.Provider
+  alias LangChain.VectorStore.WeaviateProvider
 
   setup do
     provider = %WeaviateProvider{
@@ -21,8 +21,6 @@ defmodule VectorStoreProviderTest do
       end)
 
     # the weaviate
-    IO.inspect(provider)
-    IO.inspect(vectors)
     Provider.specify(provider)
     {:ok, added_vectors_count} = Provider.add_vectors(provider, vectors)
 

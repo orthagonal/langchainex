@@ -1,18 +1,19 @@
 # any bumblebee-specific code should go in this file
 
-defmodule LangChain.Providers.Bumblebee do
+defmodule LangChain.Providers.Bumblebee.LanguageModel do
   @moduledoc """
     A module for interacting with Bumblebee models, unlike
     the other providers Bumblebee runs models on your
     local hardware, see https://hexdocs.pm/bumblebee/Bumblebee.html
-  
+
     When you load a model with Bumblebee it will download that model from
     the Huggingface API and cache it locally, so the first time you run
     a model it will take a while to download, but after that it will be
     much faster
   """
 
-  defstruct model_name: "gpt2",
+  defstruct provider: :bumblebee,
+            model_name: "gpt2",
             max_new_tokens: 25,
             temperature: 0.5,
             top_k: nil,
@@ -22,19 +23,7 @@ defmodule LangChain.Providers.Bumblebee do
   @bumblebee_enabled Application.compile_env(:langchainex, :bumblebee_enabled)
 
   if @bumblebee_enabled do
-    defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Bumblebee do
-      # get the Bumblebee config from config.exs
-
-      # you can config bumblebee models from the mix.exs file
-      defp get_config_from_mix(model) do
-        {
-          :ok,
-          mix_config
-        } = Application.fetch_env(:langchainex, :bumblebee)
-
-        mix_config
-      end
-
+    defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Bumblebee.LanguageModel do
       def call(config, prompt) do
         # this is where models get downloaded at compile time
         # models will be hundreds of MBs but will be cached by bumblebee
@@ -56,10 +45,11 @@ defmodule LangChain.Providers.Bumblebee do
             defn_options: [compiler: EXLA]
           )
 
-        Nx.Serving.run(serving, "this is some stuff")
+        Nx.Serving.run(serving, prompt)
         |> Map.get(:results, [])
-        |> Enum.map(fn result -> Map.get(result, :text, "") end)
-        |> Enum.join(" ")
+        |> Enum.map_join(" ", fn result ->
+          Map.get(result, :text, "")
+        end)
       end
 
       # '{"inputs": {"past_user_inputs": ["Which movie is the best ?"],
@@ -78,13 +68,9 @@ defmodule LangChain.Providers.Bumblebee do
         {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
         serving = Bumblebee.Text.conversation(model, tokenizer, generation_config)
         message = List.last(chats).text
-        history = List.delete_at(chats, -1)
-        IO.puts("calling the chat function")
-        IO.inspect(message)
-        IO.inspect(history)
+        prior = List.delete_at(chats, -1)
 
-        %{text: text, history: history} =
-          Nx.Serving.run(serving, %{text: message, history: history})
+        Nx.Serving.run(serving, %{text: message, history: prior}) |> Map.take([:text, :history])
       end
     end
   end
@@ -97,7 +83,6 @@ defmodule LangChain.Providers.Bumblebee.Embedder do
   The embedding provider must match the input size of the model and use the same encoding scheme.
   """
 
-  alias LangChain.EmbedderProtocol
   defstruct model_name: "sentence-transformers/all-MiniLM-L6-v2"
 
   @bumblebee_enabled Application.compile_env(:langchainex, :bumblebee_enabled)

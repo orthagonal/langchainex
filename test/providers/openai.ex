@@ -38,17 +38,17 @@ defmodule LangChain.Providers.OpenAITest do
   """
   use ExUnit.Case
   alias LangChain.LanguageModelProtocol
-  alias LangChain.Providers.OpenAI
+  alias LangChain.Providers.OpenAI.LanguageModel
   require Logger
 
-  @model %OpenAI{
+  @model %LanguageModel{
     model_name: "text-ada-001",
     max_tokens: 25,
     temperature: 0.5,
     n: 1
   }
 
-  @gpt_model %OpenAI{
+  @gpt_model %LanguageModel{
     model_name: "gpt-3.5-turbo",
     max_tokens: 25,
     temperature: 0.5,

@@ -1,5 +1,5 @@
 # any replicate-specific code should go in this file
-defmodule LangChain.Providers.Replicate do
+defmodule LangChain.Providers.Replicate.LanguageModel do
   @moduledoc """
     A module for interacting with Replicate's API
     Replicate is a host for ML models that take in any data
@@ -7,14 +7,16 @@ defmodule LangChain.Providers.Replicate do
   """
   require Logger
 
-  defstruct model_name: "alpaca",
-            # the replicate model call uses the 'version'
-            version: "latest",
-            max_tokens: 25,
-            temperature: 0.5,
+  defstruct provider: :replicate,
+            # the model name isn't used by replicate but is used by LangChain
+            model_name: "vicuna-13b",
+            # the replicate model call needs the 'version' to find it
+            version: "e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
+            max_tokens: 2000,
+            temperature: 0.1,
             n: 1
 
-  defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Replicate do
+  defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Replicate.LanguageModel do
     @api_base_url "https://api.replicate.com/v1/predictions"
     @poll_interval 1000
 
@@ -56,7 +58,13 @@ defmodule LangChain.Providers.Replicate do
       {:ok, prediction_id} = create_prediction(model, prompt)
       Logger.debug(" got back prediction " <> prediction_id)
       {:ok, output} = poll_for_prediction_result(prediction_id)
-      output
+      # try to make sure output is always a simple string
+      if is_list(output) do
+        # join strings if they are a list:
+        output |> Enum.join(" ")
+      else
+        output
+      end
     end
 
     defp create_prediction(model, input) do
@@ -86,9 +94,18 @@ defmodule LangChain.Providers.Replicate do
 
           case response["status"] do
             "succeeded" ->
-              {:ok, response["output"]}
+              output =
+                if is_list(response["output"]) do
+                  # Join the output list into a single string
+                  Enum.join(response["output"], " ")
+                else
+                  # If output is already a string, just return it as is
+                  response["output"]
+                end
 
-            _ ->
+              {:ok, output}
+
+            _result ->
               Process.sleep(@poll_interval)
               poll_for_prediction_result(prediction_id)
           end
@@ -99,11 +116,38 @@ defmodule LangChain.Providers.Replicate do
     end
 
     def chat(model, chats) when is_list(chats) do
-      chats
-      |> Enum.map(fn chat ->
-        call(model, chat.text)
-      end)
+      prompt =
+        chats
+        # Starts the index from 1
+        |> Enum.with_index(1)
+        # replace this with enum.map_join:
+        |> Enum.map_join("\n", fn {chat} ->
+          # chat.role is also here but it's not used currently
+          chat.text
+        end)
+
+      call(model, prompt)
       |> handle_responses()
+    end
+
+    defp handle_responses(responses) when is_list(responses) do
+      # if responses is a list of strings, just join the list and return
+      case Enum.all?(responses, &is_binary/1) do
+        true ->
+          Enum.join(responses, " ")
+
+        false ->
+          Enum.map(responses, fn response ->
+            case response do
+              %{"translation_text" => text} -> text
+              %{"generated_text" => text} -> text
+              %{"conversation" => %{"generated_responses" => [text | _]}} -> text
+              list when is_list(list) -> Enum.join(list, "\n")
+              string when is_binary(string) -> string
+              _ -> "Unknown response format"
+            end
+          end)
+      end
     end
 
     defp handle_responses(responses) do
