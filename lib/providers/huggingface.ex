@@ -89,7 +89,8 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
             temperature: 0.5,
             top_k: nil,
             top_p: nil,
-            polling_interval: 2000
+            polling_interval: 2000,
+            fallback_chat_model: @fallback_chat_model
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Huggingface.LanguageModel do
     def call(model, prompt) do
@@ -124,10 +125,10 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           IO.puts("Received 403 response")
 
           IO.puts(
-            "Model is too large to load, falling back to #{@fallback_chat_model.model_name}"
+            "Model is too large to load, falling back to #{model.fallback_chat_model.model_name}"
           )
 
-          apply(__MODULE__, func_name, [@fallback_chat_model, input])
+          apply(__MODULE__, func_name, [model.fallback_chat_model, input])
 
         {:error, %HTTPoison.Error{reason: reason}} ->
           IO.puts("Received error: #{reason}")
