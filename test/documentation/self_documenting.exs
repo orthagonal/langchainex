@@ -113,8 +113,8 @@ defmodule SelfDocumenting do
       ] ++ (src_as_msgs |> Enum.take(1))
 
     response = LanguageModelProtocol.chat(model, question)
-    IO.puts(">>>>>>>>>>>>>>>>>>>>>>>>>>")
-    IO.inspect(response)
+    # IO.puts(">>>>>>>>>>>>>>>>>>>>>>>>>>")
+    # IO.inspect(response)
     # Process.sleep(60_000)
   end
 end

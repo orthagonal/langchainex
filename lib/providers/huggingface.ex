@@ -51,7 +51,6 @@ defmodule LangChain.Providers.Huggingface.Embedder do
 
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          IO.inspect(body)
           # should just be list of dicts
           Jason.decode!(body)
 

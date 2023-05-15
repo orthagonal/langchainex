@@ -21,8 +21,6 @@ defmodule VectorStoreProviderTest do
       end)
 
     # the weaviate
-    IO.inspect(provider)
-    IO.inspect(vectors)
     Provider.specify(provider)
     {:ok, added_vectors_count} = Provider.add_vectors(provider, vectors)
 

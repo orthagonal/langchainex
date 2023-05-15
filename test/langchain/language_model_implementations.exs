@@ -65,7 +65,7 @@ defmodule LangChain.LanguageModelProtocolTest do
         IO.puts("A test failed with reason: #{inspect(reason)}")
 
       {:ok, result} ->
-        IO.inspect(results)
+        result
         # The task finished successfully, so we do nothing
         :ok
     end)

@@ -85,13 +85,11 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
     end
 
     defp poll_for_prediction_result(prediction_id) do
-      # IO.puts("polling for prediction result")
       base = get_base(prediction_id, :poll)
 
       case HTTPoison.get(base.url, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           response = Jason.decode!(body)
-          # IO.inspect(response)
 
           case response["status"] do
             "succeeded" ->
@@ -116,29 +114,6 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
       end
     end
 
-    # defp poll_for_prediction_result(prediction_id) do
-    #   IO.puts("polling for prediction result")
-    #   base = get_base(prediction_id, :poll)
-
-    #   case HTTPoison.get(base.url, base.headers) do
-    #     {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-    #       response = Jason.decode!(body)
-    #       IO.inspect(response)
-
-    #       case response["status"] do
-    #         "succeeded" ->
-    #           {:ok, response["output"]}
-
-    #         result ->
-    #           Process.sleep(@poll_interval)
-    #           poll_for_prediction_result(prediction_id)
-    #       end
-
-    #     {:error, %HTTPoison.Error{reason: reason}} ->
-    #       {:error, reason}
-    #   end
-    # end
-
     def chat(model, chats) when is_list(chats) do
       prompt =
         chats
@@ -152,14 +127,11 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
         end)
         |> Enum.join("\n")
 
-      IO.inspect(prompt)
-
       call(model, prompt)
       |> handle_responses()
     end
 
     defp handle_responses(responses) when is_list(responses) do
-      IO.inspect(responses)
       # if responses is a list of strings, just join the list and return
       case Enum.all?(responses, &is_binary/1) do
         true ->

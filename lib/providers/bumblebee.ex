@@ -80,9 +80,6 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
         serving = Bumblebee.Text.conversation(model, tokenizer, generation_config)
         message = List.last(chats).text
         history = List.delete_at(chats, -1)
-        IO.puts("calling the chat function")
-        IO.inspect(message)
-        IO.inspect(history)
 
         %{text: text, history: history} =
           Nx.Serving.run(serving, %{text: message, history: history})
