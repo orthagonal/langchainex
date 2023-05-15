@@ -121,10 +121,8 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
         # Starts the index from 1
         |> Enum.with_index(1)
         |> Enum.map(fn {chat, _index} ->
-          role = Map.get(chat, :role, "")
+          # chat.role is also here but it's not used currently
           chat.text
-          # "dialogprompt$#{index}: { text: '#{chat.text}'" <>
-          #   if(role != "", do: ", role: '#{role}'", else: "") <> " }"
         end)
         |> Enum.join("\n")
 

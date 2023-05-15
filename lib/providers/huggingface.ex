@@ -123,10 +123,11 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
         {:ok, %HTTPoison.Response{status_code: 403, body: _body}} ->
           IO.puts("Received 403 response")
 
-          fallback_model = @fallback_chat_model
+          IO.puts(
+            "Model is too large to load, falling back to #{@fallback_chat_model.model_name}"
+          )
 
-          IO.puts("Model is too large to load, falling back to #{fallback_model.model_name}")
-          apply(__MODULE__, func_name, [fallback_model, input])
+          apply(__MODULE__, func_name, [@fallback_chat_model, input])
 
         {:error, %HTTPoison.Error{reason: reason}} ->
           IO.puts("Received error: #{reason}")
