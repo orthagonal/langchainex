@@ -9,9 +9,10 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
 
   defstruct provider: :replicate,
             # the model name isn't used by replicate but is used by LangChain
-            model_name: "vicuna-13b",
+            model_name: "stablelm-tuned-alpha-7b",
             # the replicate model call needs the 'version' to find it
-            version: "e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
+            version: "c49dae362cbaecd2ceabb5bd34fdb68413c4ff775111fea065d259d577757beb",
+            # version: "e6d469c2b11008bb0e446c3e9629232f9674581224536851272c54871f84076e",
             max_tokens: 2000,
             temperature: 0.1,
             n: 1
@@ -58,6 +59,8 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
       {:ok, prediction_id} = create_prediction(model, prompt)
       Logger.debug(" got back prediction " <> prediction_id)
       {:ok, output} = poll_for_prediction_result(prediction_id)
+      IO.puts("got back output")
+      IO.inspect(output)
       # try to make sure output is always a simple string
       if is_list(output) do
         # join strings if they are a list:
@@ -118,10 +121,8 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
     def chat(model, chats) when is_list(chats) do
       prompt =
         chats
-        # Starts the index from 1
-        |> Enum.with_index(1)
         # replace this with enum.map_join:
-        |> Enum.map_join("\n", fn {chat} ->
+        |> Enum.map_join("\n", fn chat ->
           # chat.role is also here but it's not used currently
           chat.text
         end)
@@ -148,6 +149,10 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
             end
           end)
       end
+    end
+
+    defp handle_responses(responses) when is_binary(responses) do
+      responses
     end
 
     defp handle_responses(responses) do

@@ -94,11 +94,21 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Huggingface.LanguageModel do
     def call(model, prompt) do
-      request(model, prompt, :call)
+      try do
+        request(model, prompt, :call)
+      rescue
+        _ ->
+          "Huggingface API-based model #{model.model_name}: I had an error trying to process #{prompt} "
+      end
     end
 
     def chat(model, chats) when is_list(chats) do
-      request(model, prepare_input(chats), :chat)
+      try do
+        request(model, prepare_input(chats), :chat)
+      rescue
+        _ ->
+          "Huggingface API-based model #{model.model_name}: I had an error trying to process #{IO.inspect(chats)} "
+      end
     end
 
     # huggingface api can have a few different responses,
@@ -108,22 +118,16 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       base = Huggingface.get_base(model)
       body = Jason.encode!(%{"inputs" => input})
 
-      IO.puts("Requesting: #{base.url} with body: #{body}")
-
       case HTTPoison.post(base.url, body, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          IO.puts("Received 200 response: #{body}")
           decoded_body = Jason.decode!(body)
           handle_response(decoded_body, func_name)
 
         {:ok, %HTTPoison.Response{status_code: 503, body: _body}} ->
-          IO.puts("Received 503 response")
           :timer.sleep(model.polling_interval)
           request(model, input, func_name)
 
         {:ok, %HTTPoison.Response{status_code: 403, body: _body}} ->
-          IO.puts("Received 403 response")
-
           IO.puts(
             "Model is too large to load, falling back to #{model.testfallback_chat_model.model_name}"
           )
@@ -159,9 +163,13 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
 
     defp handle_response(_), do: {:error, "Unexpected API response format"}
 
-    defp handle_chat_response(%{"conversation" => %{"generated_responses" => responses}}) do
-      responses
-      |> Enum.map(&%{text: &1, role: "assistant"})
+    defp handle_chat_response(decoded_body) when is_list(decoded_body) do
+      IO.puts(" i got the list here")
+      IO.inspect(decoded_body)
+
+      Enum.map_join(decoded_body, "\n", fn %{"generated_text" => inner_json_string} ->
+        inner_json_string
+      end)
     end
 
     defp handle_chat_response(_), do: {:error, "Unexpected API response format"}

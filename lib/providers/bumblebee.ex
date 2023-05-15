@@ -13,7 +13,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
   """
 
   defstruct provider: :bumblebee,
-            model_name: "gpt2",
+            model_name: "distilgpt2",
             max_new_tokens: 25,
             temperature: 0.5,
             top_k: nil,
@@ -25,35 +25,38 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
   if @bumblebee_enabled do
     defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Bumblebee.LanguageModel do
       def call(config, prompt) do
-        # this is where models get downloaded at compile time
-        # models will be hundreds of MBs but will be cached by bumblebee
-        # inspect the model.spec field for an overview of the model's architecture, vocab_size,
-        # max_positions, pad_token_id, etc
-        {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
+        try do
+          # this is where models get downloaded at compile time
+          # models will be hundreds of MBs but will be cached by bumblebee
+          # inspect the model.spec field for an overview of the model's architecture, vocab_size,
+          # max_positions, pad_token_id, etc
+          {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
 
-        # this is where tokenizer for that model gets downloaded, tokenizers use the model's encoding scheme
-        # to turn text into numbers
-        # inspect your tokenizer to see stats for your tokenizer, like vocab_size, end_of_word_suffix, etc
-        {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
-        # inspect your generation_config to see info like min/max_new_tokens, min/max_length, etc
-        # strategy, bos/eos token_id ( reserved numbers from the model's encoding scheme) etc
-        {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
+          # this is where tokenizer for that model gets downloaded, tokenizers use the model's encoding scheme
+          # to turn text into numbers
+          # inspect your tokenizer to see stats for your tokenizer, like vocab_size, end_of_word_suffix, etc
+          {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
 
-        # start serving the model
-        serving =
-          Bumblebee.Text.generation(model, tokenizer, generation_config,
-            defn_options: [compiler: EXLA]
-          )
+          # inspect your generation_config to see info like min/max_new_tokens, min/max_length, etc
+          # strategy, bos/eos token_id ( reserved numbers from the model's encoding scheme) etc
+          {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
 
-        Nx.Serving.run(serving, prompt)
-        |> Map.get(:results, [])
-        |> Enum.map_join(" ", fn result ->
-          Map.get(result, :text, "")
-        end)
+          # start serving the model
+          serving =
+            Bumblebee.Text.generation(model, tokenizer, generation_config,
+              defn_options: [compiler: EXLA]
+            )
+
+          Nx.Serving.run(serving, prompt)
+          |> Map.get(:results, [])
+          |> Enum.map_join(" ", fn result ->
+            Map.get(result, :text, "")
+          end)
+        rescue
+          _e ->
+            "Model Bumblebee #{config.model_name}: I had a technical malfunction trying to process this: #{prompt}"
+        end
       end
-
-      # '{"inputs": {"past_user_inputs": ["Which movie is the best ?"],
-      # "generated_responses": ["It is Die Hard for sure."], "text":"Can you explain why ?"}}' \
 
       # input will be like:
       #   msgs = [
@@ -63,14 +66,38 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
       # pop the last item off this list and turn it into a string called 'message'
       # and put the tail of the list is the 'history' which is strings
       def chat(config, chats) when is_list(chats) do
+        try do
+          _chat(config, chats)
+        rescue
+          e ->
+            "Model Bumblebee #{config.model_name}: I had a technical malfunction trying to processing this #{IO.inspect(chats)}"
+        end
+      end
+
+      def _chat(config, chats) do
         {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
         {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
         {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
-        serving = Bumblebee.Text.conversation(model, tokenizer, generation_config)
-        message = List.last(chats).text
-        prior = List.delete_at(chats, -1)
 
-        Nx.Serving.run(serving, %{text: message, history: prior}) |> Map.take([:text, :history])
+        serving =
+          Bumblebee.Text.conversation(model, tokenizer, generation_config,
+            defn_options: [compiler: EXLA]
+          )
+
+        message = List.last(chats).text
+
+        prior =
+          List.delete_at(chats, -1)
+          |> Enum.map(fn x ->
+            if x.role == "assistant" do
+              {:generated, x.text}
+            else
+              {:user, x.text}
+            end
+          end)
+
+        Nx.Serving.run(serving, %{text: message, history: prior})
+        |> Map.get(:text, "I had a technical malfunction trying to process this: #{message}")
       end
     end
   end
