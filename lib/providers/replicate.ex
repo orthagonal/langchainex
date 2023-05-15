@@ -60,7 +60,8 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
       {:ok, output} = poll_for_prediction_result(prediction_id)
       # try to make sure output is always a simple string
       if is_list(output) do
-        output |> List.join()
+        # join strings if they are a list:
+        output |> Enum.join(" ")
       else
         output
       end
@@ -104,7 +105,7 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
 
               {:ok, output}
 
-            result ->
+            _result ->
               Process.sleep(@poll_interval)
               poll_for_prediction_result(prediction_id)
           end
@@ -119,7 +120,7 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
         chats
         # Starts the index from 1
         |> Enum.with_index(1)
-        |> Enum.map(fn {chat, index} ->
+        |> Enum.map(fn {chat, _index} ->
           role = Map.get(chat, :role, "")
           chat.text
           # "dialogprompt$#{index}: { text: '#{chat.text}'" <>

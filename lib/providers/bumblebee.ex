@@ -24,18 +24,6 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
 
   if @bumblebee_enabled do
     defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Bumblebee.LanguageModel do
-      # get the Bumblebee config from config.exs
-
-      # you can config bumblebee models from the mix.exs file
-      defp get_config_from_mix(_model) do
-        {
-          :ok,
-          mix_config
-        } = Application.fetch_env(:langchainex, :bumblebee)
-
-        mix_config
-      end
-
       def call(config, prompt) do
         # this is where models get downloaded at compile time
         # models will be hundreds of MBs but will be cached by bumblebee
@@ -81,8 +69,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
         message = List.last(chats).text
         prior = List.delete_at(chats, -1)
 
-        %{text: text, history: history} =
-          Nx.Serving.run(serving, %{text: message, history: prior})
+        Nx.Serving.run(serving, %{text: message, history: prior}) |> Map.take([:text, :history])
       end
     end
   end
@@ -95,7 +82,6 @@ defmodule LangChain.Providers.Bumblebee.Embedder do
   The embedding provider must match the input size of the model and use the same encoding scheme.
   """
 
-  alias LangChain.EmbedderProtocol
   defstruct model_name: "sentence-transformers/all-MiniLM-L6-v2"
 
   @bumblebee_enabled Application.compile_env(:langchainex, :bumblebee_enabled)

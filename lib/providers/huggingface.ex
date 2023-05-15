@@ -123,14 +123,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
         {:ok, %HTTPoison.Response{status_code: 403, body: _body}} ->
           IO.puts("Received 403 response")
 
-          fallback_model = %LangChain.Providers.Huggingface.LanguageModel{
-            model_name: "gpt2",
-            max_new_tokens: 25,
-            temperature: 0.5,
-            top_k: nil,
-            top_p: nil,
-            polling_interval: 2000
-          }
+          fallback_model = @fallback_chat_model
 
           IO.puts("Model is too large to load, falling back to #{fallback_model.model_name}")
           apply(__MODULE__, func_name, [fallback_model, input])
@@ -162,14 +155,14 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       translation_text
     end
 
+    defp handle_response(_), do: {:error, "Unexpected API response format"}
+
     defp handle_chat_response(%{"conversation" => %{"generated_responses" => responses}}) do
       responses
       |> Enum.map(&%{text: &1, role: "assistant"})
     end
 
     defp handle_chat_response(_), do: {:error, "Unexpected API response format"}
-
-    defp handle_response(_), do: {:error, "Unexpected API response format"}
 
     def prepare_input(msgs) do
       {past_user_inputs, generated_responses} =
