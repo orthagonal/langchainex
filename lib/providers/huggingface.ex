@@ -140,7 +140,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           reason
 
         e ->
-          "Model #{model.provider} #{model.model_name}: I had a technical malfunction: #{IO.inspect(e)}"
+          "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end
 
