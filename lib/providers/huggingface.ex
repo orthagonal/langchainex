@@ -84,9 +84,9 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
   }
 
   defstruct provider: :huggingface,
-            model_name: "google/flan-t5-small",
+            model_name: "microsoft/DialoGPT-large",
             max_new_tokens: 25,
-            temperature: 0.5,
+            temperature: 0.1,
             top_k: nil,
             top_p: nil,
             polling_interval: 2000,
@@ -104,7 +104,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
 
     def chat(model, chats) when is_list(chats) do
       try do
-        request(model, prepare_input(chats), :chat)
+        request(model, prepare_chat_input(chats), :chat)
       rescue
         _ ->
           "Huggingface API-based model #{model.model_name}: I had a technical malfunction trying to process these chats."
@@ -116,9 +116,12 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     # another is if the model you are calling is too big and needs dedicated hosting
     defp request(model, input, func_name) do
       base = Huggingface.get_base(model)
-      body = Jason.encode!(%{"inputs" => input})
+      IO.inspect(input)
 
-      case HTTPoison.post(base.url, body, base.headers) do
+      case HTTPoison.post(base.url, input, base.headers,
+             timeout: :infinity,
+             recv_timeout: :infinity
+           ) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           decoded_body = Jason.decode!(body)
           handle_response(decoded_body, func_name)
@@ -135,8 +138,10 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           apply(__MODULE__, func_name, [model.testfallback_chat_model, input])
 
         {:error, %HTTPoison.Error{reason: reason}} ->
-          IO.puts("Received error: #{reason}")
-          {:error, reason}
+          reason
+
+        e ->
+          "Model #{model.provider} #{model.model_name}: I had a technical malfunction: #{IO.inspect e}"
       end
     end
 
@@ -169,29 +174,53 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       end)
     end
 
-    defp handle_chat_response(_), do: {:error, "Unexpected API response format"}
+    defp handle_chat_response(decoded_body) when is_map(decoded_body) do
+      cond do
+        decoded_body["generated_text"] ->
+          decoded_body["generated_text"]
+        decoded_body["translation_text"] ->
+          decoded_body["translation_text"
+        decoded_body["text"] ->
+          decoded_body["text"]
+        true ->
+          "Unexpected API response format"
+      end
+    end
 
-    def prepare_input(msgs) do
-      {past_user_inputs, generated_responses} =
-        Enum.reduce(msgs, {[], []}, fn msg, {user_inputs, responses} ->
-          role = Map.get(msg, :role, "user")
+    # make a function that takes in list of %{ text, role } pairs and returns the following structure:
+    # {
+    #   inputs:
+    #   {
+    #     past_user_inputs: ["Which movie is the best ?"],
+    #     generated_responses: ["It is Die Hard for sure."],
+    #     text: "Can you explain why ?"
+    #   }
+    # }
+    def prepare_chat_input(msgs) do
+      msgs |> Enum.map_join("\n", fn msg -> msg.text end)
+      # get all but the last item in the list:
+      # history = msgs |> List.delete_at(-1)
 
-          case role do
-            "user" -> {[msg.text | user_inputs], responses}
-            _ -> {user_inputs, [msg.text | responses]}
-          end
-        end)
+      # past_user_inputs =
+      #   history
+      #   |> Enum.filter(fn msg -> msg.role == "user" end)
+      #   |> Enum.map(fn msg -> msg.text end)
 
-      last_text = List.last(msgs).text
+      # generated_responses =
+      #   history
+      #   |> Enum.filter(fn msg -> msg.role != "user" end)
+      #   |> Enum.map(fn msg -> msg.text end)
 
-      %{
-        "inputs" => %{
-          "past_user_inputs" => Enum.reverse(past_user_inputs),
-          "generated_responses" => Enum.reverse(generated_responses),
-          "text" => last_text
-        }
-      }
-      |> Jason.encode!()
+      # text = msgs |> List.last() |> Map.get(:text)
+      # IO.puts(text)
+
+      # %{
+      #   inputs: %{
+      #     past_user_inputs: past_user_inputs,
+      #     generated_responses: generated_responses,
+      #     text: text
+      #   }
+      # }
     end
   end
 end
