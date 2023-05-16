@@ -1,28 +1,21 @@
 # LangchainEx   
 
-- [LangchainEx](#langchainex)
-    - [Overview](#overview)
-  - [Installation](#installation)
-  - [LangChain Components](#langchain-components)
-  - [Providers](#providers)
-    - [Current Providers as of May 11th 2023:](#current-providers-as-of-may-11th-2023)
-      - [Language Models](#language-models)
-      - [Vector Storage With](#vector-storage-with)
-    - [Incoming:](#incoming)
-  - [tl;dr GenServers](#tldr-genservers)
-    - [Scraper](#scraper)
 
+## Overview
 
-### Overview
-
-Loosely inspired by [LangChainJs](https://github.com/hwchase17/langchainjs)
-This library seeks to enable core LangChain functionality but using
+Loosely inspired by [LangChainJs](https://github.com/hwchase17/langchainjs),
+this library seeks to enable core LangChain functionality using
 Elixir and OTP idioms. It provides low-level structures
 you can use to build your own language chain applications
 as well as high-level GenServers for accomplishing common 
 natural-language processing tasks very quickly. 
 
-Under current development with new backend providers and features added every few days.
+###  Use this library if you need
+  - drivers for talking to hosted and local LLMs from Elixir 
+  - component framework for building language chains and AI agents
+  - predefined eagents for scraping structured data from natural language text
+
+Under active development with new providers and features added every day
 
 
 ## Installation
@@ -35,6 +28,16 @@ def deps do
 end
 ```
 
+### Current Providers as of May 14th 2023:
+
+#### Language Models 
+ - OpenAI
+ - Replicate API 
+ - HuggingFace API
+ - Bumblebee (run huggingface models locally)
+#### Vector Storage With
+ - Pinecone Vector Storage
+
 
 ## LangChain Components 
 
@@ -46,36 +49,13 @@ end
 - Anchor - Alignment point in a chain where the AI tells you what it plans to do and gets your approval
 - Chain - A sequence of ChainLinks that can be executed in order 
 
-PromptTemplates are just text templates. ChainLinks handle the PromptTemplates. Anchors are
-verification points where the AIs are forced to align with human intentions.  Chains are
- a sequence of ChainLinks.  Here's a diagram:
- ChainLink 1 -> ChainLink 2 -> Anchor 1  -> ChainLink 3
-
-
-## Providers
-
-### Current Providers as of May 11th 2023:
-
-#### Language Models 
- - OpenAI
- - Replicate API 
- - HuggingFace API
-#### Vector Storage With
- - Pinecone Vector Storage
 
 ### Incoming:
 
- - bumblebee
  - pg-vector (Postgres Vector Storage)
  - weaviate (Weaviate Vector Storage)
  - vespa
- 
-See config.ex for list of currently supported providers
-
-
-
-## tl;dr GenServers 
-
+ - qdrant
 ### Scraper
 
 Scraper holds language chains that extract structured data
