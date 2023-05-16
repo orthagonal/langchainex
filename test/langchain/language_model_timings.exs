@@ -19,10 +19,13 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
   }
   # will use the default model for each implementation
   @implementations_and_models [
-    {%LangChain.Providers.Huggingface.LanguageModel{}, %{}}
+    {%LangChain.Providers.Huggingface.LanguageModel{},
+     %{
+       model_name: "young-geng/koala"
+     }}
     # you should be set to optional since it runs on local hardware
-    # {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}}
-    # {%LangChain.Providers.Replicate.LanguageModel{}, %{}}
+    # {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}},
+    # {%LangChain.Providers.Replicate.LanguageModel{}, %{}},
     # {%LangChain.Providers.OpenAI.LanguageModel{}, %{}}
     # {%AnotherImplementation{}, %{model_name: "model_name"}},
   ]
@@ -73,57 +76,65 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
     response == expected_response.generated_text
   end
 
-  # @tag :skip
   @tag timeout: :infinity
   test "chat/2 returns a valid response for all implementations and measures time with increasing inputs" do
-    Enum.each(0..(length(@input_for_chat) - 1), fn n ->
-      input = Enum.take(@input_for_chat, n + 1)
+    # start timer
+    {total_time, _} =
+      :timer.tc(fn ->
+        Enum.each(0..(length(@input_for_chat) - 1), fn n ->
+          input = Enum.take(@input_for_chat, n + 1)
 
-      results =
-        Task.async_stream(
-          @implementations_and_models,
-          fn {impl, params} ->
-            try do
-              model = Map.merge(impl, params)
+          results =
+            Task.async_stream(
+              @implementations_and_models,
+              fn {impl, params} ->
+                try do
+                  model = Map.merge(impl, params)
 
-              {time, response} = :timer.tc(fn -> LanguageModelProtocol.chat(model, input) end)
+                  {time, response} = :timer.tc(fn -> LanguageModelProtocol.call(model, input) end)
 
-              time_in_seconds = time / 1_000_000
+                  time_in_seconds = time / 1_000_000
 
-              %{
-                model: %{provider: model.provider, model_name: model.model_name},
-                response: response,
-                num_inputs: n + 1,
-                time: time_in_seconds,
-                yellow: yellow_function(response, @inputs_and_outputs.expected_output),
-                green: green_function(response, @inputs_and_outputs.expected_output)
-              }
-            rescue
-              error in [RuntimeError, SomeOtherError] ->
-                {:error, "Runtime error or some other error: #{Exception.message(error)}"}
-            catch
-              kind, reason ->
-                {:error, "Caught #{kind}: #{inspect(reason)}"}
-            end
-          end,
-          timeout: :infinity
-        )
-        |> Enum.to_list()
+                  %{
+                    model: %{provider: model.provider, model_name: model.model_name},
+                    response: response,
+                    num_inputs: n + 1,
+                    time: time_in_seconds,
+                    yellow: yellow_function(response, @inputs_and_outputs.expected_output),
+                    green: green_function(response, @inputs_and_outputs.expected_output)
+                  }
+                rescue
+                  error in [RuntimeError, SomeOtherError] ->
+                    {:error, "Runtime error or some other error: #{Exception.message(error)}"}
+                catch
+                  kind, reason ->
+                    {:error, "Caught #{kind}: #{inspect(reason)}"}
+                end
+              end,
+              timeout: :infinity
+            )
+            |> Enum.to_list()
 
-      Enum.map(results, fn
-        {:ok, {:error, reason}} ->
-          # The task failed, so we print the error message
-          IO.puts("A test failed with reason: #{inspect(reason)}")
+          Enum.map(results, fn
+            {:ok, {:error, reason}} ->
+              # The task failed, so we print the error message
+              IO.puts("A test failed with reason: #{inspect(reason)}")
 
-        {:ok, result} ->
-          Logger.debug(
-            "Batch size: #{result.num_inputs}, Provider: #{result.model.provider}, Model: #{result.model.model_name},
+            {:ok, result} ->
+              Logger.debug(
+                "Batch size: #{result.num_inputs}, Provider: #{result.model.provider}, Model: #{result.model.model_name},
             Response: #{result.response},
             Time Elapsed: #{result.time} seconds"
-          )
+              )
 
-          :ok
+              :ok
+          end)
+        end)
       end)
-    end)
+
+    # end timer
+
+    total_time_in_seconds = total_time / 1_000_000
+    Logger.debug("Total Time Elapsed for all tasks: #{total_time_in_seconds} seconds")
   end
 end

@@ -116,7 +116,6 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     # another is if the model you are calling is too big and needs dedicated hosting
     defp request(model, input, func_name) do
       base = Huggingface.get_base(model)
-      IO.inspect(input)
 
       case HTTPoison.post(base.url, input, base.headers,
              timeout: :infinity,
@@ -141,7 +140,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           reason
 
         e ->
-          "Model #{model.provider} #{model.model_name}: I had a technical malfunction: #{IO.inspect e}"
+          "Model #{model.provider} #{model.model_name}: I had a technical malfunction: #{IO.inspect(e)}"
       end
     end
 
@@ -178,10 +177,13 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       cond do
         decoded_body["generated_text"] ->
           decoded_body["generated_text"]
+
         decoded_body["translation_text"] ->
-          decoded_body["translation_text"
+          decoded_body["translation_text"]
+
         decoded_body["text"] ->
           decoded_body["text"]
+
         true ->
           "Unexpected API response format"
       end
@@ -214,13 +216,13 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       # text = msgs |> List.last() |> Map.get(:text)
       # IO.puts(text)
 
-      # %{
+      # Jason.encode!(%{
       #   inputs: %{
       #     past_user_inputs: past_user_inputs,
       #     generated_responses: generated_responses,
       #     text: text
       #   }
-      # }
+      # })
     end
   end
 end
