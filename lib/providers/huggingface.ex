@@ -97,17 +97,19 @@ defmodule LangChain.Providers.Huggingface do
   defp handle_conversation(responses) when is_list(responses) do
     case Enum.at(responses, 0) do
       %{"generated_text" => _} ->
-        IO.puts("handling generated text")
-
         responses
         |> Enum.map(fn %{"generated_text" => text} -> text end)
         |> Enum.join(" ")
 
       response when is_binary(response) ->
-        IO.puts("handling binaries")
         Enum.join(responses, " ")
 
-      _ ->
+      response when is_float(response) ->
+        responses
+        |> Enum.map(&Float.to_string/1)
+        |> Enum.join(", ")
+
+      res ->
         "Unsupported response format"
     end
   end

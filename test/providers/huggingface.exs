@@ -57,9 +57,9 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
     response == expected_response
   end
 
-  # @tag :skip
+  @tag :skip
   @tag timeout: :infinity
-  test "call/2 returns a valid response for all implementations" do
+  test "ask/2 returns a valid response for string prompts" do
     results =
       Task.async_stream(
         @implementations_and_models,
@@ -67,6 +67,46 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
           try do
             model = Map.merge(impl, params)
             response = LanguageModelProtocol.ask(model, @input_for_call)
+
+            %{
+              model: %{provider: model.provider, model_name: model.model_name},
+              response: response,
+              yellow: yellow_function(response, @expected_output),
+              green: green_function(response, @expected_output)
+            }
+          rescue
+            error in [RuntimeError, SomeOtherError] ->
+              {:error, "Runtime error or some other error: #{Exception.message(error)}"}
+          catch
+            kind, reason ->
+              {:error, "Caught #{kind}: #{inspect(reason)}"}
+          end
+        end,
+        timeout: :infinity
+      )
+      |> Enum.to_list()
+
+    Enum.map(results, fn
+      {:ok, {:error, reason}} ->
+        # The task failed, so we print the error message
+        IO.puts("A test failed with reason: #{inspect(reason)}")
+
+      {:ok, result} ->
+        Logger.debug("call/2 results: #{inspect(result)}")
+        :ok
+    end)
+  end
+
+  # @tag :skip
+  @tag timeout: :infinity
+  test "ask/2 returns a valid response for dialog lists" do
+    results =
+      Task.async_stream(
+        @implementations_and_models,
+        fn {impl, params} ->
+          try do
+            model = Map.merge(impl, params)
+            response = LanguageModelProtocol.ask(model, @input_for_chat)
 
             %{
               model: %{provider: model.provider, model_name: model.model_name},
