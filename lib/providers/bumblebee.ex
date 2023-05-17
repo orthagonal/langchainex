@@ -1,5 +1,48 @@
 # any bumblebee-specific code should go in this file
 defmodule LangChain.Providers.Bumblebee do
+  def prepare_input(:for_masked_language_modeling, chats) when is_binary(chats) do
+    chats
+  end
+
+  # turns it into one big string separated by newlines
+  def prepare_input(:for_masked_language_modeling, chats) when is_list(chats) do
+    Enum.map_join(chats, "\n", fn x -> x.text end)
+  end
+
+  def prepare_input(:for_masked_language_modeling, chats) when is_map(chats) do
+    Map.get(chats, :text, "")
+  end
+
+  # when is_binary(chats) do
+  def prepare_input(:for_causal_language_modeling, chats) when is_binary(chats) do
+    chats
+    # prepare_input(:for_conversational_language_modeling, chats)
+  end
+
+  def prepare_input(:for_causal_language_modeling, chats) when is_list(chats) do
+    Enum.map_join(chats, "\n", fn x -> x.text end)
+  end
+
+  def prepare_input(:for_conversational_language_modeling, chats) when is_binary(chats) do
+    # i may change this to split chats on newlines and put them in history???
+    %{text: chats, history: []}
+  end
+
+  def prepare_input(:for_conversational_language_modeling, chats) when is_list(chats) do
+    message = List.last(chats).text
+
+    prior =
+      List.delete_at(chats, -1)
+      |> Enum.map(fn x ->
+        if x.role == "assistant" do
+          {:generated, x.text}
+        else
+          {:user, x.text}
+        end
+      end)
+
+    %{text: message, history: prior}
+  end
 end
 
 defmodule LangChain.Providers.Bumblebee.LanguageModel do
@@ -26,7 +69,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
 
   if @bumblebee_enabled do
     defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Bumblebee.LanguageModel do
-      def ask(config, prompt) when is_binary(prompt) do
+      def ask(config, prompt) do
         try do
           # this is where models get downloaded at compile time
           # models will be hundreds of MBs but will be cached by bumblebee
@@ -39,78 +82,69 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
           # inspect your tokenizer to see stats for your tokenizer, like vocab_size, end_of_word_suffix, etc
           {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
 
-          # inspect your generation_config to see info like min/max_new_tokens, min/max_length, etc
-          # strategy, bos/eos token_id ( reserved numbers from the model's encoding scheme) etc
-          {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
-          # IO.inspect(generation_config)
-          # start serving the model
-          serving =
-            Bumblebee.Text.generation(model, tokenizer, generation_config,
-              defn_options: [compiler: EXLA]
-            )
-
-          Nx.Serving.run(serving, prompt)
-          |> Map.get(:results, [])
-          |> Enum.map_join(" ", fn result ->
-            Map.get(result, :text, "")
-          end)
+          execute_model(model.spec.architecture, config, prompt, model, tokenizer)
         rescue
           _e ->
-            "Model Bumblebee #{config.model_name}: I had a technical malfunction trying to process this: #{prompt}"
+            "Model Bumblebee #{config.model_name}: I had a system malfunction trying to process that request."
         end
       end
 
-      # input will be like:
-      #   msgs = [
-      #     %{text: "Write a sentence containing the word *grue*.", role: "user"},
-      #     %{text: "Include a reference to the Dead Mountaineers Hotel."}
-      #   ]
-      # pop the last item off this list and turn it into a string called 'message'
-      # and put the tail of the list is the 'history' which is strings
-      def ask(config, chats) when is_list(chats) do
-        try do
-          _chat(config, chats)
-        rescue
-          _e ->
-            "Model Bumblebee #{config.model_name}: I had a technical malfunction trying to processing this "
-        end
-      end
-
-      def _chat(config, chats) do
-        {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
-        {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
-        {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
-        # all 3 of the fields below let you examine interesting features of the
-        # model like tokens and vocab sizes of different models
-
-        # IO.inspect(tokenizer)
-        # IO.inspect(model.spec)
-        # IO.inspect(generation_config)
-
-        # we will neeed to make sure this model is compatible with the
-        # Text.<function> that we are using
+      # HANDLE DIFFERENT MODEL TYPES WITH 'ask'
+      def execute_model(
+            :for_masked_language_modeling,
+            model_config,
+            prompt,
+            bumblebee_model,
+            tokenizer
+          ) do
+        # use Bumblebee.Text.fill_mask if architecture is :for_masked_language_modeling
         serving =
-          Bumblebee.Text.conversation(model, tokenizer, generation_config,
+          Bumblebee.Text.fill_mask(bumblebee_model, tokenizer, defn_options: [compiler: EXLA])
+
+        input = LangChain.Providers.Bumblebee.prepare_input(:for_masked_language_modeling, prompt)
+
+        # verify the input contains the mask token
+        if String.contains?(input, tokenizer.special_tokens.mask) do
+          response = Nx.Serving.run(serving, input)
+
+          # Extract the token of the first prediction
+          token_of_first_prediction =
+            response
+            |> Map.get(:predictions)
+            |> List.first()
+            |> Map.get(:token)
+
+          # currently I just return the token, since it's assumed you can fill it in yourself
+          # but in future we might switch to just return the whole statement like so:
+          # String.replace(prompt, tokenizer.special_tokens.mask, token_of_first_prediction)
+          token_of_first_prediction
+        else
+          "I was passed the string #{input} but it doesn't contain the mask token #{tokenizer.special_tokens.mask}"
+        end
+      end
+
+      # handles either :for_causal_language_modeling or :for_conversational_language_modeling
+      def execute_model(architecture, model_config, prompt, bumblebee_model, tokenizer) do
+        # Default to Bumblebee.Text.generation
+        # inspect your generation_config to see info like min/max_new_tokens, min/max_length, etc
+        # strategy, bos/eos token_id ( reserved numbers from the model's encoding scheme) etc
+        {:ok, generation_config} =
+          Bumblebee.load_generation_config({:hf, model_config.model_name})
+
+        serving =
+          Bumblebee.Text.generation(bumblebee_model, tokenizer, generation_config,
             defn_options: [compiler: EXLA]
           )
 
-        message = List.last(chats).text
-
-        prior =
-          List.delete_at(chats, -1)
-          |> Enum.map(fn x ->
-            if x.role == "assistant" do
-              {:generated, x.text}
-            else
-              {:user, x.text}
-            end
-          end)
-
-        result = Nx.Serving.run(serving, %{text: message, history: prior})
-        IO.inspect(result)
+        input = LangChain.Providers.Bumblebee.prepare_input(architecture, prompt)
+        result = Nx.Serving.run(serving, input)
+        # %{text: message, history: prior})
 
         result
-        |> Map.get(:text, "I had a technical malfunction trying to process this: #{message}")
+        |> Map.get(:results, [])
+        |> Enum.map_join(" ", fn result ->
+          Map.get(result, :text, "")
+        end)
       end
     end
   end
