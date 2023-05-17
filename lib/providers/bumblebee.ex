@@ -80,8 +80,15 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
         {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
         {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
         {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
+        # all 3 of the fields below let you examine interesting features of the
+        # model like tokens and vocab sizes of different models
+
+        # IO.inspect(tokenizer)
+        # IO.inspect(model.spec)
         # IO.inspect(generation_config)
 
+        # we will neeed to make sure this model is compatible with the
+        # Text.<function> that we are using
         serving =
           Bumblebee.Text.conversation(model, tokenizer, generation_config,
             defn_options: [compiler: EXLA]
@@ -99,7 +106,10 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
             end
           end)
 
-        Nx.Serving.run(serving, %{text: message, history: prior})
+        result = Nx.Serving.run(serving, %{text: message, history: prior})
+        IO.inspect(result)
+
+        result
         |> Map.get(:text, "I had a technical malfunction trying to process this: #{message}")
       end
     end

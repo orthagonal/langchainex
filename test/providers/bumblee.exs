@@ -25,20 +25,20 @@ defmodule LangChain.Providers.BumblebeeTest do
   }
 
   describe "Bumblebee implementation of LanguageModelProtocol" do
-    # test "ask/2 returns a valid response" do
-    #   prompt = "What time is it now?"
-    #   response = LanguageModelProtocol.ask(@model, prompt)
-    #   Logger.debug(response)
-    #   assert is_binary(response)
+    test "ask/2 returns a valid response" do
+      prompt = "What time is it now?"
+      response = LanguageModelProtocol.ask(@model, prompt)
+      Logger.debug(response)
+      assert is_binary(response)
 
-    #   response2 = LanguageModelProtocol.ask(@gpt2, "Fourscore and seven years ago")
-    #   Logger.debug(response2)
-    #   assert is_binary(response2)
+      response2 = LanguageModelProtocol.ask(@gpt2, "Fourscore and seven years ago")
+      Logger.debug(response2)
+      assert is_binary(response2)
 
-    #   response3 = LanguageModelProtocol.ask(@bert, "I will become floats")
-    #   Logger.debug(response3)
-    #   assert is_binary(response3)
-    # end
+      response3 = LanguageModelProtocol.ask(@bert, "I will become floats")
+      Logger.debug(response3)
+      assert is_binary(response3)
+    end
 
     test "ask/2 returns a valid response" do
       msgs = [
@@ -46,13 +46,13 @@ defmodule LangChain.Providers.BumblebeeTest do
         %{text: "Include a reference to the Dead Mountaineers Hotel."}
       ]
 
-      # response = LanguageModelProtocol.ask(@model, msgs)
-      # Logger.debug(response)
-      # assert is_binary(response)
+      response = LanguageModelProtocol.ask(@model, msgs)
+      Logger.debug(response)
+      assert is_binary(response)
 
-      # response2 = LanguageModelProtocol.ask(@gpt2, msgs)
-      # Logger.debug(response2)
-      # assert is_binary(response2)
+      response2 = LanguageModelProtocol.ask(@gpt2, msgs)
+      Logger.debug(response2)
+      assert is_binary(response2)
 
       response3 = LanguageModelProtocol.ask(@bert, msgs)
       Logger.debug(response3)
