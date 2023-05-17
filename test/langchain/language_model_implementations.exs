@@ -21,7 +21,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
   @implementations_and_models [
     {%LangChain.Providers.Huggingface.LanguageModel{}, %{}},
     # you should be set to optional since it runs on local hardware
-    # {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}},
+    {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}},
     {%LangChain.Providers.Replicate.LanguageModel{}, %{}},
     {%LangChain.Providers.OpenAI.LanguageModel{}, %{}}
     # {%AnotherImplementation{}, %{model_name: "model_name"}},
@@ -57,7 +57,6 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
     response == expected_response.generated_text
   end
 
-  @tag :skip
   @tag timeout: :infinity
   test "ask/2 returns a valid response for all implementations" do
     results =
