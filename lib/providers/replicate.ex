@@ -1,4 +1,75 @@
 # any replicate-specific code should go in this file
+
+defmodule LangChain.Providers.Replicate do
+  @moduledoc """
+  # Replicate's pricing structure is based on what hardware you use
+  # and how long you use it.  More expensive hardware runs faster
+
+  Replicate's Pricing Structure
+  # CPU
+  # $0.0002 per second
+  # (or, $0.012 per minute)
+
+  # 4x CPU
+  # 8GB RAM
+
+  # Nvidia T4 GPU
+  # $0.00055 per second
+  # (or, $0.033 per minute)
+
+  # 4x CPU
+  # 16GB GPU RAM
+  # 8GB RAM
+
+  # Nvidia A100 40GB GPU
+  # $0.0023 per second
+  # (or, $0.138 per minute)
+
+  """
+  @pricing_structure %{
+    cpu: %{
+      dollars_per_second: 0.0002,
+      dollars_per_token: nil
+    },
+    t4: %{
+      dollars_per_second: 0.00055,
+      dollars_per_token: nil
+    },
+    a100: %{
+      dollars_per_second: 0.0023,
+      dollars_per_token: nil
+    }
+  }
+
+  @doc """
+  Used to report the price of a response from Replicate
+  """
+  def report_price(%{"status" => "succeeded"} = response) do
+    try do
+      # just assume it's a cpu for right now:
+      pricing_structure = @pricing_structure[:cpu]
+      %{"metrics" => %{"predict_time" => predict_time}} = response
+
+      total_price =
+        (pricing_structure.dollars_per_second * predict_time)
+        |> :erlang.float_to_binary(decimals: 8)
+
+      LangChain.Agents.TheAccountant.store(%{
+        provider: :replicate,
+        total_price: total_price
+      })
+
+      # IO.puts("Replicate #{predict_time} seconds cost $#{total_price}")
+    rescue
+      error -> IO.inspect(error)
+    end
+  end
+
+  # do nothing until the status is 'succeeded'
+  def report_price(response) do
+  end
+end
+
 defmodule LangChain.Providers.Replicate.LanguageModel do
   @moduledoc """
     A module for interacting with Replicate's API
@@ -91,6 +162,7 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
       case HTTPoison.get(base.url, base.headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           response = Jason.decode!(body)
+          LangChain.Providers.Replicate.report_price(response)
 
           case response["status"] do
             "succeeded" ->
