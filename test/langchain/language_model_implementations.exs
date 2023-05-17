@@ -21,7 +21,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
   @implementations_and_models [
     {%LangChain.Providers.Huggingface.LanguageModel{}, %{}},
     # you should be set to optional since it runs on local hardware
-    {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}},
+    # {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}},
     {%LangChain.Providers.Replicate.LanguageModel{}, %{}},
     {%LangChain.Providers.OpenAI.LanguageModel{}, %{}}
     # {%AnotherImplementation{}, %{model_name: "model_name"}},
@@ -57,7 +57,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
     response == expected_response.generated_text
   end
 
-  # @tag :skip
+  @tag :skip
   @tag timeout: :infinity
   test "ask/2 returns a valid response for all implementations" do
     results =
@@ -97,16 +97,15 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
     end)
   end
 
-  @tag :skip
   @tag timeout: :infinity
-  test "chat/2 returns a valid response for all implementations" do
+  test "ask/2 returns a valid response for all implementations with chat input type" do
     results =
       Task.async_stream(
         @implementations_and_models,
         fn {impl, params} ->
           try do
             model = Map.merge(impl, params)
-            response = LanguageModelProtocol.chat(model, @input_for_chat)
+            response = LanguageModelProtocol.ask(model, @input_for_chat)
 
             %{
               model: %{provider: model.provider, model_name: model.model_name},
@@ -132,7 +131,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
         IO.puts("A test failed with reason: #{inspect(reason)}")
 
       {:ok, result} ->
-        Logger.debug("chat/2 results: #{inspect(result)}")
+        Logger.debug("ask/2 results: #{inspect(result)}")
         :ok
     end)
   end
