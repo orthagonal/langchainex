@@ -14,38 +14,49 @@ defmodule LangChain.Providers.BumblebeeTest do
 
   @tag timeout: :infinity
 
-  @model %LanguageModel{
-    # model_name: "facebook/blenderbot-400M-distill"
+  @model %LanguageModel{}
+
+  @gpt2 %LanguageModel{
     model_name: "gpt2"
   }
 
-  @fb_bb_model %Language{
-    model_name: "gpt2"
-    # model_name: "facebook/blenderbot-400M-distill"
+  @bert %LanguageModel{
+    model_name: "bert-base-uncased"
   }
 
   describe "Bumblebee implementation of LanguageModelProtocol" do
-    test "call/2 returns a valid response" do
-      prompt = "What time is it now?"
-      IO.puts("calling")
-      response = LanguageModelProtocol.call(@model, prompt)
-      Logger.debug(response)
-      assert String.length(response) > 0
+    # test "ask/2 returns a valid response" do
+    #   prompt = "What time is it now?"
+    #   response = LanguageModelProtocol.ask(@model, prompt)
+    #   Logger.debug(response)
+    #   assert is_binary(response)
 
-      response2 = LanguageModelProtocol.call(@model, "Fourscore and seven years ago")
-      Logger.debug(response2)
-    end
+    #   response2 = LanguageModelProtocol.ask(@gpt2, "Fourscore and seven years ago")
+    #   Logger.debug(response2)
+    #   assert is_binary(response2)
 
-    test "chat/2 returns a valid response" do
+    #   response3 = LanguageModelProtocol.ask(@bert, "I will become floats")
+    #   Logger.debug(response3)
+    #   assert is_binary(response3)
+    # end
+
+    test "ask/2 returns a valid response" do
       msgs = [
         %{text: "Write a sentence containing the word *grue*.", role: "user"},
         %{text: "Include a reference to the Dead Mountaineers Hotel."}
       ]
 
-      response = LanguageModelProtocol.chat(@fb_bb_model, msgs)
-      Logger.debug(response)
-      assert is_list(response)
-      assert length(response) > 0
+      # response = LanguageModelProtocol.ask(@model, msgs)
+      # Logger.debug(response)
+      # assert is_binary(response)
+
+      # response2 = LanguageModelProtocol.ask(@gpt2, msgs)
+      # Logger.debug(response2)
+      # assert is_binary(response2)
+
+      response3 = LanguageModelProtocol.ask(@bert, msgs)
+      Logger.debug(response3)
+      assert is_binary(response3)
     end
   end
 

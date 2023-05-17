@@ -1,11 +1,13 @@
 # any bumblebee-specific code should go in this file
+defmodule LangChain.Providers.Bumblebee do
+end
 
 defmodule LangChain.Providers.Bumblebee.LanguageModel do
   @moduledoc """
     A module for interacting with Bumblebee models, unlike
     the other providers Bumblebee runs models on your
     local hardware, see https://hexdocs.pm/bumblebee/Bumblebee.html
-  
+
     When you load a model with Bumblebee it will download that model from
     the Huggingface API and cache it locally, so the first time you run
     a model it will take a while to download, but after that it will be
@@ -24,7 +26,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
 
   if @bumblebee_enabled do
     defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Bumblebee.LanguageModel do
-      def call(config, prompt) do
+      def ask(config, prompt) when is_binary(prompt) do
         try do
           # this is where models get downloaded at compile time
           # models will be hundreds of MBs but will be cached by bumblebee
@@ -40,7 +42,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
           # inspect your generation_config to see info like min/max_new_tokens, min/max_length, etc
           # strategy, bos/eos token_id ( reserved numbers from the model's encoding scheme) etc
           {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
-
+          # IO.inspect(generation_config)
           # start serving the model
           serving =
             Bumblebee.Text.generation(model, tokenizer, generation_config,
@@ -65,7 +67,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
       #   ]
       # pop the last item off this list and turn it into a string called 'message'
       # and put the tail of the list is the 'history' which is strings
-      def chat(config, chats) when is_list(chats) do
+      def ask(config, chats) when is_list(chats) do
         try do
           _chat(config, chats)
         rescue
@@ -78,6 +80,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
         {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
         {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
         {:ok, generation_config} = Bumblebee.load_generation_config({:hf, config.model_name})
+        # IO.inspect(generation_config)
 
         serving =
           Bumblebee.Text.conversation(model, tokenizer, generation_config,
