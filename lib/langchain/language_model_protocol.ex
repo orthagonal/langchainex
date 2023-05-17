@@ -6,6 +6,5 @@ defprotocol LangChain.LanguageModelProtocol do
             n: nil,
             options: nil
 
-  # def chat(model, chats)
   def ask(model, prompt)
 end

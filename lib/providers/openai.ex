@@ -195,8 +195,6 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
             prompt |> Enum.map_join("\n", & &1.text)
           end
 
-        IO.inspect(msg)
-
         {:ok, response} =
           ExOpenAI.Completions.create_completion(
             model.model_name,

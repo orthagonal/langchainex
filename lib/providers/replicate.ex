@@ -124,20 +124,6 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
       end
     end
 
-    # with Replicate models first create a prediction, then you poll the API call
-    # until the prediction is complete, then you get the output
-    def call(model, prompt) do
-      {:ok, prediction_id} = create_prediction(model, prompt)
-      {:ok, output} = poll_for_prediction_result(prediction_id)
-      # try to make sure output is always a simple string
-      if is_list(output) do
-        # join strings if they are a list:
-        output |> Enum.join(" ")
-      else
-        output
-      end
-    end
-
     defp create_prediction(model, input) do
       body =
         Jason.encode!(%{
@@ -187,16 +173,15 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
       end
     end
 
-    def chat(model, chats) when is_list(chats) do
+    def ask(model, chats) when is_list(chats) do
       prompt =
         chats
-        # replace this with enum.map_join:
         |> Enum.map_join("\n", fn chat ->
           # chat.role is also here but it's not used currently
           chat.text
         end)
 
-      call(model, prompt)
+      ask(model, prompt)
       |> handle_responses()
     end
 
@@ -217,6 +202,20 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
               _ -> "Unknown response format"
             end
           end)
+      end
+    end
+
+    # with Replicate models first create a prediction, then you poll the API call
+    # until the prediction is complete, then you get the output
+    def ask(model, prompt) do
+      {:ok, prediction_id} = create_prediction(model, prompt)
+      {:ok, output} = poll_for_prediction_result(prediction_id)
+      # try to make sure output is always a simple string
+      if is_list(output) do
+        # join strings if they are a list:
+        output |> Enum.join(" ")
+      else
+        output
       end
     end
 
