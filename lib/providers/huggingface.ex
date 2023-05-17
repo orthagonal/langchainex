@@ -63,15 +63,10 @@ defmodule LangChain.Providers.Huggingface do
   and returns it as a http request body in string form
   """
   def prepare_input(model, input) do
-    IO.puts("prepare")
-    IO.inspect(model)
-    IO.inspect(input)
     template = get_template_body_for_action(model)
 
     try do
       processed_template = EEx.eval_string(template, input: input)
-      IO.puts("processed is")
-      IO.inspect(processed_template)
       # processed_template |> Jason.encode!()
     rescue
       error -> IO.inspect(error)
@@ -90,24 +85,16 @@ defmodule LangChain.Providers.Huggingface do
   and returns it as a string
   """
   def handle_response(model, response) do
-    IO.puts("handle_response called")
-    IO.inspect(model)
-    IO.inspect(response)
     handle_conversation(response)
   end
 
   # Helper functions to handle conversation responses
   defp handle_conversation(%{"conversation" => %{"generated_responses" => responses}}) do
-    IO.puts("handling conversation")
-
     responses
     |> Enum.join(" ")
   end
 
   defp handle_conversation(responses) when is_list(responses) do
-    IO.puts("handling list now")
-    IO.inspect(responses)
-
     case Enum.at(responses, 0) do
       %{"generated_text" => _} ->
         IO.puts("handling generated text")
@@ -200,27 +187,13 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
             fallback_chat_model: @fallback_chat_model
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Huggingface.LanguageModel do
-    def call(model, prompt) do
+    def ask(model, prompt) do
       try do
         request(model, LangChain.Providers.Huggingface.prepare_input(model, prompt))
       rescue
         error ->
-          str = error |> Exception.format(:error) |> IO.iodata_to_binary()
-          IO.inspect(str)
-
+          # str = error |> Exception.format(:error) |> IO.iodata_to_binary()
           "Huggingface API-based model #{model.model_name}: I had a technical malfunction trying to process #{prompt} "
-      end
-    end
-
-    def chat(model, chats) when is_list(chats) do
-      try do
-        request(model, LangChain.Providers.Huggingface.prepare_input(model, chats))
-      rescue
-        error ->
-          str = error |> Exception.format(:error) |> IO.iodata_to_binary()
-          IO.puts(str)
-
-          "Huggingface API-based model #{model.model_name}: I had a technical malfunction trying to process these chats."
       end
     end
 

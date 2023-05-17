@@ -1,8 +1,7 @@
-defmodule LangChain.LanguageModelUnifiedCallTest do
+defmodule LangChain.LanguageModelHuggingfaceTest do
   @moduledoc """
-  This test is here to do a unified test of all the language model implementations
-  in one place, backed by their default models.  This ensures that our model is
-  'unified' and models can talk to each other no matter what their actual implementation is.
+  Test a variety of Huggingface models to ensure they work as expected
+  with the same 'call' interface
   """
   use ExUnit.Case, async: true
   alias LangChain.LanguageModelProtocol
@@ -14,19 +13,18 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
 
   # will use the default model for each implementation
   @implementations_and_models [
-    # {%LangChain.Providers.Huggingface.LanguageModel{}, %{}},
-    # {%LangChain.Providers.Huggingface.LanguageModel{
-    #    model_name: "gpt2"
-    #  }, %{}},
-    # {%LangChain.Providers.Huggingface.LanguageModel{
-    #    model_name: "google/flan-t5-small"
-    #  }, %{}}
-    # {%LangChain.Providers.Huggingface.LanguageModel{
-    #    model_name: "TheBloke/vicuna-13B-1.1-HF"
-    #  }, %{}}
+    {%LangChain.Providers.Huggingface.LanguageModel{}, %{}},
+    {%LangChain.Providers.Huggingface.LanguageModel{
+       model_name: "gpt2"
+     }, %{}},
+    {%LangChain.Providers.Huggingface.LanguageModel{
+       model_name: "google/flan-t5-small"
+     }, %{}},
+    {%LangChain.Providers.Huggingface.LanguageModel{
+       model_name: "TheBloke/vicuna-13B-1.1-HF"
+     }, %{}},
     {%LangChain.Providers.Huggingface.LanguageModel{
        model_name: "sentence-transformers/distilbert-base-nli-mean-tokens"
-       #  language_action: "embed"
      }, %{}}
   ]
 
@@ -68,7 +66,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
         fn {impl, params} ->
           try do
             model = Map.merge(impl, params)
-            response = LanguageModelProtocol.call(model, @input_for_call)
+            response = LanguageModelProtocol.ask(model, @input_for_call)
 
             %{
               model: %{provider: model.provider, model_name: model.model_name},
@@ -95,46 +93,6 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
 
       {:ok, result} ->
         Logger.debug("call/2 results: #{inspect(result)}")
-        :ok
-    end)
-  end
-
-  @tag :skip
-  @tag timeout: :infinity
-  test "chat/2 returns a valid response for all implementations" do
-    results =
-      Task.async_stream(
-        @implementations_and_models,
-        fn {impl, params} ->
-          try do
-            model = Map.merge(impl, params)
-            response = LanguageModelProtocol.chat(model, @input_for_chat)
-
-            %{
-              model: %{provider: model.provider, model_name: model.model_name},
-              response: response,
-              yellow: yellow_function(response, @expected_output),
-              green: green_function(response, @expected_output)
-            }
-          rescue
-            error in [RuntimeError, SomeOtherError] ->
-              {:error, "Runtime error or some other error: #{Exception.message(error)}"}
-          catch
-            kind, reason ->
-              {:error, "Caught #{kind}: #{inspect(reason)}"}
-          end
-        end,
-        timeout: :infinity
-      )
-      |> Enum.to_list()
-
-    Enum.map(results, fn
-      {:ok, {:error, reason}} ->
-        # The task failed, so we print the error message
-        IO.puts("A test failed with reason: #{inspect(reason)}")
-
-      {:ok, result} ->
-        Logger.debug("chat/2 results: #{inspect(result)}")
         :ok
     end)
   end
