@@ -13,9 +13,8 @@ defmodule LangChain.LLMTest do
     {:ok, pid: pid}
   end
 
-  test "call/2 returns a response from the language model", %{pid: pid} do
-    result =
-      LLM.call(pid, "Translate the following English text to French: 'Hello, how are you?'")
+  test "ask/2 returns a response from the language model", %{pid: pid} do
+    result = LLM.ask(pid, "Translate the following English text to French: 'Hello, how are you?'")
 
     Process.sleep(10_000)
     # assert {:ok, response} = result

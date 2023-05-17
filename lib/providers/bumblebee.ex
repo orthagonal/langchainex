@@ -1,4 +1,7 @@
 # any bumblebee-specific code should go in this file
+# bumblebee will need to be updated to support
+# keeping the model in memory when it's not in use
+
 defmodule LangChain.Providers.Bumblebee do
   def prepare_input(:for_masked_language_modeling, chats) when is_binary(chats) do
     chats

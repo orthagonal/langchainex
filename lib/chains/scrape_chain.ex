@@ -14,7 +14,7 @@ defmodule LangChain.ScrapeChain do
 
   @doc """
   Creates a new ScrapeChain struct with the given chain, input_schema, and output_parser,
-  you set up a scrapeChain with an input_schema and an output_parser, then you can call
+  you set up a scrapeChain with an input_schema and an output_parser, then you can ask
   it with whatever text you want.
   ## Example:
   # create a chat to extract data:
@@ -66,7 +66,7 @@ defmodule LangChain.ScrapeChain do
     # alt_result will be %{ firstName: "John", lastName: "Doe", age: 30, birthdate: "1987-01-01"}
   """
   def scrape(scrape_chain, llm_pid, input_variables) when is_map(input_variables) do
-    result = LangChain.Chain.call(scrape_chain.chain, llm_pid, input_variables)
+    result = LangChain.Chain.ask(scrape_chain.chain, llm_pid, input_variables)
     # Parse the result using the output_parser
     scrape_chain.output_parser.(result)
   end
@@ -78,7 +78,7 @@ defmodule LangChain.ScrapeChain do
       input_schema: scrape_chain.input_schema
     }
 
-    result = LangChain.Chain.call(scrape_chain.chain, llm_pid, input_variables)
+    result = LangChain.Chain.ask(scrape_chain.chain, llm_pid, input_variables)
     # Parse the result using the output_parser
     scrape_chain.output_parser.(result)
   end
