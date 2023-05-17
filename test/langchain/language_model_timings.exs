@@ -8,7 +8,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
   alias LangChain.LanguageModelProtocol
   require Logger
 
-  # the inputs for the 'call' function
+  # the inputs for the 'ask' function
   @input_for_call "You remind me of the baby"
   @inputs_and_outputs %{
     input: "You remind me of the baby",
@@ -19,14 +19,11 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
   }
   # will use the default model for each implementation
   @implementations_and_models [
-    {%LangChain.Providers.Huggingface.LanguageModel{},
-     %{
-       model_name: "young-geng/koala"
-     }}
+    {%LangChain.Providers.Huggingface.LanguageModel{}, %{}},
     # you should be set to optional since it runs on local hardware
-    # {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}},
-    # {%LangChain.Providers.Replicate.LanguageModel{}, %{}},
-    # {%LangChain.Providers.OpenAI.LanguageModel{}, %{}}
+    {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}},
+    {%LangChain.Providers.Replicate.LanguageModel{}, %{}},
+    {%LangChain.Providers.OpenAI.LanguageModel{}, %{}}
     # {%AnotherImplementation{}, %{model_name: "model_name"}},
   ]
 
@@ -77,7 +74,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
   end
 
   @tag timeout: :infinity
-  test "chat/2 returns a valid response for all implementations and measures time with increasing inputs" do
+  test "ask/2 returns a valid response for all implementations and measures time with increasing inputs" do
     # start timer
     {total_time, _} =
       :timer.tc(fn ->
@@ -90,8 +87,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
               fn {impl, params} ->
                 try do
                   model = Map.merge(impl, params)
-
-                  {time, response} = :timer.tc(fn -> LanguageModelProtocol.call(model, input) end)
+                  {time, response} = :timer.tc(fn -> LanguageModelProtocol.ask(model, input) end)
 
                   time_in_seconds = time / 1_000_000
 

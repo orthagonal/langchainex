@@ -9,7 +9,6 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
   require Logger
 
   # the inputs for the 'call' function
-  @input_for_call "You remind me of the baby"
   @inputs_and_outputs %{
     input: "You remind me of the baby",
     expected_output: %{
@@ -70,7 +69,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
 
   # @tag :skip
   @tag timeout: :infinity
-  test "chat/2 returns a valid response for all implementations and measures time with increasing inputs" do
+  test "ask/2 returns a valid response for all implementations and measures time with increasing inputs" do
     test_inputs =
       Enum.map(0..(length(@input_for_chat) - 1), fn n ->
         Enum.take(@input_for_chat, n + 1)
@@ -83,7 +82,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
             try do
               model = Map.merge(impl, params)
 
-              {time, response} = :timer.tc(fn -> LanguageModelProtocol.chat(model, input) end)
+              {time, response} = :timer.tc(fn -> LanguageModelProtocol.ask(model, input) end)
 
               time_in_seconds = time / 1_000_000
 
