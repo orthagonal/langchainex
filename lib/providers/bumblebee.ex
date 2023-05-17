@@ -137,8 +137,10 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
           )
 
         input = LangChain.Providers.Bumblebee.prepare_input(architecture, prompt)
+        # IO.inspect(input)
         result = Nx.Serving.run(serving, input)
         # %{text: message, history: prior})
+        # IO.inspect(result)
 
         result
         |> Map.get(:results, [])
