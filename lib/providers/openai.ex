@@ -172,21 +172,35 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
       model_name in @chatmodels
     end
 
-    def call(model, prompt) when is_tuple(prompt) do
-      call(model, elem(prompt, 1))
-    end
-
-    def call(model, prompt) do
+    def ask(model, prompt) do
       # some models are conversational and others are single-prompt only,
       # this handles fixing it up so it works either way
       if chat_model?(model.model_name) do
-        msgs = [%{text: prompt, role: "user"}]
+        # prompt is either a string or a list of messages
+        msgs =
+          if is_binary(prompt) do
+            [%{text: prompt, role: "user"}]
+          else
+            prompt
+          end
+
         chat(model, msgs)
       else
+        # prompt is either a string or a list of messages, needs to just
+        # be a single string for this model
+        msg =
+          if is_binary(prompt) do
+            prompt
+          else
+            prompt |> Enum.map_join("\n", & &1.text)
+          end
+
+        IO.inspect(msg)
+
         {:ok, response} =
           ExOpenAI.Completions.create_completion(
             model.model_name,
-            prompt: prompt,
+            prompt: msg,
             temperature: model.temperature,
             max_tokens: model.max_tokens
           )
@@ -200,7 +214,7 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
       text
     end
 
-    def chat(model, msgs) do
+    defp chat(model, msgs) do
       converted = chats_to_openai(msgs)
 
       case ExOpenAI.Chat.create_chat_completion(converted, model.model_name, n: model.n) do
