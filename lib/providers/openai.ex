@@ -90,20 +90,20 @@ defmodule LangChain.Providers.OpenAI do
   Used to report the price of a response from OpenAI
   Needs to implement callbacks to a master pricing tracker
   """
-  def report_price(_model, response) do
+  def report_price(model, response) do
     try do
       total_tokens = response.usage.total_tokens
       pricing_structure = get_pricing_structure(response.model)
 
-      _total_price =
+      total_price =
         (pricing_structure.dollars_per_token * total_tokens)
         |> :erlang.float_to_binary(decimals: 8)
 
-      # LangChain.Agents.TheAccountant.store(%{
-      #   provider: :openai,
-      #   model_name: model.model_name,
-      #   total_price: total_price
-      # })
+      LangChain.Agents.TheAccountant.store(%{
+        provider: :openai,
+        model_name: model.model_name,
+        total_price: total_price
+      })
 
       # IO.puts("OpenAI #{total_tokens} tokens cost $#{total_price}")
     rescue

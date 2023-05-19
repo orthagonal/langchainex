@@ -27,43 +27,48 @@ defmodule LangChain.Providers.Replicate do
 
   """
 
-  # @pricing_structure %{
-  #   cpu: %{
-  #     dollars_per_second: 0.0002,
-  #     dollars_per_token: nil
-  #   },
-  #   t4: %{
-  #     dollars_per_second: 0.00055,
-  #     dollars_per_token: nil
-  #   },
-  #   a100: %{
-  #     dollars_per_second: 0.0023,
-  #     dollars_per_token: nil
-  #   }
-  # }
+  @pricing_structure %{
+    cpu: %{
+      dollars_per_second: 0.0002,
+      dollars_per_token: nil
+    },
+    t4: %{
+      dollars_per_second: 0.00055,
+      dollars_per_token: nil
+    },
+    a100: %{
+      dollars_per_second: 0.0023,
+      dollars_per_token: nil
+    }
+  }
 
   @doc """
   Used to report the price of a response from Replicate
   """
-  def report_price(%{"status" => "succeeded"} = _response) do
-    # try do
-    #   # just assume it's a cpu for right now:
-    #   pricing_structure = @pricing_structure[:cpu]
-    #   %{"metrics" => %{"predict_time" => predict_time}} = response
+  def report_price(%{"status" => "succeeded"} = response) do
+    try do
+      # just assume it's a cpu for right now:
+      pricing_structure = @pricing_structure[:cpu]
+      %{"metrics" => %{"predict_time" => predict_time}} = response
 
-    #   total_price =
-    #     (pricing_structure.dollars_per_second * predict_time)
-    #     |> :erlang.float_to_binary(decimals: 8)
+      total_price =
+        (pricing_structure.dollars_per_second * predict_time)
+        |> :erlang.float_to_binary(decimals: 8)
 
-    #   LangChain.Agents.TheAccountant.store(%{
-    #     provider: :replicate,
-    #     total_price: total_price
-    #   })
+      LangChain.Agents.TheAccountant.store(%{
+        provider: :replicate,
+        total_price: total_price
+      })
 
-    #   # IO.puts("Replicate #{predict_time} seconds cost $#{total_price}")
-    # rescue
-    #   error -> error
-    # end
+      # IO.puts("Replicate #{predict_time} seconds cost $#{total_price}")
+    rescue
+      error -> error
+    end
+  end
+
+  # optional function for the one above
+  # credo:disable-for-next-line
+  def report_price(_response) do
   end
 end
 
