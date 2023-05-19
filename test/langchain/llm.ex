@@ -18,7 +18,7 @@ defmodule LangChain.LLMTest do
       LLM.call(pid, "Translate the following English text to French: 'Hello, how are you?'")
 
     Process.sleep(10_000)
-    IO.inspect(result)
+    # IO.inspect(result)
     # assert {:ok, response} = result
     # assert is_binary(response)
   end

@@ -61,7 +61,7 @@ defmodule LangChain.Providers.Replicate do
 
       # IO.puts("Replicate #{predict_time} seconds cost $#{total_price}")
     rescue
-      error -> IO.inspect(error)
+      error -> error
     end
   end
 

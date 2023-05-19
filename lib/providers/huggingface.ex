@@ -85,7 +85,7 @@ defmodule LangChain.Providers.Huggingface do
           processed_template = EEx.eval_string(template, input: input)
           # |> Jason.encode!()
         rescue
-          error -> IO.inspect(error)
+          error -> error
         end
     end
   end
@@ -102,17 +102,10 @@ defmodule LangChain.Providers.Huggingface do
   and returns it as a string
   """
   def handle_response(model, response) do
-    IO.puts("handle gen")
-    IO.puts("handle gen")
-    IO.puts("handle gen")
-    IO.inspect(response)
-
-    cond do
-      model.language_action == :generation ->
-        handle_generation(response)
-
-      true ->
-        handle_conversation(response)
+    if model.language_action == :generation do
+      handle_generation(response)
+    else
+      handle_conversation(response)
     end
   end
 
@@ -128,16 +121,14 @@ defmodule LangChain.Providers.Huggingface do
     case Enum.at(responses, 0) do
       %{"generated_text" => _} ->
         responses
-        |> Enum.map(fn %{"generated_text" => text} -> text end)
-        |> Enum.join(" ")
+        |> Enum.map_join(" ", fn %{"generated_text" => text} -> text end)
 
       response when is_binary(response) ->
         Enum.join(responses, " ")
 
       response when is_float(response) ->
         responses
-        |> Enum.map(&Float.to_string/1)
-        |> Enum.join(", ")
+        |> Enum.map_join(", ", &Float.to_string/1)
 
       res ->
         "Unsupported response format"
@@ -154,16 +145,14 @@ defmodule LangChain.Providers.Huggingface do
     case Enum.at(responses, 0) do
       %{"generated_text" => _} ->
         responses
-        |> Enum.map(fn %{"generated_text" => text} -> text end)
-        |> Enum.join(" ")
+        |> Enum.map_join(" ", fn %{"generated_text" => text} -> text end)
 
       response when is_binary(response) ->
         Enum.join(responses, " ")
 
       response when is_float(response) ->
         responses
-        |> Enum.map(&Float.to_string/1)
-        |> Enum.join(", ")
+        |> Enum.map_join(", ", &Float.to_string/1)
 
       res ->
         "Unsupported response format"
@@ -242,21 +231,18 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     # another is if the model you are calling is too big and needs dedicated hosting
     defp request(model, input) do
       base = Huggingface.get_base(model)
-      IO.puts("....")
-      IO.inspect(input)
 
       case HTTPoison.post(base.url, input, base.headers,
              timeout: :infinity,
              recv_timeout: :infinity
            ) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          IO.inspect(body)
           decoded_body = Jason.decode!(body)
           LangChain.Providers.Huggingface.handle_response(model, decoded_body)
 
         {:ok, %HTTPoison.Response{status_code: 503, body: _body}} ->
           :timer.sleep(model.polling_interval)
-          IO.inspect("Model is still loading, trying again")
+          IO.puts("Model is still loading, trying again")
           request(model, input)
 
         {:ok, %HTTPoison.Response{status_code: 403, body: _body}} ->
@@ -269,12 +255,10 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
 
         {:error, %HTTPoison.Error{reason: reason}} ->
           IO.puts("poison error")
-          IO.inspect(reason)
           reason
 
         e ->
           IO.puts("other error")
-          IO.inspect(e)
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end

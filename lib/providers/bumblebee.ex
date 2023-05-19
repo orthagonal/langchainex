@@ -3,6 +3,10 @@
 # keeping the model in memory when it's not in use
 
 defmodule LangChain.Providers.Bumblebee do
+  @moduledoc """
+  Input Processing for the Bumblebee models
+  """
+
   def prepare_input(:for_masked_language_modeling, chats) when is_binary(chats) do
     chats
   end
@@ -50,7 +54,7 @@ end
 
 defmodule LangChain.Providers.Bumblebee.LanguageModel do
   @moduledoc """
-    A module for interacting with Bumblebee models, unlike
+    A module for interacting with Bumblebee language models, unlike
     the other providers Bumblebee runs models on your
     local hardware, see https://hexdocs.pm/bumblebee/Bumblebee.html
 

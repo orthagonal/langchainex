@@ -107,7 +107,7 @@ defmodule LangChain.Providers.OpenAI do
 
       # IO.puts("OpenAI #{total_tokens} tokens cost $#{total_price}")
     rescue
-      error -> IO.inspect(error)
+      error -> error
     end
   end
 end
