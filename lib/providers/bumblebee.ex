@@ -57,7 +57,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
     A module for interacting with Bumblebee language models, unlike
     the other providers Bumblebee runs models on your
     local hardware, see https://hexdocs.pm/bumblebee/Bumblebee.html
-
+  
     When you load a model with Bumblebee it will download that model from
     the Huggingface API and cache it locally, so the first time you run
     a model it will take a while to download, but after that it will be
