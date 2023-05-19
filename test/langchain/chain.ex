@@ -49,6 +49,22 @@ defmodule LangChain.ChainTest do
   end
 
   test "Test individual Link with raw string" do
+    # ask(bob("What is the tallest building?"))
+    # repeat(question(then(ask(for completion([[MASK]])))))
+
+    # result =
+    #   LangChain.cell(
+    #     %PromptTemplate{},
+    #     %LangChain.Providers.OpenAI.LanguageModel{
+    #       model_name: "text-ada-001",
+    #       max_tokens: 25,
+    #       temperature: 0.5,
+    #       n: 1
+    #     },
+    #     input_processor: &LangChain.PromptTemplate.process/2,
+    #     output_parser: &temp_parser/2
+    # )
+
     link = %LangChain.ChainLink{
       input: "Who wrote the novel Solaris?",
       name: "enchanter",
@@ -56,7 +72,7 @@ defmodule LangChain.ChainTest do
     }
 
     # Set up the OpenAI LLM provider
-    openai_provider = %LangChain.Providers.OpenAI{
+    openai_provider = %LangChain.Providers.OpenAI.LanguageModel{
       model_name: "text-ada-001",
       max_tokens: 25,
       temperature: 0.5,
@@ -66,10 +82,10 @@ defmodule LangChain.ChainTest do
     # # Start the LLM GenServer with the OpenAI provider
     {:ok, llm_pid} = LangChain.LLM.start_link(provider: openai_provider)
 
-    # When we evaluate a chain link, we get a new chain link with the output variables
+    # # When we evaluate a chain link, we get a new chain link with the output variables
     new_link_state = LangChain.ChainLink.call(link, llm_pid, %{spell: "frotz"})
 
-    # Make sure it's the right link and the output has the right keys
+    # # Make sure it's the right link and the output has the right keys
     assert Map.keys(new_link_state.output) == [:text]
 
     assert Map.keys(new_link_state) == [
@@ -93,7 +109,7 @@ defmodule LangChain.ChainTest do
     }
 
     # Set up the OpenAI LLM provider
-    openai_provider = %LangChain.Providers.OpenAI{
+    openai_provider = %LangChain.Providers.OpenAI.LanguageModel{
       model_name: "text-ada-001",
       max_tokens: 25,
       temperature: 0.5,
@@ -137,7 +153,7 @@ defmodule LangChain.ChainTest do
     }
 
     # Set up the OpenAI LLM provider
-    openai_provider = %LangChain.Providers.OpenAI{
+    openai_provider = %LangChain.Providers.OpenAI.LanguageModel{
       model_name: "gpt-3.5-turbo",
       max_tokens: 25,
       temperature: 0.5,

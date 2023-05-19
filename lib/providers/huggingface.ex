@@ -23,6 +23,7 @@ defmodule LangChain.Providers.Huggingface do
     fill_mask: """
     """,
     generation: """
+    { inputs: "
     <%= cond do %>
     <% is_list(input) and is_map(Enum.at(input, 0)) -> %>
       <%= input
@@ -33,6 +34,7 @@ defmodule LangChain.Providers.Huggingface do
     <% is_binary(input) -> %> <%= input %>
     <% true -> %> <%= "Input is neither a list nor a string" %>
     <% end %>
+    " }
     """,
     # input for question answering is just a string
     question_answering: """
@@ -63,13 +65,28 @@ defmodule LangChain.Providers.Huggingface do
   and returns it as a http request body in string form
   """
   def prepare_input(model, input) do
-    template = get_template_body_for_action(model)
+    cond do
+      model.language_action == :generation and is_binary(input) ->
+        %{
+          inputs: input
+        }
+        |> Jason.encode!()
 
-    try do
-      processed_template = EEx.eval_string(template, input: input)
-      # processed_template |> Jason.encode!()
-    rescue
-      error -> IO.inspect(error)
+      model.language_action == :generation ->
+        %{
+          inputs: input |> Enum.join(" ")
+        }
+        |> Jason.encode()
+
+      true ->
+        template = get_template_body_for_action(model)
+
+        try do
+          processed_template = EEx.eval_string(template, input: input)
+          # |> Jason.encode!()
+        rescue
+          error -> IO.inspect(error)
+        end
     end
   end
 
@@ -85,7 +102,46 @@ defmodule LangChain.Providers.Huggingface do
   and returns it as a string
   """
   def handle_response(model, response) do
-    handle_conversation(response)
+    IO.puts("handle gen")
+    IO.puts("handle gen")
+    IO.puts("handle gen")
+    IO.inspect(response)
+
+    cond do
+      model.language_action == :generation ->
+        handle_generation(response)
+
+      true ->
+        handle_conversation(response)
+    end
+  end
+
+  def handle_generation([%{"generated_text" => text} | tail]) do
+    text
+  end
+
+  def handle_generation(response) when is_binary(response) do
+    response
+  end
+
+  def handle_generation(responses) when is_list(responses) do
+    case Enum.at(responses, 0) do
+      %{"generated_text" => _} ->
+        responses
+        |> Enum.map(fn %{"generated_text" => text} -> text end)
+        |> Enum.join(" ")
+
+      response when is_binary(response) ->
+        Enum.join(responses, " ")
+
+      response when is_float(response) ->
+        responses
+        |> Enum.map(&Float.to_string/1)
+        |> Enum.join(", ")
+
+      res ->
+        "Unsupported response format"
+    end
   end
 
   # Helper functions to handle conversation responses
@@ -114,24 +170,6 @@ defmodule LangChain.Providers.Huggingface do
     end
   end
 
-  # defp oldhr(decoded_body, :question_answering) when is_list(decoded_body) do
-  #   first_result = Enum.at(decoded_body, 0)
-  #   oldhr(first_result)
-  # end
-  # defp oldhr(decoded_body, :question_answering) do
-  #   oldhr(decoded_body)
-  # end
-  # defp oldhr(decoded_body, :chat) do
-  #   handle_chat_response(decoded_body)
-  # end
-  # defp oldhr(%{"translation_text" => translation_text}) do
-  #   translation_text
-  # end
-  # defp oldhr(_), do: {:error, "Unexpected API response format"}
-
-  @known_conversation_models [
-    "facebook/blenderbot-400M-distill"
-  ]
   @doc """
   used by all the HF api calls, get the base URL and HTTP headers for a given model
   """
@@ -204,12 +242,15 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     # another is if the model you are calling is too big and needs dedicated hosting
     defp request(model, input) do
       base = Huggingface.get_base(model)
+      IO.puts("....")
+      IO.inspect(input)
 
       case HTTPoison.post(base.url, input, base.headers,
              timeout: :infinity,
              recv_timeout: :infinity
            ) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+          IO.inspect(body)
           decoded_body = Jason.decode!(body)
           LangChain.Providers.Huggingface.handle_response(model, decoded_body)
 
@@ -227,10 +268,13 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           apply(__MODULE__, :chat, [model.testfallback_chat_model, input])
 
         {:error, %HTTPoison.Error{reason: reason}} ->
+          IO.puts("poison error")
           IO.inspect(reason)
           reason
 
         e ->
+          IO.puts("other error")
+          IO.inspect(e)
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end

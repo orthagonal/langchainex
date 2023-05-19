@@ -1,3 +1,16 @@
+# new scrape chain is a recursive function
+# validator: pass your validator function so we know when we're done
+# data, annotated schema, format
+# fill out the prompt and call the LLM
+# num_passes = 4
+
+# new execute chain is a recursive function
+# evaluate
+# plan
+# refine
+
+# execute
+
 defmodule LangChain.ScrapeChain do
   @moduledoc """
   Use this when you want to extract formatted data from natural-language text, ScrapeChain is basically
@@ -66,7 +79,7 @@ defmodule LangChain.ScrapeChain do
     # alt_result will be %{ firstName: "John", lastName: "Doe", age: 30, birthdate: "1987-01-01"}
   """
   def scrape(scrape_chain, llm_pid, input_variables) when is_map(input_variables) do
-    result = LangChain.Chain.ask(scrape_chain.chain, llm_pid, input_variables)
+    result = LangChain.Chain.call(scrape_chain.chain, llm_pid, input_variables)
     # Parse the result using the output_parser
     scrape_chain.output_parser.(result)
   end
@@ -78,7 +91,7 @@ defmodule LangChain.ScrapeChain do
       input_schema: scrape_chain.input_schema
     }
 
-    result = LangChain.Chain.ask(scrape_chain.chain, llm_pid, input_variables)
+    result = LangChain.Chain.call(scrape_chain.chain, llm_pid, input_variables)
     # Parse the result using the output_parser
     scrape_chain.output_parser.(result)
   end

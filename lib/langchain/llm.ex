@@ -25,8 +25,8 @@ defmodule LangChain.LLM do
   end
 
   def handle_call({:ask, prompt}, _from, state) do
-    result = LanguageModelProtocol.call(state.provider, prompt)
-    {:reply, result, state}
+    result = LanguageModelProtocol.ask(state.provider, prompt)
+    {:reply, {:ok, result}, state}
   end
 
   # Public functions

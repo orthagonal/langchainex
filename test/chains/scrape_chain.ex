@@ -48,26 +48,26 @@ defmodule ScrapeChainTest do
     input_text = "John Doe is 30 years old."
 
     # # Set up the OpenAI LLM provider
-    # openai_provider = %LangChain.Providers.OpenAI{
-    #   model_name: "gpt-3.5-turbo",
-    #   max_tokens: 25,
-    #   temperature: 0.5,
-    #   n: 1
-    # }
+    openai_provider = %LangChain.Providers.OpenAI.LanguageModel{
+      model_name: "gpt-3.5-turbo",
+      max_tokens: 25,
+      temperature: 0.5,
+      n: 1
+    }
 
-    # # # Start the LLM GenServer with the OpenAI provider
-    # {:ok, llm_pid} = LangChain.LLM.start_link(provider: openai_provider)
+    # # Start the LLM GenServer with the OpenAI provider
+    {:ok, llm_pid} = LangChain.LLM.start_link(provider: openai_provider)
 
-    # result = LangChain.ScrapeChain.scrape(schema_chain, llm_pid, input_text)
-    # assert Map.get(result, "age") == 30
-    # assert Map.get(result, "name") == "John Doe"
+    result = LangChain.ScrapeChain.scrape(schema_chain, llm_pid, input_text)
+    assert Map.get(result, "age") == 30
+    assert Map.get(result, "name") == "John Doe"
 
-    # # # try some different schemas on the same text
-    # input_schema2 = "{ name: { first: String, last: String }, age: Number }"
-    # schema_chain2 = LangChain.ScrapeChain.new(chain, input_schema2)
-    # result2 = LangChain.ScrapeChain.scrape(schema_chain2, llm_pid, input_text)
+    # # try some different schemas on the same text
+    input_schema2 = "{ name: { first: String, last: String }, age: Number }"
+    schema_chain2 = LangChain.ScrapeChain.new(chain, input_schema2)
+    result2 = LangChain.ScrapeChain.scrape(schema_chain2, llm_pid, input_text)
 
-    # assert Map.get(result2, "name") == %{"first" => "John", "last" => "Doe"}
-    # assert Map.get(result2, "age") == 30
+    assert Map.get(result2, "name") == %{"first" => "John", "last" => "Doe"}
+    assert Map.get(result2, "age") == 30
   end
 end
