@@ -155,13 +155,13 @@ defmodule LangChain.Providers.NlpCloud.LanguageModel do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           LangChain.Providers.NlpCloud.handle_response(model, body)
 
-        {:ok, %HTTPoison.Response{status_code: _status_code, body: body}} ->
+        {:ok, %HTTPoison.Response{status_code: _status_code, body: _body}} ->
           # credo:disable-for-next-line
           # IO.inspect(body)
 
           "I experienced a technical malfunction trying to run #{model.model_name}. Please try again later."
 
-        {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, %HTTPoison.Error{reason: _reason}} ->
           # credo:disable-for-next-line
           # IO.inspect(reason)
 
