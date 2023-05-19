@@ -8,7 +8,7 @@ defmodule LangChain.Providers.ReplicateTest do
   require Logger
 
   @moduletag timeout: 230_000
-  @model %LanguageModel{
+  @hello_model %LanguageModel{
     model_name: "hello",
     version: "5c7d5dc6dd8bf75c1acaa8565735e7986bc5b66206b55cca93cb72c9bf15ccaa"
   }
@@ -33,48 +33,58 @@ defmodule LangChain.Providers.ReplicateTest do
     version: "b3546aeec6c9891f0dd9929c2d3bedbf013c12e02e7dd0346af09c37e008c827"
   }
 
-  @models [
-    # @model,
-    # @vicuna_13_b,
-    @stablelm_tuned_alpha_7b,
-    @dolly_v2_12b,
-    @gpt_j_6b
-  ]
+  # checks the type of the response
+  defp yellow_function(response) do
+    is_binary(response)
+  end
+
+  # Check the content of the response
+  # not catastrophic if this fails, it's an AI
+  defp green_function(response, expected_response) do
+    String.contains?(response, expected_response)
+  end
 
   describe "Replicate implementation of LanguageModelProtocol" do
-    # test "call/2 returns a valid response" do
-    #   prompt = "Write a sentence containing the word *grue*."
-    #   response = LanguageModelProtocol.call(  @model, prompt)
-    #   Logger.debug(response)
-    #   assert String.length(response) > 0
-    #   assert String.contains?(response, "grue")
+    @tag timeout: :infinity
+    test "ask/2 returns a valid response for strings" do
+      prompt = "Write a sentence containing the word *grue*."
+      response = LanguageModelProtocol.ask(@hello_model, prompt)
+      Logger.debug(response)
+      assert yellow_function(response)
 
-    #   response2 = LanguageModelProtocol.call(@dolly_v2_12b, prompt)
-    #   Logger.debug(response2)
-    # end
+      # kind of expensive to run
+      # response2 = LanguageModelProtocol.ask(@dolly_v2_12b, prompt)
+      # Logger.debug(response2)
+      # assert yellow_function(response)
 
-    test "can process all the models" do
-      for model <- @models do
-        prompt = "Write a sentence containing the word *grue*."
-        response = LanguageModelProtocol.call(model, prompt)
-        Logger.debug(response)
-        # assert String.length(response) > 0
-        # assert String.contains?(response, "grue")
-      end
+      response3 = LanguageModelProtocol.ask(@stablelm_tuned_alpha_7b, prompt)
+      Logger.debug(response3)
+      assert yellow_function(response)
     end
 
-    # test "chat/2 returns a valid response" do
-    #   msgs = [
-    #     %{text: "Write a sentence containing the word *grue*.", role: "user"},
-    #     %{text: "Include a reference to the Dead Mountaineers Hotel."}
-    #   ]
+    @tag timeout: :infinity
+    test "ask/2 returns a valid response for chat lists" do
+      msgs = [
+        %{text: "Write a sentence containing the word *grue*.", role: "user"},
+        %{text: "Include a reference to the Dead Mountaineers Hotel."}
+      ]
 
-    #   response = LanguageModelProtocol.chat(@gpt_j_6b, msgs)
-    #   IO.inspect(response)
-    #   # Process.sleep(120_000)
-    #   # Logger.debug(response)
-    #   # assert is_list(response)
-    #   # assert length(response) > 0
-    # end
+      response = LanguageModelProtocol.ask(@hello_model, msgs)
+      Logger.debug(response)
+      assert yellow_function(response)
+
+      # these two kind of expensive to run
+      # response2 = LanguageModelProtocol.ask(@gpt_j_6b, msgs)
+      # Logger.debug(response2)
+      # assert yellow_function(response2)
+
+      # response3 = LanguageModelProtocol.ask(@dolly_v2_12b, msgs)
+      # Logger.debug(response3)
+      # assert yellow_function(response3)
+
+      response4 = LanguageModelProtocol.ask(@stablelm_tuned_alpha_7b, msgs)
+      Logger.debug(response4)
+      assert yellow_function(response4)
+    end
   end
 end

@@ -24,23 +24,14 @@ defmodule LangChain.LLM do
     {:ok, state}
   end
 
-  def handle_call({:call, prompt}, _from, state) do
-    result = LanguageModelProtocol.call(state.provider, prompt)
-    {:reply, result, state}
-  end
-
-  def handle_call({:chat, chats}, _from, state) do
-    result = LanguageModelProtocol.chat(state.provider, chats)
-    {:reply, result, state}
+  def handle_call({:ask, prompt}, _from, state) do
+    result = LanguageModelProtocol.ask(state.provider, prompt)
+    {:reply, {:ok, result}, state}
   end
 
   # Public functions
 
   def call(pid, prompt) do
-    GenServer.call(pid, {:call, prompt}, 60_000)
-  end
-
-  def chat(pid, msgs) do
-    GenServer.call(pid, {:chat, msgs}, 60_000)
+    GenServer.call(pid, {:ask, prompt}, 60_000)
   end
 end

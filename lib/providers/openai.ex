@@ -1,3 +1,117 @@
+defmodule LangChain.Providers.OpenAI do
+  @moduledoc """
+  OpenAI results return a body that will contain:
+   `'usage': {'prompt_tokens': 56, 'completion_tokens': 31, 'total_tokens': 87}`
+
+   OpenAI Pricing
+  Model	Prompt	Completion
+  gpt-4
+    8K context	$0.03 / 1K tokens	$0.06 / 1K tokens
+    32K context	$0.06 / 1K tokens	$0.12 / 1K tokens
+
+  gpt-3.5-turbo	$0.002 / 1K tokens
+
+  instructGPT (only models you can fine tune)
+  Ada $0.0004 / 1K tokens
+  Babbage $0.0005 / 1K tokens
+  Curie $0.0020 / 1K tokens
+  Davinci $0.0200 / 1K tokens
+  Fine-tuning:
+  Ada	$0.0004 / 1K tokens	$0.0016 / 1K tokens
+  Babbage	$0.0006 / 1K tokens	$0.0024 / 1K tokens
+  Curie	$0.0030 / 1K tokens	$0.0120 / 1K tokens
+  Davinci	$0.0300 / 1K tokens	$0.1200 / 1K tokens
+
+  embeddings
+  Ada	$0.0004 / 1K tokens
+  """
+
+  # need to update this to scrape from page
+  @pricing_structure %{
+    "gpt-4-8k" => %{
+      dollars_per_token: 0.00003
+    },
+    "gpt-4-32k" => %{
+      dollars_per_token: 0.00006
+    },
+    "gpt-3.5" => %{
+      dollars_per_token: 0.000002
+    },
+    "ada" => %{
+      dollars_per_token: 0.0004
+    },
+    "babbage" => %{
+      dollars_per_token: 0.0005
+    },
+    "curie" => %{
+      dollars_per_token: 0.0020
+    },
+    "davinci" => %{
+      dollars_per_token: 0.0200
+    },
+    :fine_tuning => %{
+      "ada" => %{
+        dollars_per_token: 0.0004
+      },
+      "babbage" => %{
+        dollars_per_token: 0.0006
+      },
+      "curie" => %{
+        dollars_per_token: 0.0030
+      },
+      "davinci" => %{
+        dollars_per_token: 0.0300
+      }
+    },
+    :embedding => %{
+      "ada" => %{
+        dollars_per_token: 0.0004
+      }
+    }
+  }
+
+  # get most-similar entry from pricing structure
+  def get_pricing_structure(model_name) do
+    @pricing_structure
+    |> Enum.map(fn {key, value} ->
+      if is_binary(key) do
+        {String.jaro_distance(model_name, key), key, value}
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.max_by(fn {score, _, _} -> score end)
+    |> case do
+      {score, _key, value} when score > 0.7 -> value
+      _ -> 0
+    end
+  end
+
+  @doc """
+  Used to report the price of a response from OpenAI
+  Needs to implement callbacks to a master pricing tracker
+  """
+  def report_price(_model, response) do
+    try do
+      total_tokens = response.usage.total_tokens
+      pricing_structure = get_pricing_structure(response.model)
+
+      _total_price =
+        (pricing_structure.dollars_per_token * total_tokens)
+        |> :erlang.float_to_binary(decimals: 8)
+
+      # LangChain.Agents.TheAccountant.store(%{
+      #   provider: :openai,
+      #   model_name: model.model_name,
+      #   total_price: total_price
+      # })
+
+      # IO.puts("OpenAI #{total_tokens} tokens cost $#{total_price}")
+    rescue
+      error -> error
+    end
+  end
+end
+
 defmodule LangChain.Embedder.OpenAIProvider do
   @moduledoc """
   An OpenAI implementation of the LangChain.EmbedderProtocol.
@@ -38,7 +152,7 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
   defstruct provider: :openai,
             model_name: "gpt-3.5-turbo",
             max_tokens: 25,
-            temperature: 0.5,
+            temperature: 0.1,
             n: 1
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.OpenAI.LanguageModel do
@@ -58,21 +172,33 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
       model_name in @chatmodels
     end
 
-    def call(model, prompt) when is_tuple(prompt) do
-      call(model, elem(prompt, 1))
-    end
-
-    def call(model, prompt) do
+    def ask(model, prompt) do
       # some models are conversational and others are single-prompt only,
       # this handles fixing it up so it works either way
       if chat_model?(model.model_name) do
-        msgs = [%{text: prompt, role: "user"}]
+        # prompt is either a string or a list of messages
+        msgs =
+          if is_binary(prompt) do
+            [%{text: prompt, role: "user"}]
+          else
+            prompt
+          end
+
         chat(model, msgs)
       else
+        # prompt is either a string or a list of messages, needs to just
+        # be a single string for this model
+        msg =
+          if is_binary(prompt) do
+            prompt
+          else
+            prompt |> Enum.map_join("\n", & &1.text)
+          end
+
         {:ok, response} =
           ExOpenAI.Completions.create_completion(
             model.model_name,
-            prompt: prompt,
+            prompt: msg,
             temperature: model.temperature,
             max_tokens: model.max_tokens
           )
@@ -86,11 +212,13 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
       text
     end
 
-    def chat(model, msgs) do
+    defp chat(model, msgs) do
       converted = chats_to_openai(msgs)
 
       case ExOpenAI.Chat.create_chat_completion(converted, model.model_name, n: model.n) do
         {:ok, response} ->
+          LangChain.Providers.OpenAI.report_price(model, response)
+
           cond do
             # if it's a list just return the first 'text' field
             is_list(response) ->

@@ -47,8 +47,8 @@ defmodule ScrapeChainTest do
 
     input_text = "John Doe is 30 years old."
 
-    # Set up the OpenAI LLM provider
-    openai_provider = %LangChain.Providers.OpenAI{
+    # # Set up the OpenAI LLM provider
+    openai_provider = %LangChain.Providers.OpenAI.LanguageModel{
       model_name: "gpt-3.5-turbo",
       max_tokens: 25,
       temperature: 0.5,

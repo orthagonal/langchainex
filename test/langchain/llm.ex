@@ -8,16 +8,17 @@ defmodule LangChain.LLMTest do
   alias LangChain.Providers.OpenAI
 
   setup do
-    openai = %OpenAI{}
+    openai = %LangChain.Providers.OpenAI.LanguageModel{}
     {:ok, pid} = LLM.start_link(provider: openai)
     {:ok, pid: pid}
   end
 
-  test "call/2 returns a response from the language model", %{pid: pid} do
+  test "ask/2 returns a response from the language model", %{pid: pid} do
     result =
       LLM.call(pid, "Translate the following English text to French: 'Hello, how are you?'")
 
     Process.sleep(10_000)
+    # IO.inspect(result)
     # assert {:ok, response} = result
     # assert is_binary(response)
   end

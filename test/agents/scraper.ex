@@ -9,7 +9,7 @@ defmodule LangChain.ScraperTest do
   setup do
     {:ok, pid} = Scraper.start_link()
     # Set up the OpenAI LLM provider
-    openai_provider = %LangChain.Providers.OpenAI{
+    openai_provider = %LangChain.Providers.OpenAI.LanguageModel{
       model_name: "gpt-3.5-turbo",
       max_tokens: 25,
       temperature: 0.5,

@@ -1,3 +1,16 @@
+# new scrape chain is a recursive function
+# validator: pass your validator function so we know when we're done
+# data, annotated schema, format
+# fill out the prompt and call the LLM
+# num_passes = 4
+
+# new execute chain is a recursive function
+# evaluate
+# plan
+# refine
+
+# execute
+
 defmodule LangChain.ScrapeChain do
   @moduledoc """
   Use this when you want to extract formatted data from natural-language text, ScrapeChain is basically
@@ -14,7 +27,7 @@ defmodule LangChain.ScrapeChain do
 
   @doc """
   Creates a new ScrapeChain struct with the given chain, input_schema, and output_parser,
-  you set up a scrapeChain with an input_schema and an output_parser, then you can call
+  you set up a scrapeChain with an input_schema and an output_parser, then you can ask
   it with whatever text you want.
   ## Example:
   # create a chat to extract data:

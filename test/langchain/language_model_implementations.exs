@@ -8,7 +8,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
   alias LangChain.LanguageModelProtocol
   require Logger
 
-  # the inputs for the 'call' function
+  # the inputs for the 'ask' function
   @input_for_call "You remind me of the baby"
   @inputs_and_outputs %{
     input: "You remind me of the baby",
@@ -57,16 +57,15 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
     response == expected_response.generated_text
   end
 
-  # @tag :skip
   @tag timeout: :infinity
-  test "call/2 returns a valid response for all implementations" do
+  test "ask/2 returns a valid response for all implementations" do
     results =
       Task.async_stream(
         @implementations_and_models,
         fn {impl, params} ->
           try do
             model = Map.merge(impl, params)
-            response = LanguageModelProtocol.call(model, @input_for_call)
+            response = LanguageModelProtocol.ask(model, @input_for_call)
 
             %{
               model: %{provider: model.provider, model_name: model.model_name},
@@ -92,21 +91,20 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
         IO.puts("A test failed with reason: #{inspect(reason)}")
 
       {:ok, result} ->
-        Logger.debug("call/2 results: #{inspect(result)}")
+        Logger.debug("ask/2 results: #{inspect(result)}")
         :ok
     end)
   end
 
-  # @tag :skip
   @tag timeout: :infinity
-  test "chat/2 returns a valid response for all implementations" do
+  test "ask/2 returns a valid response for all implementations with chat input type" do
     results =
       Task.async_stream(
         @implementations_and_models,
         fn {impl, params} ->
           try do
             model = Map.merge(impl, params)
-            response = LanguageModelProtocol.chat(model, @input_for_chat)
+            response = LanguageModelProtocol.ask(model, @input_for_chat)
 
             %{
               model: %{provider: model.provider, model_name: model.model_name},
@@ -132,7 +130,7 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
         IO.puts("A test failed with reason: #{inspect(reason)}")
 
       {:ok, result} ->
-        Logger.debug("chat/2 results: #{inspect(result)}")
+        Logger.debug("ask/2 results: #{inspect(result)}")
         :ok
     end)
   end
