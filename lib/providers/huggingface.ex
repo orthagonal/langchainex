@@ -82,8 +82,7 @@ defmodule LangChain.Providers.Huggingface do
         template = get_template_body_for_action(model)
 
         try do
-          processed_template = EEx.eval_string(template, input: input)
-          # |> Jason.encode!()
+          EEx.eval_string(template, input: input)
         rescue
           error -> error
         end
@@ -97,10 +96,6 @@ defmodule LangChain.Providers.Huggingface do
   finds the matching output format for this model/input
   and returns it as a string
   """
-  @doc """
-  finds the matching output format for this model/input
-  and returns it as a string
-  """
   def handle_response(model, response) do
     if model.language_action == :generation do
       handle_generation(response)
@@ -109,7 +104,7 @@ defmodule LangChain.Providers.Huggingface do
     end
   end
 
-  def handle_generation([%{"generated_text" => text} | tail]) do
+  def handle_generation([%{"generated_text" => text} | _tail]) do
     text
   end
 
@@ -130,7 +125,7 @@ defmodule LangChain.Providers.Huggingface do
         responses
         |> Enum.map_join(", ", &Float.to_string/1)
 
-      res ->
+      _ ->
         "Unsupported response format"
     end
   end
@@ -154,7 +149,7 @@ defmodule LangChain.Providers.Huggingface do
         responses
         |> Enum.map_join(", ", &Float.to_string/1)
 
-      res ->
+      _res ->
         "Unsupported response format"
     end
   end
@@ -183,7 +178,7 @@ defmodule LangChain.Providers.Huggingface do
   translate whatever input (string, list of %{ role, text } to the right payload format
   for the given language action
   """
-  def translate_payload_for_language_action(input, language_action) do
+  def translate_payload_for_language_action(_input, language_action) do
   end
 end
 
@@ -220,7 +215,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       try do
         request(model, LangChain.Providers.Huggingface.prepare_input(model, prompt))
       rescue
-        error ->
+        _error ->
           # str = error |> Exception.format(:error) |> IO.iodata_to_binary()
           "Huggingface API-based model #{model.model_name}: I had a technical malfunction trying to process #{prompt} "
       end
@@ -257,8 +252,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           IO.puts("poison error")
           reason
 
-        e ->
-          IO.puts("other error")
+        _e ->
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end

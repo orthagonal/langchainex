@@ -99,7 +99,7 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
       # HANDLE DIFFERENT MODEL TYPES WITH 'ask'
       def execute_model(
             :for_masked_language_modeling,
-            model_config,
+            _model_config,
             prompt,
             bumblebee_model,
             tokenizer
