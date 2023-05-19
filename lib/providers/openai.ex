@@ -81,7 +81,7 @@ defmodule LangChain.Providers.OpenAI do
     |> Enum.reject(&is_nil/1)
     |> Enum.max_by(fn {score, _, _} -> score end)
     |> case do
-      {score, key, value} when score > 0.7 -> value
+      {score, _key, value} when score > 0.7 -> value
       _ -> 0
     end
   end

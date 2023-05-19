@@ -26,47 +26,44 @@ defmodule LangChain.Providers.Replicate do
   # (or, $0.138 per minute)
 
   """
-  @pricing_structure %{
-    cpu: %{
-      dollars_per_second: 0.0002,
-      dollars_per_token: nil
-    },
-    t4: %{
-      dollars_per_second: 0.00055,
-      dollars_per_token: nil
-    },
-    a100: %{
-      dollars_per_second: 0.0023,
-      dollars_per_token: nil
-    }
-  }
+
+  # @pricing_structure %{
+  #   cpu: %{
+  #     dollars_per_second: 0.0002,
+  #     dollars_per_token: nil
+  #   },
+  #   t4: %{
+  #     dollars_per_second: 0.00055,
+  #     dollars_per_token: nil
+  #   },
+  #   a100: %{
+  #     dollars_per_second: 0.0023,
+  #     dollars_per_token: nil
+  #   }
+  # }
 
   @doc """
   Used to report the price of a response from Replicate
   """
-  def report_price(%{"status" => "succeeded"} = response) do
-    try do
-      # just assume it's a cpu for right now:
-      pricing_structure = @pricing_structure[:cpu]
-      %{"metrics" => %{"predict_time" => predict_time}} = response
+  def report_price(%{"status" => "succeeded"} = _response) do
+    # try do
+    #   # just assume it's a cpu for right now:
+    #   pricing_structure = @pricing_structure[:cpu]
+    #   %{"metrics" => %{"predict_time" => predict_time}} = response
 
-      total_price =
-        (pricing_structure.dollars_per_second * predict_time)
-        |> :erlang.float_to_binary(decimals: 8)
+    #   total_price =
+    #     (pricing_structure.dollars_per_second * predict_time)
+    #     |> :erlang.float_to_binary(decimals: 8)
 
-      LangChain.Agents.TheAccountant.store(%{
-        provider: :replicate,
-        total_price: total_price
-      })
+    #   LangChain.Agents.TheAccountant.store(%{
+    #     provider: :replicate,
+    #     total_price: total_price
+    #   })
 
-      # IO.puts("Replicate #{predict_time} seconds cost $#{total_price}")
-    rescue
-      error -> error
-    end
-  end
-
-  # do nothing until the status is 'succeeded'
-  def report_price(response) do
+    #   # IO.puts("Replicate #{predict_time} seconds cost $#{total_price}")
+    # rescue
+    #   error -> error
+    # end
   end
 end
 
@@ -185,6 +182,20 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
       |> handle_responses()
     end
 
+    # with Replicate models first create a prediction, then you poll the API call
+    # until the prediction is complete, then you get the output
+    def ask(model, prompt) do
+      {:ok, prediction_id} = create_prediction(model, prompt)
+      {:ok, output} = poll_for_prediction_result(prediction_id)
+      # try to make sure output is always a simple string
+      if is_list(output) do
+        # join strings if they are a list:
+        output |> Enum.join(" ")
+      else
+        output
+      end
+    end
+
     defp handle_responses(responses) when is_list(responses) do
       # if responses is a list of strings, just join the list and return
       case Enum.all?(responses, &is_binary/1) do
@@ -202,20 +213,6 @@ defmodule LangChain.Providers.Replicate.LanguageModel do
               _ -> "Unknown response format"
             end
           end)
-      end
-    end
-
-    # with Replicate models first create a prediction, then you poll the API call
-    # until the prediction is complete, then you get the output
-    def ask(model, prompt) do
-      {:ok, prediction_id} = create_prediction(model, prompt)
-      {:ok, output} = poll_for_prediction_result(prediction_id)
-      # try to make sure output is always a simple string
-      if is_list(output) do
-        # join strings if they are a list:
-        output |> Enum.join(" ")
-      else
-        output
       end
     end
 

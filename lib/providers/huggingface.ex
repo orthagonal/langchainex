@@ -173,13 +173,6 @@ defmodule LangChain.Providers.Huggingface do
       ]
     }
   end
-
-  @doc """
-  translate whatever input (string, list of %{ role, text } to the right payload format
-  for the given language action
-  """
-  def translate_payload_for_language_action(_input, language_action) do
-  end
 end
 
 defmodule LangChain.Providers.Huggingface.LanguageModel do
@@ -262,60 +255,6 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
         inner_json_string
       end)
     end
-
-    defp handle_chat_response(decoded_body) when is_map(decoded_body) do
-      cond do
-        decoded_body["generated_text"] ->
-          decoded_body["generated_text"]
-
-        decoded_body["translation_text"] ->
-          decoded_body["translation_text"]
-
-        decoded_body["text"] ->
-          decoded_body["text"]
-
-        true ->
-          "Unexpected API response format"
-      end
-    end
-
-    # {
-    #   inputs:
-    #   {
-    #     past_user_inputs: ["Which movie is the best ?"],
-    #     generated_responses: ["It is Die Hard for sure."],
-    #     text: "Can you explain why ?"
-    #   }
-    # }
-    # def prepare_input(msgs) do
-    #   msgs |> Enum.map_join("\n", fn msg -> msg.text end)
-    # get all but the last item in the list:
-    # history = msgs |> List.delete_at(-1)
-
-    # past_user_inputs =
-    #   history
-    #   |> Enum.filter(fn msg -> msg.role == "user" end)
-    #   |> Enum.map(fn msg -> msg.text end)
-
-    # generated_responses =
-    #   history
-    #   |> Enum.filter(fn msg -> msg.role != "user" end)
-    #   |> Enum.map(fn msg -> msg.text end)
-
-    # text = msgs |> List.last() |> Map.get(:text)
-
-    # package = %{
-    #   conversation: %{
-    #     past_user_inputs: past_user_inputs,
-    #     generated_responses: generated_responses,
-    #     text: text,
-    #     warnings: []
-    #   }
-    # }
-
-    # IO.inspect(package)
-    # Jason.encode!(package)
-    # end
   end
 end
 
