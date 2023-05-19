@@ -69,6 +69,7 @@ defmodule LangChain.Providers.OpenAITest do
 
   # Check the content of the response
   # not catastrophic if this fails, it's an AI
+  # credo:disable-for-next-line
   defp green_function(response, expected_response) do
     String.contains?(response, expected_response)
   end
@@ -79,15 +80,15 @@ defmodule LangChain.Providers.OpenAITest do
 
       response = LanguageModelProtocol.ask(@model, prompt)
       assert yellow_function(response)
-      # assert green_function(response, "grue")
+      assert green_function(response, "grue")
 
       response2 = LanguageModelProtocol.ask(@davinci_model, prompt)
       assert yellow_function(response2)
-      # assert green_function(response, "grue")
+      assert green_function(response, "grue")
 
       response3 = LanguageModelProtocol.ask(@gpt_model, prompt)
       assert yellow_function(response3)
-      # assert green_function(response, "grue")
+      assert green_function(response, "grue")
     end
 
     test "ask/2 returns a valid response with list of chats" do
