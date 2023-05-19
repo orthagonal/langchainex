@@ -68,7 +68,7 @@ defmodule LangChain.Providers.Replicate do
 
   # optional function for the one above
   # credo:disable-for-next-line
-  def report_price(response) do
+  def report_price(_response) do
   end
 end
 
