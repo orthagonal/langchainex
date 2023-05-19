@@ -13,10 +13,16 @@ defmodule LangChain.Agents.TheAccountant do
     {:ok, %{}}
   end
 
+  @doc """
+  Query the stored reports by provider and model name
+  """
   def query(provider, model_name) do
     handle_process(:query, [provider, model_name])
   end
 
+  @doc """
+  let's a provider store a price calculation for a run
+  """
   def store(report) do
     handle_process(:store, report)
   end
@@ -29,7 +35,7 @@ defmodule LangChain.Agents.TheAccountant do
     handle_process(:print_to_screen, [report])
   end
 
-  defp handle_process(message, args \\ []) do
+  defp handle_process(message, args) do
     case Process.whereis(__MODULE__) do
       nil ->
         # the accountant process is not running so just
@@ -57,7 +63,7 @@ defmodule LangChain.Agents.TheAccountant do
     {:reply, :ok, updated_state}
   end
 
-  def handle_call({query, [provider, model_name]}, _from, state) do
+  def handle_call({:query, [provider, model_name]}, _from, state) do
     case Map.fetch(state, provider) do
       {:ok, provider_reports} ->
         case Map.fetch(provider_reports, model_name) do
@@ -73,14 +79,17 @@ defmodule LangChain.Agents.TheAccountant do
     end
   end
 
-  def handle_call({:post_webhook, [url, report]}, _from, state) do
-    # perform the webhook post, e.g. with HTTPoison
-    # use the report data as the JSON payload
-    {:reply, :ok, state}
-  end
+  # future: will be able to post reports to a web source
+  # def handle_call({:post_webhook, [url, _report]}, _from, state) do
+  #   # perform the webhook post, e.g. with HTTPoison
+  #   # use the report data as the JSON payload
+  #   {:reply, :ok, state}
+  # end
 
   def handle_call({:print_to_screen, [report]}, _from, state) do
-    # IO.inspect(report)
+    # for now I just show the pricing object that I stored
+    # credo:disable-for-next-line
+    IO.inspect(report)
     {:reply, :ok, state}
   end
 end
