@@ -249,12 +249,6 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end
-
-    defp handle_chat_response(decoded_body) when is_list(decoded_body) do
-      Enum.map_join(decoded_body, "\n", fn %{"generated_text" => inner_json_string} ->
-        inner_json_string
-      end)
-    end
   end
 end
 
