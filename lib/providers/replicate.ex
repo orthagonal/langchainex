@@ -4,27 +4,27 @@ defmodule LangChain.Providers.Replicate do
   @moduledoc """
   # Replicate's pricing structure is based on what hardware you use
   # and how long you use it.  More expensive hardware runs faster
-  
+
   Replicate's Pricing Structure
   # CPU
   # $0.0002 per second
   # (or, $0.012 per minute)
-  
+
   # 4x CPU
   # 8GB RAM
-  
+
   # Nvidia T4 GPU
   # $0.00055 per second
   # (or, $0.033 per minute)
-  
+
   # 4x CPU
   # 16GB GPU RAM
   # 8GB RAM
-  
+
   # Nvidia A100 40GB GPU
   # $0.0023 per second
   # (or, $0.138 per minute)
-  
+
   """
 
   @pricing_structure %{

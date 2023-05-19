@@ -2,15 +2,15 @@ defmodule LangChain.Providers.OpenAI do
   @moduledoc """
   OpenAI results return a body that will contain:
    `'usage': {'prompt_tokens': 56, 'completion_tokens': 31, 'total_tokens': 87}`
-  
+
    OpenAI Pricing
   Model	Prompt	Completion
   gpt-4
     8K context	$0.03 / 1K tokens	$0.06 / 1K tokens
     32K context	$0.06 / 1K tokens	$0.12 / 1K tokens
-  
+
   gpt-3.5-turbo	$0.002 / 1K tokens
-  
+
   instructGPT (only models you can fine tune)
   Ada $0.0004 / 1K tokens
   Babbage $0.0005 / 1K tokens
@@ -21,7 +21,7 @@ defmodule LangChain.Providers.OpenAI do
   Babbage	$0.0006 / 1K tokens	$0.0024 / 1K tokens
   Curie	$0.0030 / 1K tokens	$0.0120 / 1K tokens
   Davinci	$0.0300 / 1K tokens	$0.1200 / 1K tokens
-  
+
   embeddings
   Ada	$0.0004 / 1K tokens
   """
