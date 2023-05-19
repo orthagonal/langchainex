@@ -5,8 +5,6 @@ defmodule LangChain.Providers.NlpCloud do
   https://nlpcloud.com/
   This module is predominantly used for internal API handling
 
-  """
-
   @models %{
     "fast-gpt-j" => "A fast implementation of the GPT-J model.",
     "finetuned-gpt-neox-20b" =>
@@ -16,6 +14,8 @@ defmodule LangChain.Providers.NlpCloud do
     "chatdolphin" =>
       "ChatDolphin, an NLP Cloud in-house model, has a great accuracy at an affordable price. It supports many non-English languages."
   }
+
+  """
 
   @doc """
   Used to report the price of a response from Replicate
@@ -104,7 +104,7 @@ defmodule LangChain.Providers.NlpCloud do
         |> Jason.encode!()
 
       :generation ->
-        input = question |> Enum.map(fn i -> i.text end) |> Enum.join("\n")
+        input = question |> Enum.map_join("\n", fn i -> i.text end)
 
         %{
           "text" => input,
@@ -115,8 +115,6 @@ defmodule LangChain.Providers.NlpCloud do
   end
 
   def handle_response(model, body) do
-    IO.inspect("body is")
-    IO.inspect(body)
     decoded_body = Jason.decode!(body)
 
     # price reporting is always the same:
@@ -157,13 +155,15 @@ defmodule LangChain.Providers.NlpCloud.LanguageModel do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           LangChain.Providers.NlpCloud.handle_response(model, body)
 
-        {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
-          IO.inspect(body)
+        {:ok, %HTTPoison.Response{status_code: _status_code, body: body}} ->
+          # credo:disable-for-next-line
+          # IO.inspect(body)
 
           "I experienced a technical malfunction trying to run #{model.model_name}. Please try again later."
 
         {:error, %HTTPoison.Error{reason: reason}} ->
-          IO.inspect(reason)
+          # credo:disable-for-next-line
+          # IO.inspect(reason)
 
           "I experienced a technical malfunction trying to run #{model.model_name}. Please try again later."
       end
