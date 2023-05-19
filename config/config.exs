@@ -18,6 +18,9 @@ config :langchainex, :weaviate,
 # Huggingface Inference API https://huggingface.co/docs/api-inference/index
 config :langchainex, :huggingface, api_key: System.get_env("HUGGINGFACE_API_KEY")
 
+# NLP Cloud https://nlpcloud.com/
+config :langchainex, :nlp_cloud, token: System.get_env("NLP_CLOUD_TOKEN")
+
 # Replicate AI https://replicate.ai/docs
 config :langchainex, :replicate,
   api_key: System.get_env("REPLICATE_API_KEY"),
