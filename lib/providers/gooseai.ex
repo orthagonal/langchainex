@@ -5,7 +5,7 @@ defmodule LangChain.Providers.GooseAi do
   """
 
   # need to update this to scrape from page
-  @pricing_structure %{}
+  # @pricing_structure %{}
 
   # get the GooseAi config from config.exs
   def get_base(model) do
