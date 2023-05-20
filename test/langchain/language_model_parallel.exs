@@ -21,7 +21,9 @@ defmodule LangChain.LanguageModelUnifiedCallTest do
     {%LangChain.Providers.Huggingface.LanguageModel{}, %{}},
     {%LangChain.Providers.Bumblebee.LanguageModel{}, %{}},
     {%LangChain.Providers.Replicate.LanguageModel{}, %{}},
-    {%LangChain.Providers.OpenAI.LanguageModel{}, %{}}
+    {%LangChain.Providers.OpenAI.LanguageModel{}, %{}},
+    {%LangChain.Providers.NlpCloud.LanguageModel{}, %{}},
+    {%LangChain.Providers.GooseAi.LanguageModel{}, %{}}
     # {%AnotherImplementation{}, %{model_name: "model_name"}},
   ]
 
