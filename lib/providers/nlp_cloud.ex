@@ -4,7 +4,7 @@ defmodule LangChain.Providers.NlpCloud do
   NLP Cloud Provider
   https://nlpcloud.com/
   This module is predominantly used for internal API handling
-
+  
   @models %{
     "fast-gpt-j" => "A fast implementation of the GPT-J model.",
     "finetuned-gpt-neox-20b" =>
@@ -14,7 +14,7 @@ defmodule LangChain.Providers.NlpCloud do
     "chatdolphin" =>
       "ChatDolphin, an NLP Cloud in-house model, has a great accuracy at an affordable price. It supports many non-English languages."
   }
-
+  
   """
 
   @doc """

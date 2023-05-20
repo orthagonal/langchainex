@@ -21,6 +21,9 @@ config :langchainex, :huggingface, api_key: System.get_env("HUGGINGFACE_API_KEY"
 # NLP Cloud https://nlpcloud.com/
 config :langchainex, :nlp_cloud, token: System.get_env("NLP_CLOUD_TOKEN")
 
+# GooseAI https://goose.ai/dashboard/apikeys
+config :langchainex, :goose_ai, api_key: System.get_env("GOOSE_AI_API_KEY")
+
 # Replicate AI https://replicate.ai/docs
 config :langchainex, :replicate,
   api_key: System.get_env("REPLICATE_API_KEY"),
