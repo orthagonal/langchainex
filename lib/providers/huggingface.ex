@@ -173,6 +173,24 @@ defmodule LangChain.Providers.Huggingface do
       ]
     }
   end
+
+  # audio uses octet stream
+  def get_base_audio(model) do
+    {
+      :ok,
+      [
+        api_key: api_key
+      ]
+    } = Application.fetch_env(:langchainex, :huggingface)
+
+    %{
+      url: "#{@api_base_url}/#{model.model_name}",
+      headers: [
+        {"Authorization", "Bearer #{api_key}"},
+        {"Content-Type", "application/octet-stream"}
+      ]
+    }
+  end
 end
 
 defmodule LangChain.Providers.Huggingface.LanguageModel do
@@ -287,6 +305,51 @@ defmodule LangChain.Providers.Huggingface.Embedder do
 
     def embed_query(provider, query) do
       embed_documents(provider, [query])
+    end
+  end
+end
+
+defmodule LangChain.Providers.Huggingface.AudioModel do
+  @moduledoc"""
+  Audio models with huggingface
+  """
+  alias LangChain.Providers.Huggingface
+
+  defstruct provider: :huggingface,
+            model_name: "facebook/wav2vec2-base-960h",
+            language_action: :audio_transcription,
+            polling_interval: 2000
+
+  defimpl LangChain.AudioModelProtocol, for: LangChain.Providers.Huggingface.AudioModel do
+    def stream(model, audio_stream) do
+    end
+
+    def speak(model, audio_data) do
+      base = LangChain.Providers.Huggingface.get_base_audio(model)
+
+      case HTTPoison.post(base.url, audio_data, base.headers,
+             timeout: :infinity,
+             recv_timeout: :infinity
+           ) do
+        {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+          decoded_body = Jason.decode!(body)
+          decoded_body["text"]
+
+        {:ok, %HTTPoison.Response{status_code: 503, body: _body}} ->
+          :timer.sleep(model.polling_interval)
+          IO.puts("Model is still loading, trying again")
+          speak(model, audio_data)
+
+        {:ok, %HTTPoison.Response{status_code: 403, body: _body}} ->
+          IO.puts("Model is too large to load.")
+
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          IO.puts("poison error")
+          reason
+
+        _e ->
+          "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
+      end
     end
   end
 end

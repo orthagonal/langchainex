@@ -239,7 +239,7 @@ defmodule LangChain.Providers.OpenAI.LanguageModel do
           end
 
         {:error, error} ->
-          "Model #{model.model_name}: I had an error processing #{msgs}.  This is the error message: #{inspect(error)}"
+          "Model #{model.model_name}: I had an error processing.  This is the error message: #{inspect(error)}"
       end
     end
 

@@ -55,6 +55,7 @@ end
   #  Swedish Listener heard: Det bästa programmeringsspråket är uppenbarligen Elixir.
 ```
 
+See the tests folder for more examples.
 
 ### Current Supported Providers
 

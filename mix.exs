@@ -4,7 +4,7 @@ defmodule LangchainEx.MixProject do
   def project do
     [
       app: :langchainex,
-      version: "0.1.0",
+      version: "0.2.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -27,6 +27,7 @@ defmodule LangchainEx.MixProject do
       {:bumblebee, github: "elixir-nx/bumblebee", optional: true},
       # if you want to run bumblbee models on your GPU (*highly* recommended)
       # you can uncomment exla and it *should* be able to build
+      # though this can get tricky on non-linux platforms
       # {:exla, "~> 0.5.1"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:elixir_uuid, "~> 1.2"},
