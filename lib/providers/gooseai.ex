@@ -1,8 +1,8 @@
 defmodule LangChain.Providers.GooseAi do
   @moduledoc """
+  Goose AI is a for-pay provider for ML models
+  https://goose.ai/docs/api/engines
   """
-  # need to update this to scrape from page
-  # @pricing_structure %{}
 
   # get the GooseAi config from config.exs
   def get_base(model) do

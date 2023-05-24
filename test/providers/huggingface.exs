@@ -171,8 +171,7 @@ defmodule LangChain.AudioModelHuggingfaceTest do
             model = Map.merge(impl, params)
             audio_data = File.read!(@audio_file)
             response = AudioModelProtocol.speak(model, audio_data)
-            IO.puts("*****")
-            IO.inspect(response)
+            IO.puts(response)
 
             %{
               model: %{provider: model.provider, model_name: model.model_name},
