@@ -154,9 +154,7 @@ defmodule LangChain.AudioModelHuggingfaceTest do
   @audio_models [
     # {%LangChain.Providers.Huggingface.AudioModel{}, %{}},
     {%LangChain.Providers.Huggingface.AudioModel{
-       # model_name: "facebook/wav2vec2-base-960h"
         model_name: "marinone94/whisper-medium-swedish"
-      #  model_name: "philschmid/pyannote-segmentation"
      }, %{}}
     # {%LangChain.Providers.Huggingface.AudioModel{
     #    model_name: "facebook/wav2vec2-large-960h-lv60"
