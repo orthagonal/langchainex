@@ -1,20 +1,5 @@
-# new scrape chain is a recursive function
-# validator: pass your validator function so we know when we're done
-# data, annotated schema, format
-# fill out the prompt and call the LLM
-# num_passes = 4
-
-# new execute chain is a recursive function
-# evaluate
-# plan
-# refine
-
-# execute
-
 defmodule LangChain.ScrapeChain do
   @moduledoc """
-  Use this when you want to extract formatted data from natural-language text, ScrapeChain is basically
-  a special form of QueryChain.
   ScrapeChain is a wrapper around a special type of Chain that requires 'input_schema' and 'input_text' in its
   input_variables and combines it with an output_parser.
   Once you define that chain, you can have the chain 'scrape' a text and return the
