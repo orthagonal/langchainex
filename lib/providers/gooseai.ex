@@ -1,9 +1,6 @@
 defmodule LangChain.Providers.GooseAi do
   @moduledoc """
-  GooseAi results return a body that will contain:
-   `'usage': {'prompt_tokens': 56, 'completion_tokens': 31, 'total_tokens': 87}`
   """
-
   # need to update this to scrape from page
   # @pricing_structure %{}
 
@@ -92,29 +89,30 @@ defmodule LangChain.Providers.GooseAi.LanguageModel do
   require Logger
 
   defstruct provider: :goose_ai,
-            model_name: "gpt-j-6b",
-            language_action: :generation,
-            max_token: 25,
-            temperature: 0.1
+        model_name: "gpt-j-6b",
+        # model_name: "gpt-neo-20b",
+        language_action: :generation,
+        max_token: 400,
+        temperature: 0.1
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.GooseAi.LanguageModel do
     def ask(model, question) do
       base = LangChain.Providers.GooseAi.get_base(model)
       body = LangChain.Providers.GooseAi.prepare_body(model, question)
 
-      case HTTPoison.post(base.url, body, base.headers) do
+      case HTTPoison.post(base.url, body, base.headers, [timeout: 50_000, recv_timeout: 60_000]) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           LangChain.Providers.GooseAi.handle_response(model, body)
 
-        {:ok, %HTTPoison.Response{status_code: _status_code, body: _body}} ->
+        {:ok, %HTTPoison.Response{status_code: _status_code, body: body}} ->
           # credo:disable-for-next-line
-          # IO.inspect(body)
+          IO.inspect(body)
 
           "I experienced a technical malfunction trying to run #{model.model_name}. Please try again later."
 
-        {:error, %HTTPoison.Error{reason: _reason}} ->
+        {:error, %HTTPoison.Error{reason: reason}} ->
           # credo:disable-for-next-line
-          # IO.inspect(reason)
+          IO.inspect(reason)
 
           "I experienced a technical malfunction trying to run #{model.model_name}. Please try again later."
       end
