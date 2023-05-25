@@ -23,7 +23,7 @@ Use this library if you need:
 ```elixir
 def deps do
   [
-    {:langchainex, "~> 0.1.0"}
+    {:langchainex, "~> 0.2.2"}
   ]
 end
 ```
