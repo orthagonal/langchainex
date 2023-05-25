@@ -134,4 +134,4 @@ In your code:
 
 - Obviously, neural networks and language models are kind of a thing right now, the field is moving quickly and new 
 paradigms and providers are popping up all the time.  If you have a favorite provider that you'd like to see supported or features that you'd like to see enabled, please open an issue and I'll do my best to add it. 
-- This is intended to be a springboard library that helps you get up and running with AI very quickly, without having to worry about the gory details of the underlying providers.  
+
