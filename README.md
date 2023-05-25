@@ -49,7 +49,7 @@ end
   @swedish_listener %LangChain.Providers.Huggingface.AudioModel{
     model_name: "marinone94/whisper-medium-swedish"
   }
-  audio_data = File.read!(@audio_file)
+  audio_data = File.read!("my_transcript.wav")
   response = AudioModelProtocol.speak(model, audio_data)
   IO.puts "Swedish Listener heard: #{response}"
   #  Swedish Listener heard: Det bästa programmeringsspråket är uppenbarligen Elixir.
