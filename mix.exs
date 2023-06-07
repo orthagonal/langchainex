@@ -24,7 +24,7 @@ defmodule LangchainEx.MixProject do
   defp deps do
     [
       # bumblebee is optional, if you want to run models locally
-      {:bumblebee, github: "elixir-nx/bumblebee", optional: true},
+      # {:bumblebee, github: "elixir-nx/bumblebee", optional: true},
       # if you want to run bumblbee models on your GPU (*highly* recommended)
       # you can uncomment exla and it *should* be able to build
       # though this can get tricky on non-linux platforms
@@ -35,9 +35,9 @@ defmodule LangchainEx.MixProject do
       # kino is optional, use if you want to use ui with models
       # {:kino, "~> 0.8.0", optional: true}
       {:ex_openai, "~> 1.1.0"},
-      {:jason, "~> 1.2"},
+      {:jason, ">= 1.0.0"},
       # telemetry is optional, use if you want to run models locally with bumblebee
-      {:telemetry, "~> 1.0", optional: true}
+      {:telemetry, ">= 0.4.0", optional: true}
     ]
   end
 
