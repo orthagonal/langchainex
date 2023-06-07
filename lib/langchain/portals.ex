@@ -39,7 +39,7 @@ defmodule LangChain.Portals do
       do: min(1.0, model.temperature + 0.1),
       else: original_temperature
     model = %{model | temperature: current_temperature}
-    IO.inspect model
+    # IO.inspect model
     if (cur_attempt >= max_attempts) do
       raise "whirlpool_portal failed after #{max_attempts} attempts"
     end
@@ -47,7 +47,7 @@ defmodule LangChain.Portals do
     bindings = Keyword.get(options, :bindings, [])
     IO.puts "******************"
     IO.puts "attempt #{cur_attempt} try to evaluate: \n#{elixir_code}\n"
-    IO.inspect bindings
+    # IO.inspect bindings
     try do
       elixir_code
         |> Code.eval_string(bindings)
@@ -66,11 +66,9 @@ defmodule LangChain.Portals do
             <%= elixir_code %>
             #######
             When you evaluated it with Code.eval_string() you got this error: \"\"\"<%= error_message %>\"\"\".
-            Fix the code so that it doesn't crash when you evaluate it.  Do not change the intent of
-            the code, just fix the syntax errors. Make sure any data structures or data types are being passed
-            in the correct format. Only emit the corrected Elixir code, do NOT provide any commentary
-            or explanation.  Do not surround the code with any marking symbols or quotes like ```elixir.  Only emit the code
-            that is going to be passed to Code.eval_string().
+            Fix the code so that it retains its meaning but doesn't crash when you evaluate it, ensure.
+            data structures are being passed in the correct format. Only emit the corrected Elixir code to be evaluated, do not provide any commentary
+            or explanation or surround the code with marking symbols or quotes.
           """,
           input_variables: [:original_prompt, :elixir_code, :error_message]
         }
