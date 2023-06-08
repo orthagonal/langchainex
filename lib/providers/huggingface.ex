@@ -75,7 +75,7 @@ defmodule LangChain.Providers.Huggingface do
     """,
     audio_classification: """
     { audio_file: "<%= input.audio_file %>" }
-    """,
+    """
     # video input models
     # image_classification: """
     # { image_file: "<%= input.image_file %>" }
@@ -109,11 +109,12 @@ defmodule LangChain.Providers.Huggingface do
 
   # this function will now provide the default model if none is specified
   def get_model_for_action(action, model_name \\ nil) do
-    IO.puts "get it"
-    IO.puts "get it"
-    IO.puts "get it"
-    IO.inspect action
-    IO.inspect model_name
+    IO.puts("get it")
+    IO.puts("get it")
+    IO.puts("get it")
+    IO.inspect(action)
+    IO.inspect(model_name)
+
     if is_nil(model_name) do
       Map.get(@default_models, action)
     else
@@ -141,15 +142,18 @@ defmodule LangChain.Providers.Huggingface do
 
       model.language_action == :table_question_answering ->
         template = get_template_body_for_action(model)
+
         try do
           atom_input = %{
             :query => input["query"] || input[:query],
             :table => input["table"] || input[:table]
           }
+
           EEx.eval_string(template, input: atom_input)
         rescue
           error -> error
         end
+
       true ->
         template = get_template_body_for_action(model)
 
@@ -161,8 +165,6 @@ defmodule LangChain.Providers.Huggingface do
     end
   end
 
-
-
   # parsers for parsing the response from the API
   # this is also an example of "transforming program knowledge space into AI knowledge space"
 
@@ -171,7 +173,8 @@ defmodule LangChain.Providers.Huggingface do
   and returns it as a string
   """
   def handle_response(model, response) do
-    IO.inspect model.language_action
+    IO.inspect(model.language_action)
+
     case model.language_action do
       :generation -> handle_generation(response)
       :conversation -> handle_conversation(response)
@@ -257,8 +260,10 @@ defmodule LangChain.Providers.Huggingface do
         api_key: api_key
       ]
     } = Application.fetch_env(:langchainex, :huggingface)
+
     # if model_name is nil, use the default model for this action
     model_name = get_model_for_action(model.language_action, model.model_name)
+
     %{
       url: "#{@api_base_url}/#{model_name}",
       headers: [
@@ -276,7 +281,9 @@ defmodule LangChain.Providers.Huggingface do
         api_key: api_key
       ]
     } = Application.fetch_env(:langchainex, :huggingface)
+
     model_name = get_model_for_action(model.language_action, model.model_name)
+
     %{
       url: "#{@api_base_url}/#{model_name}",
       headers: [
@@ -294,7 +301,9 @@ defmodule LangChain.Providers.Huggingface do
         api_key: api_key
       ]
     } = Application.fetch_env(:langchainex, :huggingface)
+
     model_name = get_model_for_action(model.language_action, model.model_name)
+
     %{
       url: "#{@api_base_url}/#{model_name}",
       headers: [
@@ -315,7 +324,8 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
 
   @fallback_chat_model %{
     provider: :huggingface,
-    model_name: nil,  # default to nil
+    # default to nil
+    model_name: nil,
     language_action: :conversation,
     max_new_tokens: 25,
     temperature: 0.5,
@@ -355,6 +365,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
     # another is if the model you are calling is too big and needs dedicated hosting
     defp request(model, input) do
       base = Huggingface.get_base(model)
+
       case HTTPoison.post(base.url, input, base.headers,
              timeout: :infinity,
              recv_timeout: :infinity
@@ -381,8 +392,8 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           reason
 
         _e ->
-          IO.puts "got error"
-          IO.inspect _e
+          IO.puts("got error")
+          IO.inspect(_e)
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end
@@ -429,7 +440,7 @@ defmodule LangChain.Providers.Huggingface.Embedder do
 end
 
 defmodule LangChain.Providers.Huggingface.AudioModel do
-  @moduledoc"""
+  @moduledoc """
   Audio models with huggingface
   """
   alias LangChain.Providers.Huggingface
@@ -485,7 +496,8 @@ defmodule LangChain.Providers.Huggingface.ImageModel do
   alias LangChain.Providers.Huggingface
 
   defstruct provider: :huggingface,
-            model_name: nil,  # default to nil
+            # default to nil
+            model_name: nil,
             language_action: :image_classification,
             polling_interval: 2000
 
@@ -502,8 +514,10 @@ defmodule LangChain.Providers.Huggingface.ImageModel do
     def detect_objects(image_model, image_path) do
       # call Huggingface API to detect objects in the image
     end
+
     defp request(model, input) do
       base = Huggingface.get_base_video(model)
+
       case HTTPoison.post(base.url, input, base.headers,
              timeout: :infinity,
              recv_timeout: :infinity
@@ -530,12 +544,10 @@ defmodule LangChain.Providers.Huggingface.ImageModel do
           reason
 
         _e ->
-          IO.puts "got error"
-          IO.inspect _e
+          IO.puts("got error")
+          IO.inspect(_e)
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end
-
   end
-
 end

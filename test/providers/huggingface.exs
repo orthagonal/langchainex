@@ -117,12 +117,9 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
         flunk("Runtime error or some other error: #{Exception.message(error)}")
     catch
       kind, reason ->
-        IO.inspect kind
-        IO.inspect reason
-        # flunk("Caught #{kind}: #{inspect(reason)}")
+        flunk("Caught #{kind}: #{inspect(reason)}")
     end
   end
-
 
   @tag :skip
   @tag timeout: :infinity
@@ -205,89 +202,87 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
   end
 end
 
-# defmodule LangChain.AudioModelHuggingfaceTest do
-#   @moduledoc """
-#   Test a variety of Huggingface models to ensure they work as expected
-#   with the same 'call' interface but for audio
-#   """
-#   use ExUnit.Case, async: true
-#   alias LangChain.AudioModelProtocol
-#   alias LangChain.Providers.Huggingface.AudioModel
-#   require Logger
+defmodule LangChain.AudioModelHuggingfaceTest do
+  @moduledoc """
+  Test a variety of Huggingface models to ensure they work as expected
+  with the same 'call' interface but for audio
+  """
+  use ExUnit.Case, async: true
+  alias LangChain.AudioModelProtocol
+  alias LangChain.Providers.Huggingface.AudioModel
+  require Logger
 
-#   # get from cwd
-#   @audio_file "./ep1a.wav"
+  # get from cwd
+  @audio_file "./ep1a.wav"
 
-#   @audio_models [
-#     # {%LangChain.Providers.Huggingface.AudioModel{}, %{}},
-#     {%LangChain.Providers.Huggingface.AudioModel{
-#         model_name: "marinone94/whisper-medium-swedish"
-#      }, %{}}
-#   ]
+  @audio_models [
+    # {%LangChain.Providers.Huggingface.AudioModel{}, %{}},
+    {%LangChain.Providers.Huggingface.AudioModel{
+        model_name: "marinone94/whisper-medium-swedish"
+     }, %{}}
+  ]
 
-#   @tag timeout: :infinity
-#   test "speak/2 returns a valid response for audio files" do
-#     results =
-#       Task.async_stream(
-#         @audio_models,
-#         fn {impl, params} ->
-#           try do
-#             model = Map.merge(impl, params)
-#             audio_data = File.read!(@audio_file)
-#             chunks = audio_data
-#               |> Enum.chunk_every(50)
-#             IO.inspect chunks |> Enum.count()
-#             # response = AudioModelProtocol.speak(model, audio_data)
-#             # IO.puts(response)
-#             # %{
-#             #   model: %{provider: model.provider, model_name: model.model_name},
-#             #   response: response,
-#             #   yellow: yellow_function(response),
-#             #   green: green_function(response)
-#             # }
-#           rescue
-#             error in [RuntimeError, SomeOtherError] ->
-#               {:error, "Runtime error or some other error: #{Exception.message(error)}"}
-#           catch
-#             kind, reason ->
-#               {:error, "Caught #{kind}: #{inspect(reason)}"}
-#           end
-#         end,
-#         timeout: :infinity
-#       )
-#       |> Enum.to_list()
+  @tag timeout: :infinity
+  test "speak/2 returns a valid response for audio files" do
+    results =
+      Task.async_stream(
+        @audio_models,
+        fn {impl, params} ->
+          try do
+            model = Map.merge(impl, params)
+            audio_data = File.read!(@audio_file)
+            chunks = audio_data
+              |> Enum.chunk_every(50)
+            IO.inspect chunks |> Enum.count()
+            # response = AudioModelProtocol.speak(model, audio_data)
+            # IO.puts(response)
+            # %{
+            #   model: %{provider: model.provider, model_name: model.model_name},
+            #   response: response,
+            #   yellow: yellow_function(response),
+            #   green: green_function(response)
+            # }
+          rescue
+            error in [RuntimeError, SomeOtherError] ->
+              {:error, "Runtime error or some other error: #{Exception.message(error)}"}
+          catch
+            kind, reason ->
+              {:error, "Caught #{kind}: #{inspect(reason)}"}
+          end
+        end,
+        timeout: :infinity
+      )
+      |> Enum.to_list()
 
-#     Enum.map(results, fn
-#       {:ok, {:error, reason}} ->
-#         # The task failed, so we print the error message
-#         IO.puts("A test failed with reason: #{inspect(reason)}")
+    Enum.map(results, fn
+      {:ok, {:error, reason}} ->
+        # The task failed, so we print the error message
+        IO.puts("A test failed with reason: #{inspect(reason)}")
 
-#       {:ok, result} ->
-#         Logger.debug("ask/2 results: #{inspect(result)}")
-#         :ok
-#     end)
-#   end
+      {:ok, result} ->
+        Logger.debug("ask/2 results: #{inspect(result)}")
+        :ok
+    end)
+  end
 
-#   # checks the type of the response
-#   defp yellow_function(response) do
-#     # Here, instead of checking if it's a string without the word 'malfunction' in it,
-#     # you'd probably want to check that it's the expected type of audio data:
-#     # update this according to your needs
-#     is_binary(response)
-#   end
+  # checks the type of the response
+  defp yellow_function(response) do
+    # Here, instead of checking if it's a string without the word 'malfunction' in it,
+    # you'd probably want to check that it's the expected type of audio data:
+    # update this according to your needs
+    is_binary(response)
+  end
 
-#   # Check the content of the response
-#   # not catastrophic if this fails, it's an AI
-#   defp green_function(response) do
-#     # As for checking the content of the response,
-#     # it would depend on what you're expecting back from the AudioModel. If you're getting back audio data,
-#     # you might want to check its duration, bitrate, number of channels, etc.
-#     # response == expected_response
-#     # return true or false according to your needs
-#   end
-# end
-
-
+  # Check the content of the response
+  # not catastrophic if this fails, it's an AI
+  defp green_function(response) do
+    # As for checking the content of the response,
+    # it would depend on what you're expecting back from the AudioModel. If you're getting back audio data,
+    # you might want to check its duration, bitrate, number of channels, etc.
+    # response == expected_response
+    # return true or false according to your needs
+  end
+end
 
 defmodule LangChain.ImageModelHuggingfaceTest do
   @moduledoc """
@@ -303,14 +298,14 @@ defmodule LangChain.ImageModelHuggingfaceTest do
   @image_file "./sample.jpg"
 
   @image_model_classify %LangChain.Providers.Huggingface.ImageModel{
-    language_action: :image_classification,
+    language_action: :image_classification
   }
 
   @tag timeout: :infinity
   test "classify/2 return valid responses for image files" do
-      image_data = File.read!(@image_file)
-      response_classify = ImageModelProtocol.describe(@image_model_classify, image_data)
-      IO.inspect response_classify
+    image_data = File.read!(@image_file)
+    response_classify = ImageModelProtocol.describe(@image_model_classify, image_data)
+    IO.inspect(response_classify)
   end
 
   # checks the type of the response

@@ -89,18 +89,18 @@ defmodule LangChain.Providers.GooseAi.LanguageModel do
   require Logger
 
   defstruct provider: :goose_ai,
-        model_name: "gpt-j-6b",
-        # model_name: "gpt-neo-20b",
-        language_action: :generation,
-        max_token: 400,
-        temperature: 0.1
+            model_name: "gpt-j-6b",
+            # model_name: "gpt-neo-20b",
+            language_action: :generation,
+            max_token: 400,
+            temperature: 0.1
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.GooseAi.LanguageModel do
     def ask(model, question) do
       base = LangChain.Providers.GooseAi.get_base(model)
       body = LangChain.Providers.GooseAi.prepare_body(model, question)
 
-      case HTTPoison.post(base.url, body, base.headers, [timeout: 50_000, recv_timeout: 60_000]) do
+      case HTTPoison.post(base.url, body, base.headers, timeout: 50_000, recv_timeout: 60_000) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           LangChain.Providers.GooseAi.handle_response(model, body)
 
