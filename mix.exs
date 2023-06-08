@@ -35,6 +35,7 @@ defmodule LangchainEx.MixProject do
       # kino is optional, use if you want to use ui with models
       # {:kino, "~> 0.8.0", optional: true}
       {:ex_openai, "~> 1.1.0"},
+      {:gitex, "~> 0.2.0"},
       {:jason, ">= 1.0.0"},
       # telemetry is optional, use if you want to run models locally with bumblebee
       {:telemetry, ">= 0.4.0", optional: true}

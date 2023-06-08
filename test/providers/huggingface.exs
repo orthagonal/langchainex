@@ -45,18 +45,6 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
   ]
   @expected_outputs "Not really worried about it"
 
-  # checks the type of the response
-  defp yellow_function(response, _expected_response) do
-    # make sure it's a string without the word 'malfunction' in it:
-    is_binary(response) and String.contains?(response, "malfunction") == false
-  end
-
-  # Check the content of the response
-  # not catastrophic if this fails, it's an AI
-  defp green_function(response, expected_response) do
-    response =~ expected_response
-  end
-
   @tag :skip
   @tag timeout: :infinity
   test "ask/2 returns a valid translation for a text" do
@@ -67,10 +55,7 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
 
     try do
       response = LanguageModelProtocol.ask(model, input_for_translation)
-
-      # assert yellow_function(response, expected_output_for_translation)
-      # assert green_function(response, expected_output_for_translation)
-
+      assert response =~ expected_output_for_translation
       Logger.debug("ask/2 results: #{inspect(response)}")
       :ok
     rescue
@@ -82,10 +67,6 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
     end
   end
 
-  # TODO not working yet
-  # TODO not working yet
-  # TODO not working yet
-  # TODO not working yet
   @tag :skip
   @tag timeout: :infinity
   test "ask/2 returns a valid answer for a table-based question" do
@@ -108,7 +89,7 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
       response = LanguageModelProtocol.ask(model, input_for_table_qa)
 
       # Replace yellow_function and green_function with real assert functions
-      # assert response == expected_output_for_table_qa
+      assert response == expected_output_for_table_qa
 
       Logger.debug("ask/2 results: #{inspect(response)}")
       :ok
@@ -118,6 +99,14 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
     catch
       kind, reason ->
         flunk("Caught #{kind}: #{inspect(reason)}")
+    end
+  end
+
+  def yellow_function(response, expected_output) do
+    if response =~ expected_output do
+      :ok
+    else
+      flunk("Expected #{inspect(expected_output)} but got #{inspect(response)}")
     end
   end
 
@@ -135,8 +124,7 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
             %{
               model: %{provider: model.provider, model_name: model.model_name},
               response: response,
-              yellow: yellow_function(response, @expected_output),
-              green: green_function(response, @expected_output)
+              # yellow: yellow_function(response, @expected_output),
             }
           rescue
             error in [RuntimeError, SomeOtherError] ->
@@ -175,8 +163,8 @@ defmodule LangChain.LanguageModelHuggingfaceTest do
             %{
               model: %{provider: model.provider, model_name: model.model_name},
               response: response,
-              yellow: yellow_function(response, @expected_output),
-              green: green_function(response, @expected_output)
+              # yellow: yellow_function(response, @expected_output),
+              # green: green_function(response, @expected_output)
             }
           rescue
             error in [RuntimeError, SomeOtherError] ->
@@ -264,24 +252,6 @@ defmodule LangChain.AudioModelHuggingfaceTest do
         :ok
     end)
   end
-
-  # checks the type of the response
-  defp yellow_function(response) do
-    # Here, instead of checking if it's a string without the word 'malfunction' in it,
-    # you'd probably want to check that it's the expected type of audio data:
-    # update this according to your needs
-    is_binary(response)
-  end
-
-  # Check the content of the response
-  # not catastrophic if this fails, it's an AI
-  defp green_function(response) do
-    # As for checking the content of the response,
-    # it would depend on what you're expecting back from the AudioModel. If you're getting back audio data,
-    # you might want to check its duration, bitrate, number of channels, etc.
-    # response == expected_response
-    # return true or false according to your needs
-  end
 end
 
 defmodule LangChain.ImageModelHuggingfaceTest do
@@ -306,22 +276,5 @@ defmodule LangChain.ImageModelHuggingfaceTest do
     image_data = File.read!(@image_file)
     response_classify = ImageModelProtocol.describe(@image_model_classify, image_data)
     IO.inspect(response_classify)
-  end
-
-  # checks the type of the response
-  defp yellow_function(response) do
-    # Here, instead of checking if it's a string without the word 'malfunction' in it,
-    # you'd probably want to check that it's the expected type of data:
-    # update this according to your needs
-    is_binary(response)
-  end
-
-  # Check the content of the response
-  # not catastrophic if this fails, it's an AI
-  defp green_function(response) do
-    # As for checking the content of the response,
-    # it would depend on what you're expecting back from the ImageModel. You might want to check its shape, classes, etc.
-    # response == expected_response
-    # return true or false according to your needs
   end
 end
