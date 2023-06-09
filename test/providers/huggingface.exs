@@ -1,3 +1,4 @@
+# credo:disable-for-this-file
 defmodule LangChain.LanguageModelHuggingfaceTest do
   @moduledoc """
   Test a variety of Huggingface models to ensure they work as expected

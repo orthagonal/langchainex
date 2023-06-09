@@ -1,4 +1,7 @@
+# credo:disable-for-this-file
 defmodule PortalsTest do
+  @moduledoc """
+  """
   use ExUnit.Case
   alias LangChain.Portals
 

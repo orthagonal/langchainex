@@ -1,7 +1,8 @@
-defmodule LangChain.Retriever.GitexTest do
+# credo:disable-for-this-file
+defmodule LangChain.Retriever.GitTest do
   use ExUnit.Case
 
-  @gitex %LangChain.Retriever.Gitex{}
+  @gitex %LangChain.Retriever.Git{}
 
 
   describe "get_relevant_documents/2" do

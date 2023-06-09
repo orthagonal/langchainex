@@ -109,12 +109,6 @@ defmodule LangChain.Providers.Huggingface do
 
   # this function will now provide the default model if none is specified
   def get_model_for_action(action, model_name \\ nil) do
-    IO.puts("get it")
-    IO.puts("get it")
-    IO.puts("get it")
-    IO.inspect(action)
-    IO.inspect(model_name)
-
     if is_nil(model_name) do
       Map.get(@default_models, action)
     else
@@ -173,8 +167,6 @@ defmodule LangChain.Providers.Huggingface do
   and returns it as a string
   """
   def handle_response(model, response) do
-    IO.inspect(model.language_action)
-
     case model.language_action do
       :generation -> handle_generation(response)
       :conversation -> handle_conversation(response)
@@ -393,7 +385,6 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
 
         _e ->
           IO.puts("got error")
-          IO.inspect(_e)
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end
@@ -545,7 +536,6 @@ defmodule LangChain.Providers.Huggingface.ImageModel do
 
         _e ->
           IO.puts("got error")
-          IO.inspect(_e)
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end

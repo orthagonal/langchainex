@@ -1,4 +1,7 @@
-defmodule LangChain.Retriever.Gitex do
+defmodule LangChain.Retriever.Git do
+  @moduledoc """
+  Gitex is a wrapper around the Elixir Git library.
+  """
   @behaviour LangChain.Retriever
 
   defstruct []

@@ -5,7 +5,7 @@ defmodule LangChain.Providers.Cohere do
   """
 
   # get the Cohere config from config.exs
-  def get_base(model) do
+  def get_base(_model) do
     {:ok, [api_key: api_key]} = Application.fetch_env(:langchainex, :cohere)
 
     url = "https://api.cohere.ai/v1/generate"
@@ -22,13 +22,9 @@ defmodule LangChain.Providers.Cohere do
     }
   end
 
-  def prepare_body(model, question) do
+  def prepare_body(_model, question) do
     %{
       prompt: question,
-    #   "model": model.model_name,
-    #   "max_tokens": model.max_token,
-    #   "return_likelihoods": model.return_likelihoods,
-    #   "truncate": model.truncate
     }
     |> Jason.encode!()
   end

@@ -12,7 +12,7 @@ defmodule LangChain.Portals do
   and decoding some JSON that was spit out by an LLM query) until that source code evaluates correctly with Code.eval_string.
   This usually only takes one iteration, since the LLM is shown both the failing code and the resulting error message,
   but I've seen it kind of....meander a little...before coming back.
-  
+
   I don't try to make long elaborate elixir_code snippets, I keep them pretty simple.  Example:
     model = %LangChain.Providers.OpenAI.LanguageModel{}
     # notice this JSON is broken, so this will throw a SyntaxError the first time we eval_string it:
@@ -20,7 +20,7 @@ defmodule LangChain.Portals do
     # whirlpool portal isn't fazed it will make up to 3 iterations to try to correct this code
     { value, bindings } = Courierlive.EmailParser.whirlpool_portal(model, elixir_code, max_steps: 3)
     # value will be this Elixir struct: %{"a" => 1}
-  
+
   Options:
     :bindings - a map of bindings to use when evaluating the elixir_code
     :max_attempts - the maximum number of attempts to make before giving up
@@ -42,7 +42,6 @@ defmodule LangChain.Portals do
         else: original_temperature
 
     model = %{model | temperature: current_temperature}
-    # IO.inspect model
     if cur_attempt >= max_attempts do
       raise "whirlpool_portal failed after #{max_attempts} attempts"
     end
@@ -50,15 +49,12 @@ defmodule LangChain.Portals do
     bindings = Keyword.get(options, :bindings, [])
     IO.puts("******************")
     IO.puts("attempt #{cur_attempt} try to evaluate: \n#{elixir_code}\n")
-    # IO.inspect bindings
     try do
       elixir_code
       |> Code.eval_string(bindings)
     rescue
       e ->
         error_message = Exception.format(:error, e)
-        IO.inspect(error_message)
-
         template = %PromptTemplate{
           template: """
             You are an Elixir programmer, this is the prompt you started with:

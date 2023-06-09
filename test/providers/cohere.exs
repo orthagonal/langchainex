@@ -23,9 +23,8 @@ defmodule LangChain.Providers.CohereTest do
     test "ask/2 returns a valid response for strings" do
       prompt = "Write a sentence containing the word *grue*."
       response = LanguageModelProtocol.ask(@cohere_model, prompt)
-      IO.inspect(response)
-      # Logger.debug(response)
-      # assert yellow_function(response)
+      Logger.debug(response)
+      assert yellow_function(response)
     end
   end
 end
