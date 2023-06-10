@@ -88,15 +88,10 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
           # this is where tokenizer for that model gets downloaded, tokenizers use the model's encoding scheme
           # to turn text into numbers
           # inspect your tokenizer to see stats for your tokenizer, like vocab_size, end_of_word_suffix, etc
-          IO.puts "getting the tokenizer"
-          IO.inspect config
           {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
-          IO.puts "tokenzier"
-          IO.inspect tokenizer
           execute_model(model.spec.architecture, config, prompt, model, tokenizer)
         rescue
           _e ->
-            IO.inspect _e
             "Model Bumblebee #{config.model_name}: I had a system malfunction trying to process that request."
         end
       end
