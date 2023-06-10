@@ -25,9 +25,6 @@ defmodule LangChain.Retriever.Git do
       [obj]
     end
 
-    def get_relevant_documents(_provider, _query) do
-      {:error,
-       "Invalid query. Query must include 'type', 'branch', 'path' is optional and used for 'blob' and 'tree' types."}
-    end
+    def get_relevant_documents(_provider, _query), do: {:error, "Unsupported query format"}
   end
 end
