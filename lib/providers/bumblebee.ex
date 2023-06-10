@@ -85,15 +85,18 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
           # inspect the model.spec field for an overview of the model's architecture, vocab_size,
           # max_positions, pad_token_id, etc
           {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
-
           # this is where tokenizer for that model gets downloaded, tokenizers use the model's encoding scheme
           # to turn text into numbers
           # inspect your tokenizer to see stats for your tokenizer, like vocab_size, end_of_word_suffix, etc
+          IO.puts "getting the tokenizer"
+          IO.inspect config
           {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
-
+          IO.puts "tokenzier"
+          IO.inspect tokenizer
           execute_model(model.spec.architecture, config, prompt, model, tokenizer)
         rescue
           _e ->
+            IO.inspect _e
             "Model Bumblebee #{config.model_name}: I had a system malfunction trying to process that request."
         end
       end
@@ -146,10 +149,10 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
           )
 
         input = LangChain.Providers.Bumblebee.prepare_input(architecture, prompt)
-        # IO.inspect(input)
+        IO.inspect(input)
         result = Nx.Serving.run(serving, input)
         # %{text: message, history: prior})
-        # IO.inspect(result)
+        IO.inspect(result)
 
         result
         |> Map.get(:results, [])
