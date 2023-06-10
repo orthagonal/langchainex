@@ -13,7 +13,7 @@ defmodule LangChain.Retriever.Git do
       [blob]
     end
 
-    def get_relevant_documents(_provider, %{"type" => "tree", "branch" => branch, "path" => path}) do
+    def get_relevant_documents(_provider, %{"type" => _tree, "branch" => branch, "path" => path}) do
       repo_instance = Gitex.Git.open
       tree = Gitex.get(branch, repo_instance, path)
     end
@@ -22,6 +22,9 @@ defmodule LangChain.Retriever.Git do
       repo_instance = Gitex.Git.open
       obj = Gitex.get(branch, repo_instance)
       [obj]
+    end
+
+    def get_relevant_documents(provider, query) do
     end
 
     def get_relevant_documents(_provider, _) do

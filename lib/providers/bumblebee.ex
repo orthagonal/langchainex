@@ -178,7 +178,7 @@ defmodule LangChain.Providers.Bumblebee.Embedder do
         {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, provider.model_name})
 
         inputs = Bumblebee.apply_tokenizer(tokenizer, documents)
-
+        # credo:disable-for-next-line - to disable for the next line
         embedding = Axon.predict(model_info.model, model_info.params, inputs, compiler: EXLA)
 
         {:ok, embedding}

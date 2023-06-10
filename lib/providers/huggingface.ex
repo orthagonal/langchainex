@@ -346,7 +346,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
       try do
         request(model, LangChain.Providers.Huggingface.prepare_input(model, prompt))
       rescue
-        error ->
+        _error ->
           # str = error |> Exception.format(:error) |> IO.iodata_to_binary()
           "Huggingface API-based model #{model.model_name}: I had a technical malfunction trying to process #{prompt} "
       end
@@ -447,7 +447,7 @@ defmodule LangChain.Providers.Huggingface.AudioModel do
   end
 
   defimpl LangChain.AudioModelProtocol, for: LangChain.Providers.Huggingface.AudioModel do
-    def stream(model, audio_stream) do
+    def stream(_model, _audio_stream) do
     end
 
     def speak(model, audio_data) do
@@ -502,7 +502,7 @@ defmodule LangChain.Providers.Huggingface.ImageModel do
       request(image_model, image_data)
     end
 
-    def detect_objects(image_model, image_path) do
+    def detect_objects(_image_model, _image_path) do
       # call Huggingface API to detect objects in the image
     end
 
