@@ -15,7 +15,7 @@ defmodule LangChain.Retriever.Git do
 
     def get_relevant_documents(_provider, %{"type" => _tree, "branch" => branch, "path" => path}) do
       repo_instance = Gitex.Git.open
-      tree = Gitex.get(branch, repo_instance, path)
+      Gitex.get(branch, repo_instance, path)
     end
 
     def get_relevant_documents(_provider, %{"type" => type, "branch" => branch}) when type in ["commit", "tag"] do
@@ -24,7 +24,7 @@ defmodule LangChain.Retriever.Git do
       [obj]
     end
 
-    def get_relevant_documents(provider, query) do
+    def get_relevant_documents(_provider, _query) do
     end
 
     def get_relevant_documents(_provider, _) do

@@ -1,3 +1,5 @@
+# credo:disable-for-this-file
+# bumblebee is an optional dep so we need to disable credo for this file
 # any bumblebee-specific code should go in this file
 # bumblebee will need to be updated to support
 # keeping the model in memory when it's not in use
@@ -173,12 +175,12 @@ defmodule LangChain.Providers.Bumblebee.Embedder do
     defimpl LangChain.EmbedderProtocol do
       def embed_documents(provider, documents) do
         {:ok, model_info} =
-          Bumblebee.load_model({:hf, provider.model_name}, log_params_diff: false)
+        Bumblebee.load_model({:hf, provider.model_name}, log_params_diff: false)
 
         {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, provider.model_name})
 
         inputs = Bumblebee.apply_tokenizer(tokenizer, documents)
-        # credo:disable-for-next-line - to disable for the next line
+
         embedding = Axon.predict(model_info.model, model_info.params, inputs, compiler: EXLA)
 
         {:ok, embedding}
