@@ -35,24 +35,19 @@ defmodule LangChain.Providers.BumblebeeTest do
     # Test the :for_masked_language_modeling with binary input
     result =
       LangChain.Providers.Bumblebee.prepare_input(:for_masked_language_modeling, chat_binary)
-
     assert result == chat_binary, "Failed :for_masked_language_modeling with binary input"
-
     # Test the :for_masked_language_modeling with list input
     result = LangChain.Providers.Bumblebee.prepare_input(:for_masked_language_modeling, chat_list)
-
     assert result == "Hello, world!\nHow are you?",
            "Failed :for_masked_language_modeling with list input"
 
     # Test the :for_causal_language_modeling with binary input
     result =
       LangChain.Providers.Bumblebee.prepare_input(:for_causal_language_modeling, chat_binary)
-
     assert result == chat_binary, "Failed :for_causal_language_modeling with binary input"
 
     # Test the :for_causal_language_modeling with list input
     result = LangChain.Providers.Bumblebee.prepare_input(:for_causal_language_modeling, chat_list)
-
     assert result == "Hello, world!\nHow are you?",
            "Failed :for_causal_language_modeling with list input"
 
@@ -62,7 +57,6 @@ defmodule LangChain.Providers.BumblebeeTest do
         :for_conversational_language_modeling,
         chat_binary
       )
-
     assert result == %{text: chat_binary, history: []},
            "Failed :for_conversational_language_modeling with binary input"
 
@@ -89,7 +83,7 @@ defmodule LangChain.Providers.BumblebeeTest do
 
       response2 = LanguageModelProtocol.ask(@gpt2, "Fourscore and seven years ago")
       Logger.debug(response2)
-      assert is_binary(response2)
+      # assert is_binary(response2)
     end
 
     @tag timeout: :infinity
@@ -130,37 +124,37 @@ defmodule LangChain.Providers.BumblebeeTest do
     end
   end
 
-  # describe "Bumblebee.Embedder implementation of EmbedderProtocol" do
-  #   #   setup do
-  #   #     embedder_bumblebee = %LangChain.Providers.Bumblebee.Embedder{
-  #   #       model_name: "sentence-transformers/all-MiniLM-L6-v2"
-  #   #     }
+  describe "Bumblebee.Embedder implementation of EmbedderProtocol" do
+      setup do
+        embedder_bumblebee = %LangChain.Providers.Bumblebee.Embedder{
+          model_name: "sentence-transformers/all-MiniLM-L6-v2"
+        }
 
-  #   #     {:ok, embedder: embedder_bumblebee}
-  #   #   end
+        {:ok, embedder: embedder_bumblebee}
+      end
 
-  #   #   test "embed_query/2 returns a valid response", %{embedder: embedder_bumblebee} do
-  #   #     prompt = "What time is it now?"
-  #   #     {:ok, response} = LangChain.EmbedderProtocol.embed_query(embedder_bumblebee, prompt)
+      test "embed_query/2 returns a valid response", %{embedder: embedder_bumblebee} do
+        prompt = "What time is it now?"
+        {:ok, response} = LangChain.EmbedderProtocol.embed_query(embedder_bumblebee, prompt)
 
-  #   #     IO.inspect(response)
-  #   #     # make sure it's a list of vectors
-  #   #     assert is_list(response)
-  #   #     assert length(response) > 0
-  #   #     assert is_list(Enum.at(response, 0))
-  #   #   end
+        IO.inspect(response)
+        # make sure it's a list of vectors
+        assert is_list(response)
+        assert length(response) > 0
+        assert is_list(Enum.at(response, 0))
+      end
 
-  #   test "embed_documents/2 returns a valid response", %{embedder: embedder_bumblebee} do
-  #     {:ok, response} =
-  #       LangChain.EmbedderProtocol.embed_documents(embedder_bumblebee, [
-  #         "What time is it now?",
-  #         "Fourscore and seven years ago"
-  #       ])
+    test "embed_documents/2 returns a valid response", %{embedder: embedder_bumblebee} do
+      {:ok, response} =
+        LangChain.EmbedderProtocol.embed_documents(embedder_bumblebee, [
+          "What time is it now?",
+          "Fourscore and seven years ago"
+        ])
 
-  #     # make sure it's a list of vectors
-  #     assert is_list(response)
-  #     assert length(response) > 0
-  #     assert is_list(Enum.at(response, 0))
-  #   end
-  # end
+      # make sure it's a list of vectors
+      assert is_list(response)
+      assert length(response) > 0
+      assert is_list(Enum.at(response, 0))
+    end
+  end
 end

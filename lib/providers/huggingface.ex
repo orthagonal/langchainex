@@ -20,8 +20,6 @@ defmodule LangChain.Providers.Huggingface do
     <% true -> %> <%= "Input is neither a list nor a string" %>
     <% end %>
     """,
-    fill_mask: """
-    """,
     generation: """
     { inputs: "
     <%= cond do %>
@@ -49,15 +47,73 @@ defmodule LangChain.Providers.Huggingface do
     <% true -> %> <%= "Input is neither a list nor a string" %>
     <% end %>
     """,
-    text_classification: """
+    table_question_answering: """
+    { "inputs": {
+      "query": "<%= input.query %>",
+      "table": <%= input.table |> Jason.encode!() %>
+    } }
     """,
-    token_classification: """
+    sentence_similarity: """
+    { inputs: {
+      source_sentence: "<%= input.source_sentence %>",
+      sentences: <%= input.sentences |> Enum.join(",") |> Jason.encode!() %>
+    } }
+    """,
+    # NER named entity recognition is basically translation from one language to another
+    text_translation: """
+    { inputs: "<%= input %>" }
     """,
     zero_shot_classification: """
+    { inputs: "<%= input.text %>", parameters: {candidate_labels: <%= input.labels |> Enum.join(",") |> Jason.encode!() %>} }
+    """,
+    fill_mask: """
+    { inputs: "<%= input %>" }
+    """,
+    # audio input models
+    automatic_speech_recognition: """
+    { audio_file: "<%= input.audio_file %>" }
+    """,
+    audio_classification: """
+    { audio_file: "<%= input.audio_file %>" }
     """
+    # video input models
+    # image_classification: """
+    # { image_file: "<%= input.image_file %>" }
+    # """,
+    # object_detection: """
+    # { image_file: "<%= input.image_file %>" }
+    # """,
+    # image_segmentation: """
+    # { image_file: "<%= input.image_file %>" }
+    # """
   }
   def get_template_body_for_action(model) do
     Map.get(@request_templates, model.language_action)
+  end
+
+  # default hf models for each action
+  @default_models %{
+    conversation: "microsoft/DialoGPT-large",
+    generation: "EleutherAI/gpt-neo-2.7B",
+    table_question_answering: "google/tapas-base-finetuned-wtq",
+    sentence_similarity: "sentence-transformers/all-MiniLM-L6-v2",
+    text_translation: "Helsinki-NLP/opus-mt-ru-en",
+    zero_shot_classification: "facebook/bart-large-mnli",
+    # audio models for the same model type
+    automatic_speech_recognition: "facebook/wav2vec2-base-960h",
+    audio_classification: "superb/hubert-large-superb-er",
+    image_classification: "google/vit-base-patch16-224",
+    object_detection: "facebook/detr-resnet-50",
+    image_segmentation: "facebook/detr-resnet-50-panoptic"
+  }
+
+  # this function will now provide the default model if none is specified
+  def get_model_for_action(action, model_name \\ nil) do
+    if is_nil(model_name) do
+      Map.get(@default_models, action)
+    else
+      model_name
+    end
   end
 
   @doc """
@@ -78,6 +134,20 @@ defmodule LangChain.Providers.Huggingface do
         }
         |> Jason.encode()
 
+      model.language_action == :table_question_answering ->
+        template = get_template_body_for_action(model)
+
+        try do
+          atom_input = %{
+            :query => input["query"] || input[:query],
+            :table => input["table"] || input[:table]
+          }
+
+          EEx.eval_string(template, input: atom_input)
+        rescue
+          error -> error
+        end
+
       true ->
         template = get_template_body_for_action(model)
 
@@ -97,11 +167,25 @@ defmodule LangChain.Providers.Huggingface do
   and returns it as a string
   """
   def handle_response(model, response) do
-    if model.language_action == :generation do
-      handle_generation(response)
-    else
-      handle_conversation(response)
+    case model.language_action do
+      :generation -> handle_generation(response)
+      :conversation -> handle_conversation(response)
+      :text_translation -> handle_generation(response)
+      # :table_question_answering -> handle_table_question_answering(response)
+      # :sentence_similarity -> handle_sentence_similarity(response)
+      # :zero_shot_classification -> handle_zero_shot_classification(response)
+      # :fill_mask -> handle_fill_mask(response)
+      # :automatic_speech_recognition -> handle_automatic_speech_recognition(response)
+      # :audio_classification -> handle_audio_classification(response)
+      :image_classification -> handle_image_classification(response)
+      # :object_detection -> handle_object_detection(response)
+      # :image_segmentation -> handle_image_segmentation(response)
+      _ -> "Unsupported action"
     end
+  end
+
+  def handle_image_classification(list_of_id) do
+    list_of_id |> Enum.map_join(", ", fn id -> Map.get(id, "label", "") end)
   end
 
   def handle_generation([%{"generated_text" => text} | _tail]) do
@@ -117,6 +201,10 @@ defmodule LangChain.Providers.Huggingface do
       %{"generated_text" => _} ->
         responses
         |> Enum.map_join(" ", fn %{"generated_text" => text} -> text end)
+
+      %{"translation_text" => _} ->
+        responses
+        |> Enum.map_join(" ", fn %{"translation_text" => text} -> text end)
 
       response when is_binary(response) ->
         Enum.join(responses, " ")
@@ -165,8 +253,11 @@ defmodule LangChain.Providers.Huggingface do
       ]
     } = Application.fetch_env(:langchainex, :huggingface)
 
+    # if model_name is nil, use the default model for this action
+    model_name = get_model_for_action(model.language_action, model.model_name)
+
     %{
-      url: "#{@api_base_url}/#{model.model_name}",
+      url: "#{@api_base_url}/#{model_name}",
       headers: [
         {"Authorization", "Bearer #{api_key}"},
         {"Content-Type", "application/json"}
@@ -183,8 +274,30 @@ defmodule LangChain.Providers.Huggingface do
       ]
     } = Application.fetch_env(:langchainex, :huggingface)
 
+    model_name = get_model_for_action(model.language_action, model.model_name)
+
     %{
-      url: "#{@api_base_url}/#{model.model_name}",
+      url: "#{@api_base_url}/#{model_name}",
+      headers: [
+        {"Authorization", "Bearer #{api_key}"},
+        {"Content-Type", "application/octet-stream"}
+      ]
+    }
+  end
+
+  # video uses octet stream
+  def get_base_video(model) do
+    {
+      :ok,
+      [
+        api_key: api_key
+      ]
+    } = Application.fetch_env(:langchainex, :huggingface)
+
+    model_name = get_model_for_action(model.language_action, model.model_name)
+
+    %{
+      url: "#{@api_base_url}/#{model_name}",
       headers: [
         {"Authorization", "Bearer #{api_key}"},
         {"Content-Type", "application/octet-stream"}
@@ -203,7 +316,9 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
 
   @fallback_chat_model %{
     provider: :huggingface,
-    model_name: "google/flan-t5-small",
+    # default to nil
+    model_name: nil,
+    language_action: :conversation,
     max_new_tokens: 25,
     temperature: 0.5,
     top_k: nil,
@@ -212,7 +327,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
   }
 
   defstruct provider: :huggingface,
-            model_name: "microsoft/DialoGPT-large",
+            model_name: nil,
             language_action: :conversation,
             max_new_tokens: 25,
             temperature: 0.1,
@@ -220,6 +335,11 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
             top_p: nil,
             polling_interval: 2000,
             fallback_chat_model: @fallback_chat_model
+
+  def new(language_action, model_name \\ nil) do
+    model_name = Huggingface.get_model_for_action(language_action, model_name)
+    %__MODULE__{model_name: model_name, language_action: language_action}
+  end
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Huggingface.LanguageModel do
     def ask(model, prompt) do
@@ -264,6 +384,7 @@ defmodule LangChain.Providers.Huggingface.LanguageModel do
           reason
 
         _e ->
+          IO.puts("got error")
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end
@@ -310,18 +431,23 @@ defmodule LangChain.Providers.Huggingface.Embedder do
 end
 
 defmodule LangChain.Providers.Huggingface.AudioModel do
-  @moduledoc"""
+  @moduledoc """
   Audio models with huggingface
   """
   alias LangChain.Providers.Huggingface
 
   defstruct provider: :huggingface,
-            model_name: "facebook/wav2vec2-base-960h",
-            language_action: :audio_transcription,
+            model_name: nil,
+            language_action: :automatic_speech_recognition,
             polling_interval: 2000
 
+  def new(language_action, model_name \\ nil) do
+    model_name = Huggingface.get_model_for_action(language_action, model_name)
+    %__MODULE__{model_name: model_name, language_action: language_action}
+  end
+
   defimpl LangChain.AudioModelProtocol, for: LangChain.Providers.Huggingface.AudioModel do
-    def stream(model, audio_stream) do
+    def stream(_model, _audio_stream) do
     end
 
     def speak(model, audio_data) do
@@ -348,6 +474,68 @@ defmodule LangChain.Providers.Huggingface.AudioModel do
           reason
 
         _e ->
+          "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
+      end
+    end
+  end
+end
+
+defmodule LangChain.Providers.Huggingface.ImageModel do
+  @moduledoc """
+  Image models with huggingface
+  """
+  alias LangChain.Providers.Huggingface
+
+  defstruct provider: :huggingface,
+            # default to nil
+            model_name: nil,
+            language_action: :image_classification,
+            polling_interval: 2000
+
+  def new(language_action, model_name \\ nil) do
+    model_name = Huggingface.get_model_for_action(language_action, model_name)
+    %__MODULE__{model_name: model_name, language_action: language_action}
+  end
+
+  defimpl LangChain.ImageModelProtocol, for: LangChain.Providers.Huggingface.ImageModel do
+    def describe(image_model, image_data) do
+      request(image_model, image_data)
+    end
+
+    def detect_objects(_image_model, _image_path) do
+      # call Huggingface API to detect objects in the image
+    end
+
+    defp request(model, input) do
+      base = Huggingface.get_base_video(model)
+
+      case HTTPoison.post(base.url, input, base.headers,
+             timeout: :infinity,
+             recv_timeout: :infinity
+           ) do
+        {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+          decoded_body = Jason.decode!(body)
+          LangChain.Providers.Huggingface.handle_response(model, decoded_body)
+
+        {:ok, %HTTPoison.Response{status_code: 503, body: _body}} ->
+          :timer.sleep(model.polling_interval)
+          IO.puts("Model is still loading, trying again")
+          request(model, input)
+
+        {:ok, %HTTPoison.Response{status_code: 403, body: _body}} ->
+          IO.puts(
+            "Model is too large to load, falling back to #{model.testfallback_chat_model.model_name}"
+          )
+
+          # fallback is a chat model:
+          apply(__MODULE__, :chat, [model.testfallback_chat_model, input])
+
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          IO.puts("poison error")
+          reason
+
+        _e ->
+          IO.puts("got error")
           "Model #{model.provider} #{model.model_name}: I had a technical malfunction"
       end
     end

@@ -31,7 +31,7 @@ end
 ## Example
 
 ```elixir
-  # Language Model (text input) example
+  # Language Model (text input) examples
   goose = %LangChain.Provides.GooseAi.LanguageModel{
     model_name: "gpt-neo-20b"
   }
@@ -46,6 +46,14 @@ end
   IO.puts "OpenAI says: #{openai_answer}"
   # OpenAI says: I don't know for sure, but I don't trust languages that can't operate more than one thread at a time.
 
+  cohere = LangChain.Providers.Cohere.LanguageModel{
+    model_name: "command"
+  }
+  response = LanguageModelProtocol.ask(@cohere_model, "Why is Elixir a good language for AI applications?")
+  IO.puts "Cohere says: #{response}"
+
+
+  # Audio Model (audio input) examples
   @swedish_listener %LangChain.Providers.Huggingface.AudioModel{
     model_name: "marinone94/whisper-medium-swedish"
   }
@@ -53,6 +61,15 @@ end
   response = AudioModelProtocol.speak(model, audio_data)
   IO.puts "Swedish Listener heard: #{response}"
   #  Swedish Listener heard: Det bästa programmeringsspråket är uppenbarligen Elixir.
+
+  # Image Classification Model (image input) examples
+  image_model_classify = %LangChain.Providers.Huggingface.ImageModel{
+    language_action: :image_classification
+  }
+  image_data = File.read!("as_byatt_holding_a_gun.jpg")
+  response_classify = ImageModelProtocol.describe(image_model_classify, image_data)
+  IO.puts "Image Classification Model says: #{response_classify}"
+  # Image Classifcation Model says: "woman, AS Byatt, gun, pistol" 
 ```
 
 See the tests folder for more examples.
@@ -60,25 +77,24 @@ See the tests folder for more examples.
 ### Current Supported Providers
 
 #### Text  
- - Bumblebee (runs on your own hardware with Nx and XLA!)
- - GooseAi
  - HuggingFace API
+ - GooseAi
  - NLP Cloud
  - OpenAI
  - Replicate API 
+ - Cohere
+ - Bumblebee (runs on your local hardware with Nx and XLA!)
 
 #### Audio
   - Huggingface
-  - Bumblebee (under construction)
-  - (more to come)
 
-#### Image (coming soon)
+#### Image Classification
+  - Huggingface
 
 Under active development with new providers and features added every day
 
 #### Vector Storage Providers
  - Pinecone Vector Storage
- - weaviate (under construction)
 
 
 

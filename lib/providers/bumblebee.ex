@@ -1,3 +1,5 @@
+# credo:disable-for-this-file
+# bumblebee is an optional dep so we need to disable credo for this file
 # any bumblebee-specific code should go in this file
 # bumblebee will need to be updated to support
 # keeping the model in memory when it's not in use
@@ -83,12 +85,10 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
           # inspect the model.spec field for an overview of the model's architecture, vocab_size,
           # max_positions, pad_token_id, etc
           {:ok, model} = Bumblebee.load_model({:hf, config.model_name})
-
           # this is where tokenizer for that model gets downloaded, tokenizers use the model's encoding scheme
           # to turn text into numbers
           # inspect your tokenizer to see stats for your tokenizer, like vocab_size, end_of_word_suffix, etc
           {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, config.model_name})
-
           execute_model(model.spec.architecture, config, prompt, model, tokenizer)
         rescue
           _e ->
@@ -144,10 +144,10 @@ defmodule LangChain.Providers.Bumblebee.LanguageModel do
           )
 
         input = LangChain.Providers.Bumblebee.prepare_input(architecture, prompt)
-        # IO.inspect(input)
+        IO.inspect(input)
         result = Nx.Serving.run(serving, input)
         # %{text: message, history: prior})
-        # IO.inspect(result)
+        IO.inspect(result)
 
         result
         |> Map.get(:results, [])
