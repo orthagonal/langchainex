@@ -42,6 +42,7 @@ defmodule LangChain.Portals do
         else: original_temperature
 
     model = %{model | temperature: current_temperature}
+
     if cur_attempt >= max_attempts do
       raise "whirlpool_portal failed after #{max_attempts} attempts"
     end
@@ -49,12 +50,14 @@ defmodule LangChain.Portals do
     bindings = Keyword.get(options, :bindings, [])
     IO.puts("******************")
     IO.puts("attempt #{cur_attempt} try to evaluate: \n#{elixir_code}\n")
+
     try do
       elixir_code
       |> Code.eval_string(bindings)
     rescue
       e ->
         error_message = Exception.format(:error, e)
+
         template = %PromptTemplate{
           template: """
             You are an Elixir programmer, this is the prompt you started with:

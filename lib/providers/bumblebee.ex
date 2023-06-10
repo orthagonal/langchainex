@@ -175,7 +175,7 @@ defmodule LangChain.Providers.Bumblebee.Embedder do
     defimpl LangChain.EmbedderProtocol do
       def embed_documents(provider, documents) do
         {:ok, model_info} =
-        Bumblebee.load_model({:hf, provider.model_name}, log_params_diff: false)
+          Bumblebee.load_model({:hf, provider.model_name}, log_params_diff: false)
 
         {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, provider.model_name})
 

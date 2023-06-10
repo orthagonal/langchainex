@@ -8,27 +8,26 @@ defmodule LangChain.Retriever.Git do
 
   defimpl LangChain.Retriever do
     def get_relevant_documents(_provider, %{"type" => "blob", "branch" => branch, "path" => path}) do
-      repo_instance = Gitex.Git.open
+      repo_instance = Gitex.Git.open()
       blob = Gitex.get(branch, repo_instance, path)
       [blob]
     end
 
     def get_relevant_documents(_provider, %{"type" => _tree, "branch" => branch, "path" => path}) do
-      repo_instance = Gitex.Git.open
+      repo_instance = Gitex.Git.open()
       Gitex.get(branch, repo_instance, path)
     end
 
-    def get_relevant_documents(_provider, %{"type" => type, "branch" => branch}) when type in ["commit", "tag"] do
-      repo_instance = Gitex.Git.open
+    def get_relevant_documents(_provider, %{"type" => type, "branch" => branch})
+        when type in ["commit", "tag"] do
+      repo_instance = Gitex.Git.open()
       obj = Gitex.get(branch, repo_instance)
       [obj]
     end
 
     def get_relevant_documents(_provider, _query) do
-    end
-
-    def get_relevant_documents(_provider, _) do
-      {:error, "Invalid query. Query must include 'type', 'branch', 'path' is optional and used for 'blob' and 'tree' types."}
+      {:error,
+       "Invalid query. Query must include 'type', 'branch', 'path' is optional and used for 'blob' and 'tree' types."}
     end
   end
 end

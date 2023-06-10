@@ -24,7 +24,7 @@ defmodule LangChain.Providers.Cohere do
 
   def prepare_body(_model, question) do
     %{
-      prompt: question,
+      prompt: question
     }
     |> Jason.encode!()
   end
@@ -46,8 +46,10 @@ defmodule LangChain.Providers.Cohere.LanguageModel do
   defstruct provider: :cohere,
             model_name: "command",
             max_token: 20,
-            temperature: 0.75, # ranges from 0.0 to 5.0
-            k: 0 # limit number of tokens to consider to the top k tokens
+            # ranges from 0.0 to 5.0
+            temperature: 0.75,
+            # limit number of tokens to consider to the top k tokens
+            k: 0
 
   defimpl LangChain.LanguageModelProtocol, for: LangChain.Providers.Cohere.LanguageModel do
     def ask(model, question) do
@@ -56,7 +58,7 @@ defmodule LangChain.Providers.Cohere.LanguageModel do
 
       case HTTPoison.post(base.url, body, base.headers, timeout: 50_000, recv_timeout: 60_000) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          %{ "generations" => [%{ "text" => text }] } = body |> Jason.decode!()
+          %{"generations" => [%{"text" => text}]} = body |> Jason.decode!()
           text
 
         {:ok, %HTTPoison.Response{status_code: _status_code, body: body}} ->
