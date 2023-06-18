@@ -32,24 +32,24 @@ end
 
 ```elixir
   # Language Model (text input) examples
-  goose = %LangChain.Provides.GooseAi.LanguageModel{
+  goose = %LangChain.Providers.GooseAi.LanguageModel{
     model_name: "gpt-neo-20b"
   }
-  goose_answer = LanguageModelProtocol.ask(goose, "What is your favorite programming language?")
+  goose_answer = LangChain.LanguageModelProtocol.ask(goose, "What is your favorite programming language?")
   IO.puts "Goose says: #{goose_answer}"
   # Goose says: My favorite  programming language is Elixir with a side-order of Rust.
 
-  openai = %LangChain.Provides.OpenAi.LanguageModel{
-    model_name: "gpt-turbo-3.5"
+  openai = %LangChain.Providers.OpenAI.LanguageModel{
+    model_name: "gpt-3.5-turbo"
   }
-  openai_answer = LanguageModelProtocol.ask(openai, "What is your favorite programming language?")
+  openai_answer = LangChain.LanguageModelProtocol.ask(openai, "What is your favorite programming language?")
   IO.puts "OpenAI says: #{openai_answer}"
   # OpenAI says: I don't know for sure, but I don't trust languages that can't operate more than one thread at a time.
 
   cohere = LangChain.Providers.Cohere.LanguageModel{
     model_name: "command"
   }
-  response = LanguageModelProtocol.ask(@cohere_model, "Why is Elixir a good language for AI applications?")
+  response = LangChain.LanguageModelProtocol.ask(@cohere_model, "Why is Elixir a good language for AI applications?")
   IO.puts "Cohere says: #{response}"
 
 
