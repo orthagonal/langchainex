@@ -35,6 +35,8 @@ config :ex_openai,
 
 config :langchainex, :cohere, api_key: System.get_env("COHERE_API_KEY")
 
+config :langchainex, :aleph_alpha, api_key: System.get_env("ALEPH_ALPHA_API_KEY")
+
 ##########################
 # VECTOR STORE PROVIDERS #
 ##########################
