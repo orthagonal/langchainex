@@ -114,4 +114,28 @@ defmodule LangChain.ScraperTest do
 
     Logger.log(:debug, result_yml.text)
   end
+
+  test "example from the README", %{ pid: pid, llm_pid: llm_pid} do
+    {:ok, scraper_pid} = LangChain.Scraper.start_link()
+
+    description = "Hi I'm Nermal an 11th-level magic user with 30 hit points, I have a wand of healing and a cloak of protection in my inventory."
+
+    character_schema = "{
+      name: String,
+      class: String,
+      hit_points: Int,
+      inventory: [String]
+    }"
+
+    {:ok, result } = LangChain.Scraper.scrape(scraper_pid, description, llm_pid, "default_scraper", %{ output_format: "YAML", input_schema: character_schema })
+
+    IO.puts result.text
+    " name: Nermal
+      class: magic user
+      hit_points: 30
+      inventory:
+        - wand of healing
+        - cloak of protection
+    "
+  end
 end

@@ -124,26 +124,40 @@ In your Application tree:
 
 In your code: 
 ```elixir
-  description = "Hi I'm Nermal an 11th-level magic user with 30 hit points, I have a wand of healing and a cloak of protection in my inventory."
+    # start the Scraper genserver
+    {:ok, pid} = Scraper.start_link()
+    # Set up an LLM provider, we're using OpenAI here
+    openai_provider = %LangChain.Providers.OpenAI.LanguageModel{
+      model_name: "gpt-3.5-turbo",
+      max_tokens: 25,
+      temperature: 0.5,
+      n: 1
+    }
 
-  character_schema = "{
-    name: String,
-    class: String,
-    hit_points: Int,          
-    inventory: [String]
-  }"
+    # # Start the LLM GenServer with the OpenAI provider
+    {:ok, llm_pid} = LangChain.LLM.start_link(provider: openai_provider)
 
-  {:ok, result } = LangChain.Scraper.scrape(:scraper, description, "default_scraper", %{ output_format: "YAML", input_schema: character_schema }) 
+    {:ok, scraper_pid} = LangChain.Scraper.start_link()
 
-  IO.puts result.text 
-  " name: Nermal
-    class: magic user
-    hit_points: 30
-    inventory:
-      - wand of healing
-      - cloak of protection
-  "
-    end
+    description = "Hi I'm Nermal an 11th-level magic user with 30 hit points, I have a wand of healing and a cloak of protection in my inventory."
+
+    character_schema = "{
+      name: String,
+      class: String,
+      hit_points: Int,
+      inventory: [String]
+    }"
+
+    {:ok, result } = LangChain.Scraper.scrape(scraper_pid, description, llm_pid, "default_scraper", %{ output_format: "YAML", input_schema: character_schema })
+
+    IO.puts result.text
+    " name: Nermal
+      class: magic user
+      hit_points: 30
+      inventory:
+        - wand of healing
+        - cloak of protection
+    "
 ```
 
 ### Notes
