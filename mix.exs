@@ -24,11 +24,12 @@ defmodule LangchainEx.MixProject do
   defp deps do
     [
       # bumblebee is optional, if you want to run models locally
-      {:bumblebee, github: "elixir-nx/bumblebee", optional: true},
+      # {:bumblebee, github: "elixir-nx/bumblebee", optional: true},
+      {:bumblebee, "~> 0.3.0"},
       # if you want to run bumblbee models on your GPU (*highly* recommended)
       # you can uncomment exla and it *should* be able to build
       # though this can get tricky on non-linux platforms
-      # {:exla, "~> 0.5.1"},
+      {:exla, ">= 0.0.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:elixir_uuid, "~> 1.2"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},

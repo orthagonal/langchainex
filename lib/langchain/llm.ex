@@ -32,6 +32,6 @@ defmodule LangChain.LLM do
   # Public functions
 
   def call(pid, prompt) do
-    GenServer.call(pid, {:ask, prompt}, 60_000)
+    GenServer.call(pid, {:ask, prompt}, :infinity)
   end
 end
