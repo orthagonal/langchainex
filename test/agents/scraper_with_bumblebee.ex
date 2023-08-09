@@ -6,6 +6,7 @@ defmodule LangChain.ScraperTest do
   alias LangChain.{Chain, ChainLink, PromptTemplate, Scraper}
   require Logger
 
+  # timeout has to be infinity because bumblebee will take a while to download it
   @tag timeout: :infinity
   setup do
     {:ok, pid} = Scraper.start_link()
